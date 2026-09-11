@@ -1,11 +1,9 @@
 """Query SQL — Interroga direttamente i dati ANAC."""
 
 import time
-from pathlib import Path
 
-import duckdb
 import streamlit as st
-from sources import DATASETS, ALL_YEARS, _clean_url
+from sources import DATASETS, YEARS_BANDI, YEARS_SNAPSHOT, query
 
 st.title("🧪 Query SQL")
 st.markdown(
@@ -86,24 +84,12 @@ if show_hist and history:
 if execute:
     with st.spinner(f"Esecuzione su `{selected_slug}`…"):
         try:
-            urls = [_clean_url(selected_slug, y) for y in selected_years]
-            urls = [u for u in urls if u]
-            if not urls:
-                st.error("Nessun file parquet trovato per il dataset selezionato.")
-                st.stop()
-
-            paths = ", ".join(f"'{u}'" for u in urls)
-            cte = f"WITH clean_input AS (SELECT * FROM read_parquet([{paths}], union_by_name=true))"
-
             q = sql.strip().rstrip(";")
-            if not q.upper().startswith("WITH"):
-                q = f"{cte} {q}"
             if "LIMIT" not in q.upper():
                 q += " LIMIT 1000"
 
             t0 = time.perf_counter()
-            with duckdb.connect() as con:
-                df = con.sql(q).df()
+            df = query(q, years=selected_years, slug=selected_slug)
             elapsed = time.perf_counter() - t0
 
             n_rows = len(df)
@@ -112,7 +98,7 @@ if execute:
             m1, m2, m3 = st.columns(3)
             m1.metric("Righe", f"{n_rows:,}")
             m2.metric("Tempo", f"{elapsed:.2f}s")
-            m3.metric("Parquet", f"{len(urls)} file")
+            m3.metric("Parquet", f"{len(selected_years)} file")
 
             if is_truncated:
                 st.info(f"Troncato a 1000 righe. Aggiungi LIMIT.")

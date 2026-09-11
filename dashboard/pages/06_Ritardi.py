@@ -4,7 +4,7 @@ import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 from lab_connectors.formatters import fmt_num
-from sources import ALL_YEARS, _clean_path
+from sources import YEARS_BANDI, query
 
 st.title("⏱️ Ritardi e Monitoraggio")
 st.markdown(
@@ -15,38 +15,16 @@ st.markdown(
 # ── Caricamento dati ──────────────────────────────────────────────────────────
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_ritardi_data():
-    import duckdb
-    con = duckdb.connect()
-
-    sal_path = str(_clean_path("anac_stati_avanzamento", 2026))
-    bandi_paths = [str(_clean_path("anac_bandi_gara", y)) for y in ALL_YEARS]
-    bandi_paths = [p for p in bandi_paths if __import__('os').path.exists(p)]
-    bandi_list = ", ".join(f"'{p}'" for p in bandi_paths)
-
-    sql = f"""
-    WITH sal AS (
-        SELECT 
-            cig, denominazione_sal, flag_ritardo, data_emissione_sal,
-            importo_sal, n_giorni_scostamento, progressivo_sal,
-            EXTRACT(YEAR FROM data_emissione_sal) AS anno
-        FROM read_parquet('{sal_path}')
-        WHERE EXTRACT(YEAR FROM data_emissione_sal) BETWEEN 2008 AND 2026
-    ),
-    bandi AS (
-        SELECT DISTINCT cig, denominazione_amministrazione_appaltante AS sa,
-               oggetto_principale_contratto AS settore, importo_lotto
-        FROM read_parquet([{bandi_list}], union_by_name=true)
+    sal = query("SELECT * FROM clean_input", years=[2026], slug="anac_stati_avanzamento")
+    bandi = query(
+        "SELECT DISTINCT cig, denominazione_amministrazione_appaltante AS sa, "
+        "oggetto_principale_contratto AS settore, importo_lotto FROM clean_input",
+        years=YEARS_BANDI,
+        slug="anac_bandi_gara",
     )
-    SELECT 
-        s.cig, s.flag_ritardo, s.anno, s.data_emissione_sal,
-        s.importo_sal, s.n_giorni_scostamento, s.progressivo_sal,
-        b.sa, b.settore, b.importo_lotto
-    FROM sal s
-    LEFT JOIN bandi b ON s.cig = b.cig
-    """
-    df = con.sql(sql).df()
-    con.close()
-    return df
+    if sal.empty:
+        return sal
+    return sal.merge(bandi, on="cig", how="left")
 
 
 with st.spinner("Caricamento dati SAL + bandi…"):

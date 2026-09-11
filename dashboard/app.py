@@ -5,12 +5,18 @@ Dashboard interattiva per l'esplorazione dei dati ANAC sugli appalti pubblici.
 """
 
 import streamlit as st
+from lab_connectors.branding import apply_branding
 
 st.set_page_config(
     page_title="ANAC Appalti · Dashboard",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded",
+)
+
+apply_branding(
+    repo_name="appalti-pubblici",
+    repo_url="https://github.com/dataciviclab/appalti-pubblici",
 )
 
 pages = {
@@ -29,12 +35,4 @@ pages = {
 }
 
 pg = st.navigation(pages, position="sidebar")
-
-st.sidebar.markdown("---")
-st.sidebar.caption("Dati: ANAC (dati.anticorruzione.it) · CC BY 4.0")
-st.sidebar.caption(
-    "Codice: [dataciviclab/dataset-incubator](https://github.com/dataciviclab/dataset-incubator)"
-)
-st.sidebar.caption("[DataCivicLab](https://dataciviclab.org/)")
-
 pg.run()

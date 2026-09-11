@@ -6,13 +6,13 @@ import plotly.graph_objects as go
 from lab_connectors.formatters import fmt_num
 from sources import (
     load_mart_annuale_bandi, load_mart_top_stazioni, load_mart_trend_pnrr,
-    load_mart_esiti_procedura, load_mart_trend_settore, ALL_YEARS,
+    load_mart_esiti_procedura, load_mart_trend_settore, YEARS_BANDI,
 )
 
 st.title("📋 Bandi di Gara")
 
 # ── Filtro anno ───────────────────────────────────────────────────────────────
-year = st.selectbox("Anno", ALL_YEARS, index=len(ALL_YEARS) - 1)
+year = st.selectbox("Anno", YEARS_BANDI, index=len(YEARS_BANDI) - 1)
 
 # ── Caricamento dati ──────────────────────────────────────────────────────────
 try:

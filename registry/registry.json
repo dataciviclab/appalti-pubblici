@@ -1,0 +1,2031 @@
+{
+  "schema_version": 1,
+  "repo": "appalti-pubblici",
+  "source_repo": "dataciviclab/appalti-pubblici",
+  "updated_at": "2026-09-11",
+  "datasets": [
+    {
+      "slug": "anac_aggiudicatari",
+      "name": "Anac Aggiudicatari",
+      "description": "",
+      "source": "",
+      "source_id": "anac",
+      "period": {
+        "start": 2000,
+        "end": 2026
+      },
+      "tags": [
+        "appalti",
+        "anac",
+        "aggiudicatari"
+      ],
+      "category": "appalti",
+      "columns": [
+        {
+          "name": "cig",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cig_code"
+        },
+        {
+          "name": "ruolo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "codice_fiscale",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "fiscal_code"
+        },
+        {
+          "name": "denominazione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "tipo_soggetto",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "id_aggiudicazione",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/appalti_pubblici/anac_aggiudicatari/2026/anac_aggiudicatari_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "anac_aggiudicatari__mart_top_aggiudicatari"
+      ]
+    },
+    {
+      "slug": "anac_aggiudicazioni",
+      "name": "Anac Aggiudicazioni",
+      "description": "",
+      "source": "",
+      "source_id": "anac",
+      "period": {
+        "start": 2000,
+        "end": 2026
+      },
+      "tags": [
+        "appalti",
+        "anac",
+        "aggiudicazioni"
+      ],
+      "category": "appalti",
+      "columns": [
+        {
+          "name": "cig",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cig_code"
+        },
+        {
+          "name": "data_aggiudicazione_definitiva",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "esito",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "criterio_aggiudicazione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_comunicazione_esito",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "numero_offerte_ammesse",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "numero_offerte_escluse",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "importo_aggiudicazione",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "ribasso_aggiudicazione",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "num_imprese_offerenti",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "flag_subappalto",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "id_aggiudicazione",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "cod_esito",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "num_imprese_richiedenti",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "asta_elettronica",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "num_imprese_invitate",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "massimo_ribasso",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "minimo_ribasso",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "FLAG_SCOMPUTO",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "COD_PRESTAZIONI_COMPRESE",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "PRESTAZIONI_COMPRESE",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "CIG_PROG_ESTERNA",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cig_code"
+        },
+        {
+          "name": "DATA_INCARICO_PROG",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "DATA_CONS_PROG",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "COD_MODO_RIAGGIUDICAZIONE",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "MODO_RIAGGIUDICAZIONE",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "FLAG_PROC_ACCELERATA",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "N_MANIF_INTERESSE",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/appalti_pubblici/anac_aggiudicazioni/2026/anac_aggiudicazioni_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "anac_aggiudicazioni__mart_annuale",
+        "anac_aggiudicazioni__mart_dettaglio"
+      ]
+    },
+    {
+      "slug": "anac_bandi_gara",
+      "name": "Anac Bandi Gara",
+      "description": "",
+      "source": "",
+      "source_id": "anac",
+      "period": {
+        "start": 2016,
+        "end": 2025
+      },
+      "tags": [
+        "appalti",
+        "anac",
+        "bandi",
+        "gara"
+      ],
+      "category": "appalti",
+      "columns": [
+        {
+          "name": "cig",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cig_code"
+        },
+        {
+          "name": "cig_accordo_quadro",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cig_code"
+        },
+        {
+          "name": "CIG_COLLEGAMENTO",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cig_code"
+        },
+        {
+          "name": "CUI_PROGRAMMA",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "numero_gara",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "oggetto_gara",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "importo_complessivo_gara",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "n_lotti_componenti",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "oggetto_lotto",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "importo_lotto",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "oggetto_principale_contratto",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "stato",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "country_code"
+        },
+        {
+          "name": "settore",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "codice_istat_luogo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "municipality_code"
+        },
+        {
+          "name": "provincia",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "province_code"
+        },
+        {
+          "name": "data_pubblicazione",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_scadenza_offerta",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "cod_tipo_scelta_contraente",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "tipo_scelta_contraente",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "cod_modalita_realizzazione",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "modalita_realizzazione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "codice_ausa",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "ausa_code"
+        },
+        {
+          "name": "cf_amministrazione_appaltante",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "fiscal_code"
+        },
+        {
+          "name": "denominazione_amministrazione_appaltante",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "sezione_regionale",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "id_centro_costo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "denominazione_centro_costo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "anno_pubblicazione",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "mese_pubblicazione",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "cod_cpv",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cpv_code"
+        },
+        {
+          "name": "descrizione_cpv",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "flag_pnrr",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "flag_urgenza",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "flag_delega",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "COD_MODALITA_INDIZIONE_SPECIALI",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "MODALITA_INDIZIONE_SPECIALI",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "COD_MODALITA_INDIZIONE_SERVIZI",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "MODALITA_INDIZIONE_SERVIZI",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "durata_prevista",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "COD_STRUMENTO_SVOLGIMENTO",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "STRUMENTO_SVOLGIMENTO",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "COD_MOTIVO_URGENZA",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "motivo_urgenza",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "funzioni_delegate",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "CF_SA_DELEGANTE",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "DENOMINAZIONE_SA_DELEGANTE",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "CF_SA_DELEGATA",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "DENOMINAZIONE_SA_DELEGATA",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "importo_sicurezza",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "COD_ESITO",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "ESITO",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_comunicazione_esito",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_cancellazione",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "COD_MOTIVO_CANCELLAZIONE",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "MOTIVO_CANCELLAZIONE",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "TIPO_APPALTO_RISERVATO",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_ultimo_perfezionamento",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/appalti_pubblici/anac_bandi_gara/*/anac_bandi_gara_*_clean.parquet",
+        "multi_file": true
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "anac_bandi_gara__mart_annuale",
+        "anac_bandi_gara__mart_trend_pnrr",
+        "anac_bandi_gara__mart_top_stazioni",
+        "anac_bandi_gara__mart_esiti_per_procedura",
+        "anac_bandi_gara__mart_trend_settore"
+      ]
+    },
+    {
+      "slug": "anac_collaudo",
+      "name": "Anac Collaudo",
+      "description": "",
+      "source": "",
+      "source_id": "anac",
+      "period": {
+        "start": 2000,
+        "end": 2026
+      },
+      "tags": [
+        "appalti",
+        "anac",
+        "collaudo"
+      ],
+      "category": "appalti",
+      "columns": [
+        {
+          "name": "cig",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cig_code"
+        },
+        {
+          "name": "data_delibera",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_cert_collaudo",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "esito_collaudo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_inizio_oper",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_regolare_esec",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_nomina_coll",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_collaudo_stat",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "id_aggiudicazione",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "riserve_avanzate",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "riserve_definite",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "importo_contenz_risolto",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/appalti_pubblici/anac_collaudo/2026/anac_collaudo_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "anac_collaudo__mart_collaudo"
+      ]
+    },
+    {
+      "slug": "anac_cross",
+      "name": "Anac Cross",
+      "description": "Compose ANAC: CIG-level snapshot unificato (2026) da tutti i dataset ANAC + vista lifecycle (bandi 2016-2025 + snapshot).",
+      "source": "",
+      "source_id": "dataciviclab_composite",
+      "period": {
+        "start": 2026,
+        "end": 2026
+      },
+      "tags": [
+        "appalti",
+        "anac",
+        "compose",
+        "cross"
+      ],
+      "category": "appalti",
+      "columns": [
+        {
+          "name": "cig",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cig_code"
+        },
+        {
+          "name": "data_aggiudicazione_definitiva",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "esito",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "criterio_aggiudicazione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_comunicazione_esito",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "numero_offerte_ammesse",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "numero_offerte_escluse",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "importo_aggiudicazione",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "ribasso_aggiudicazione",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "num_imprese_offerenti",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "flag_subappalto",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "id_aggiudicazione",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "cod_esito",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "num_imprese_richiedenti",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "asta_elettronica",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "num_imprese_invitate",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "massimo_ribasso",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "minimo_ribasso",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "FLAG_SCOMPUTO",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "COD_PRESTAZIONI_COMPRESE",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "PRESTAZIONI_COMPRESE",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "CIG_PROG_ESTERNA",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cig_code"
+        },
+        {
+          "name": "DATA_INCARICO_PROG",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "DATA_CONS_PROG",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "COD_MODO_RIAGGIUDICAZIONE",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "MODO_RIAGGIUDICAZIONE",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "FLAG_PROC_ACCELERATA",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "N_MANIF_INTERESSE",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/appalti_pubblici/anac_cross/2026/anac_cross_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "anac_cross__mart_panoramica",
+        "anac_cross__mart_lifecycle",
+        "anac_cross__mart_imprese"
+      ]
+    },
+    {
+      "slug": "anac_cup",
+      "name": "Anac Cup",
+      "description": "",
+      "source": "",
+      "source_id": "anac",
+      "period": {
+        "start": 2000,
+        "end": 2026
+      },
+      "tags": [
+        "appalti",
+        "anac",
+        "cup"
+      ],
+      "category": "appalti",
+      "columns": [
+        {
+          "name": "cig",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cig_code"
+        },
+        {
+          "name": "cup",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cup_code"
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/appalti_pubblici/anac_cup/2026/anac_cup_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "anac_cup__mart_cup"
+      ]
+    },
+    {
+      "slug": "anac_partecipanti",
+      "name": "Anac Partecipanti",
+      "description": "",
+      "source": "",
+      "source_id": "anac",
+      "period": {
+        "start": 2023,
+        "end": 2026
+      },
+      "tags": [
+        "appalti",
+        "anac",
+        "partecipanti"
+      ],
+      "category": "appalti",
+      "columns": [
+        {
+          "name": "cig",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cig_code"
+        },
+        {
+          "name": "ruolo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "codice_fiscale",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "fiscal_code"
+        },
+        {
+          "name": "denominazione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "tipo_soggetto",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/appalti_pubblici/anac_partecipanti/2026/anac_partecipanti_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "anac_partecipanti__mart_top_partecipanti"
+      ]
+    },
+    {
+      "slug": "anac_stati_avanzamento",
+      "name": "Anac Stati Avanzamento",
+      "description": "",
+      "source": "",
+      "source_id": "anac",
+      "period": {
+        "start": 2000,
+        "end": 2026
+      },
+      "tags": [
+        "appalti",
+        "anac",
+        "stati",
+        "avanzamento"
+      ],
+      "category": "appalti",
+      "columns": [
+        {
+          "name": "cig",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cig_code"
+        },
+        {
+          "name": "denominazione_sal",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "flag_ritardo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_emissione_sal",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "importo_sal",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "n_giorni_scostamento",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "progressivo_sal",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "id_aggiudicazione",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "data_cert_pagamento",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "importo_cert_pagamento",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "giorni_proroga",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/appalti_pubblici/anac_stati_avanzamento/2026/anac_stati_avanzamento_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "anac_stati_avanzamento__mart_sal"
+      ]
+    },
+    {
+      "slug": "anac_subappalti",
+      "name": "Anac Subappalti",
+      "description": "",
+      "source": "",
+      "source_id": "anac",
+      "period": {
+        "start": 2020,
+        "end": 2026
+      },
+      "tags": [
+        "appalti",
+        "anac",
+        "subappalti"
+      ],
+      "category": "appalti",
+      "columns": [
+        {
+          "name": "cig",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cig_code"
+        },
+        {
+          "name": "id_subappalto",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "cf_subappaltante",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "fiscal_code"
+        },
+        {
+          "name": "data_autorizzazione",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "oggetto",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "cod_categoria",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "descrizione_categoria",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "classe_importo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "descrizione_tipo_categoria",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "cod_cpv",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cpv_code"
+        },
+        {
+          "name": "descrizione_cpv",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "codice_fiscale",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "fiscal_code"
+        },
+        {
+          "name": "denominazione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "ruolo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "tipo_soggetto",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/appalti_pubblici/anac_subappalti/2026/anac_subappalti_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "anac_subappalti__mart_top_subappalti"
+      ]
+    }
+  ],
+  "marts": [
+    {
+      "slug": "anac_aggiudicatari__mart_top_aggiudicatari",
+      "dataset": "anac_aggiudicatari",
+      "table": "mart_top_aggiudicatari",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_aggiudicatari/2026/mart_top_aggiudicatari.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_aggiudicazioni__mart_annuale",
+      "dataset": "anac_aggiudicazioni",
+      "table": "mart_annuale",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_aggiudicazioni/2026/mart_annuale.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_aggiudicazioni__mart_dettaglio",
+      "dataset": "anac_aggiudicazioni",
+      "table": "mart_dettaglio",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_aggiudicazioni/2026/mart_dettaglio.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_bandi_gara__mart_annuale",
+      "dataset": "anac_bandi_gara",
+      "table": "mart_annuale",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_bandi_gara/2025/mart_annuale.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_bandi_gara__mart_esiti_per_procedura",
+      "dataset": "anac_bandi_gara",
+      "table": "mart_esiti_per_procedura",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_bandi_gara/2025/mart_esiti_per_procedura.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_bandi_gara__mart_top_stazioni",
+      "dataset": "anac_bandi_gara",
+      "table": "mart_top_stazioni",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_bandi_gara/2025/mart_top_stazioni.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_bandi_gara__mart_trend_pnrr",
+      "dataset": "anac_bandi_gara",
+      "table": "mart_trend_pnrr",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_bandi_gara/2025/mart_trend_pnrr.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_bandi_gara__mart_trend_settore",
+      "dataset": "anac_bandi_gara",
+      "table": "mart_trend_settore",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_bandi_gara/2025/mart_trend_settore.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_collaudo__mart_collaudo",
+      "dataset": "anac_collaudo",
+      "table": "mart_collaudo",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_collaudo/2026/mart_collaudo.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_cross__mart_imprese",
+      "dataset": "anac_cross",
+      "table": "mart_imprese",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_cross/2026/mart_imprese.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_cross__mart_lifecycle",
+      "dataset": "anac_cross",
+      "table": "mart_lifecycle",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_cross/2026/mart_lifecycle.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_cross__mart_panoramica",
+      "dataset": "anac_cross",
+      "table": "mart_panoramica",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_cross/2026/mart_panoramica.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_cup__mart_cup",
+      "dataset": "anac_cup",
+      "table": "mart_cup",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_cup/2026/mart_cup.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_partecipanti__mart_top_partecipanti",
+      "dataset": "anac_partecipanti",
+      "table": "mart_top_partecipanti",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_partecipanti/2026/mart_top_partecipanti.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_stati_avanzamento__mart_sal",
+      "dataset": "anac_stati_avanzamento",
+      "table": "mart_sal",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_stati_avanzamento/2026/mart_sal.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_subappalti__mart_top_subappalti",
+      "dataset": "anac_subappalti",
+      "table": "mart_top_subappalti",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_subappalti/2026/mart_top_subappalti.parquet",
+        "multi_file": false
+      }
+    }
+  ],
+  "signals": [
+    {
+      "id": "compose:anac_cross",
+      "source_id": "dataciviclab_composite",
+      "status": "ok",
+      "label": "anac_cross",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260909T171914Z_2011a039",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "mart": 100
+        },
+        "output_rows": {
+          "mart": 17715889
+        },
+        "output_bytes": {
+          "mart": 589525486
+        },
+        "started_at": "2026-09-09T17:19:14.329338+00:00",
+        "finished_at": "2026-09-09T17:22:47.212039+00:00",
+        "duration_seconds": 212.883
+      }
+    },
+    {
+      "id": "anac_aggiudicatari",
+      "source_id": "anac",
+      "status": "ok",
+      "label": "anac_aggiudicatari",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260911T102100Z_ef531a50",
+        "year": 2026,
+        "status": "FAILED",
+        "quality_score": {
+          "clean": 80
+        },
+        "output_rows": {
+          "clean": 5437334
+        },
+        "output_bytes": {
+          "clean": 106629842
+        },
+        "started_at": "2026-09-11T10:21:00.481077+00:00",
+        "finished_at": "2026-09-11T10:21:24.728426+00:00",
+        "duration_seconds": 24.247
+      }
+    },
+    {
+      "id": "anac_aggiudicazioni",
+      "source_id": "anac",
+      "status": "ok",
+      "label": "anac_aggiudicazioni",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260911T102218Z_0fbab541",
+        "year": 2026,
+        "status": "FAILED",
+        "quality_score": {
+          "clean": 80
+        },
+        "output_rows": {
+          "clean": 4862077
+        },
+        "output_bytes": {
+          "clean": 110425012
+        },
+        "started_at": "2026-09-11T10:22:18.994086+00:00",
+        "finished_at": "2026-09-11T10:22:56.388094+00:00",
+        "duration_seconds": 37.394
+      }
+    },
+    {
+      "id": "anac_bandi_gara",
+      "source_id": "anac",
+      "status": "ok",
+      "label": "anac_bandi_gara",
+      "detail": "anni 2016-2025 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260909T112220Z_630d340a",
+        "year": 2026,
+        "status": "FAILED",
+        "started_at": "2026-09-09T11:22:20.545981+00:00",
+        "finished_at": "2026-09-09T11:22:20.953727+00:00",
+        "duration_seconds": 0.408
+      }
+    },
+    {
+      "id": "anac_collaudo",
+      "source_id": "anac",
+      "status": "ok",
+      "label": "anac_collaudo",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260911T102305Z_2ba297dc",
+        "year": 2026,
+        "status": "FAILED",
+        "quality_score": {
+          "clean": 80
+        },
+        "output_rows": {
+          "clean": 648862
+        },
+        "output_bytes": {
+          "clean": 8790939
+        },
+        "started_at": "2026-09-11T10:23:05.968755+00:00",
+        "finished_at": "2026-09-11T10:23:09.029453+00:00",
+        "duration_seconds": 3.061
+      }
+    },
+    {
+      "id": "anac_cup",
+      "source_id": "anac",
+      "status": "ok",
+      "label": "anac_cup",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260911T102335Z_bd2fb7bd",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "mart": 100
+        },
+        "output_rows": {
+          "mart": 1549627
+        },
+        "output_bytes": {
+          "mart": 9005930
+        },
+        "started_at": "2026-09-11T10:23:35.470832+00:00",
+        "finished_at": "2026-09-11T10:23:38.029616+00:00",
+        "duration_seconds": 2.559
+      }
+    },
+    {
+      "id": "anac_partecipanti",
+      "source_id": "anac",
+      "status": "ok",
+      "label": "anac_partecipanti",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260911T102344Z_c95e9a0e",
+        "year": 2026,
+        "status": "FAILED",
+        "quality_score": {
+          "clean": 80
+        },
+        "output_rows": {
+          "clean": 8044052
+        },
+        "output_bytes": {
+          "clean": 122789273
+        },
+        "started_at": "2026-09-11T10:23:44.121699+00:00",
+        "finished_at": "2026-09-11T10:24:41.371712+00:00",
+        "duration_seconds": 57.25
+      }
+    },
+    {
+      "id": "anac_stati_avanzamento",
+      "source_id": "anac",
+      "status": "ok",
+      "label": "anac_stati_avanzamento",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260911T102456Z_d4b0f153",
+        "year": 2026,
+        "status": "FAILED",
+        "quality_score": {
+          "clean": 80
+        },
+        "output_rows": {
+          "clean": 1274801
+        },
+        "output_bytes": {
+          "clean": 22907256
+        },
+        "started_at": "2026-09-11T10:24:56.694508+00:00",
+        "finished_at": "2026-09-11T10:25:02.724817+00:00",
+        "duration_seconds": 6.03
+      }
+    },
+    {
+      "id": "anac_subappalti",
+      "source_id": "anac",
+      "status": "ok",
+      "label": "anac_subappalti",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260911T102523Z_3fd4ebba",
+        "year": 2026,
+        "status": "FAILED",
+        "quality_score": {
+          "clean": 75
+        },
+        "output_rows": {
+          "clean": 334301
+        },
+        "output_bytes": {
+          "clean": 16911777
+        },
+        "started_at": "2026-09-11T10:25:23.102659+00:00",
+        "finished_at": "2026-09-11T10:25:26.483456+00:00",
+        "duration_seconds": 3.381
+      }
+    }
+  ],
+  "codelists": [],
+  "entities": {
+    "entities": {
+      "Categoria merceologica": {
+        "entity": "Categoria merceologica",
+        "label": "Categoria merceologica",
+        "datasets": [
+          {
+            "slug": "anac_bandi_gara",
+            "name": "Anac Bandi Gara",
+            "column": "cod_cpv",
+            "semantic_type": "cpv_code"
+          },
+          {
+            "slug": "anac_subappalti",
+            "name": "Anac Subappalti",
+            "column": "cod_cpv",
+            "semantic_type": "cpv_code"
+          }
+        ],
+        "types": {
+          "cpv_code": 2
+        }
+      },
+      "Comune": {
+        "entity": "Comune",
+        "label": "Comune (ISTAT)",
+        "datasets": [
+          {
+            "slug": "anac_bandi_gara",
+            "name": "Anac Bandi Gara",
+            "column": "codice_istat_luogo",
+            "semantic_type": "municipality_code"
+          }
+        ],
+        "types": {
+          "municipality_code": 1
+        }
+      },
+      "Ente (o Impresa)": {
+        "entity": "Ente (o Impresa)",
+        "label": "Ente (o Impresa)",
+        "datasets": [
+          {
+            "slug": "anac_aggiudicatari",
+            "name": "Anac Aggiudicatari",
+            "column": "codice_fiscale",
+            "semantic_type": "fiscal_code"
+          },
+          {
+            "slug": "anac_bandi_gara",
+            "name": "Anac Bandi Gara",
+            "column": "cf_amministrazione_appaltante",
+            "semantic_type": "fiscal_code"
+          },
+          {
+            "slug": "anac_partecipanti",
+            "name": "Anac Partecipanti",
+            "column": "codice_fiscale",
+            "semantic_type": "fiscal_code"
+          },
+          {
+            "slug": "anac_subappalti",
+            "name": "Anac Subappalti",
+            "column": "cf_subappaltante",
+            "semantic_type": "fiscal_code"
+          },
+          {
+            "slug": "anac_subappalti",
+            "name": "Anac Subappalti",
+            "column": "codice_fiscale",
+            "semantic_type": "fiscal_code"
+          }
+        ],
+        "types": {
+          "fiscal_code": 5
+        }
+      },
+      "Gara": {
+        "entity": "Gara",
+        "label": "Gara / Appalto",
+        "datasets": [
+          {
+            "slug": "anac_aggiudicatari",
+            "name": "Anac Aggiudicatari",
+            "column": "cig",
+            "semantic_type": "cig_code"
+          },
+          {
+            "slug": "anac_aggiudicazioni",
+            "name": "Anac Aggiudicazioni",
+            "column": "cig",
+            "semantic_type": "cig_code"
+          },
+          {
+            "slug": "anac_aggiudicazioni",
+            "name": "Anac Aggiudicazioni",
+            "column": "CIG_PROG_ESTERNA",
+            "semantic_type": "cig_code"
+          },
+          {
+            "slug": "anac_bandi_gara",
+            "name": "Anac Bandi Gara",
+            "column": "cig",
+            "semantic_type": "cig_code"
+          },
+          {
+            "slug": "anac_bandi_gara",
+            "name": "Anac Bandi Gara",
+            "column": "cig_accordo_quadro",
+            "semantic_type": "cig_code"
+          },
+          {
+            "slug": "anac_bandi_gara",
+            "name": "Anac Bandi Gara",
+            "column": "CIG_COLLEGAMENTO",
+            "semantic_type": "cig_code"
+          },
+          {
+            "slug": "anac_collaudo",
+            "name": "Anac Collaudo",
+            "column": "cig",
+            "semantic_type": "cig_code"
+          },
+          {
+            "slug": "anac_cross",
+            "name": "Anac Cross",
+            "column": "cig",
+            "semantic_type": "cig_code"
+          },
+          {
+            "slug": "anac_cross",
+            "name": "Anac Cross",
+            "column": "CIG_PROG_ESTERNA",
+            "semantic_type": "cig_code"
+          },
+          {
+            "slug": "anac_cup",
+            "name": "Anac Cup",
+            "column": "cig",
+            "semantic_type": "cig_code"
+          },
+          {
+            "slug": "anac_partecipanti",
+            "name": "Anac Partecipanti",
+            "column": "cig",
+            "semantic_type": "cig_code"
+          },
+          {
+            "slug": "anac_stati_avanzamento",
+            "name": "Anac Stati Avanzamento",
+            "column": "cig",
+            "semantic_type": "cig_code"
+          },
+          {
+            "slug": "anac_subappalti",
+            "name": "Anac Subappalti",
+            "column": "cig",
+            "semantic_type": "cig_code"
+          }
+        ],
+        "types": {
+          "cig_code": 13
+        }
+      },
+      "Nazione": {
+        "entity": "Nazione",
+        "label": "Nazione",
+        "datasets": [
+          {
+            "slug": "anac_bandi_gara",
+            "name": "Anac Bandi Gara",
+            "column": "stato",
+            "semantic_type": "country_code"
+          }
+        ],
+        "types": {
+          "country_code": 1
+        }
+      },
+      "Progetto": {
+        "entity": "Progetto",
+        "label": "Progetto",
+        "datasets": [
+          {
+            "slug": "anac_cup",
+            "name": "Anac Cup",
+            "column": "cup",
+            "semantic_type": "cup_code"
+          }
+        ],
+        "types": {
+          "cup_code": 1
+        }
+      },
+      "Provincia": {
+        "entity": "Provincia",
+        "label": "Provincia",
+        "datasets": [
+          {
+            "slug": "anac_bandi_gara",
+            "name": "Anac Bandi Gara",
+            "column": "provincia",
+            "semantic_type": "province_code"
+          }
+        ],
+        "types": {
+          "province_code": 1
+        }
+      },
+      "Stazione Appaltante": {
+        "entity": "Stazione Appaltante",
+        "label": "Stazione Appaltante",
+        "datasets": [
+          {
+            "slug": "anac_bandi_gara",
+            "name": "Anac Bandi Gara",
+            "column": "codice_ausa",
+            "semantic_type": "ausa_code"
+          }
+        ],
+        "types": {
+          "ausa_code": 1
+        }
+      }
+    },
+    "bridges": [
+      {
+        "from": {
+          "entity": "Gara",
+          "dataset": "anac_aggiudicatari",
+          "via": "cig_code"
+        },
+        "to": {
+          "entity": "Comune",
+          "bridge": "anac_bandi_gara",
+          "on": "cig",
+          "semantic_type": "municipality_code"
+        }
+      },
+      {
+        "from": {
+          "entity": "Gara",
+          "dataset": "anac_aggiudicazioni",
+          "via": "cig_code"
+        },
+        "to": {
+          "entity": "Comune",
+          "bridge": "anac_bandi_gara",
+          "on": "cig",
+          "semantic_type": "municipality_code"
+        }
+      },
+      {
+        "from": {
+          "entity": "Gara",
+          "dataset": "anac_bandi_gara",
+          "via": "cig_code"
+        },
+        "to": {
+          "entity": "Comune",
+          "bridge": "anac_bandi_gara",
+          "on": "cig",
+          "semantic_type": "municipality_code"
+        }
+      },
+      {
+        "from": {
+          "entity": "Stazione Appaltante",
+          "dataset": "anac_bandi_gara",
+          "via": "ausa_code"
+        },
+        "to": {
+          "entity": "Ente (o Impresa)",
+          "bridge": "bdap_anagrafe_enti",
+          "on": "codice_ente_ipa",
+          "semantic_type": "fiscal_code"
+        }
+      },
+      {
+        "from": {
+          "entity": "Gara",
+          "dataset": "anac_collaudo",
+          "via": "cig_code"
+        },
+        "to": {
+          "entity": "Comune",
+          "bridge": "anac_bandi_gara",
+          "on": "cig",
+          "semantic_type": "municipality_code"
+        }
+      },
+      {
+        "from": {
+          "entity": "Gara",
+          "dataset": "anac_cross",
+          "via": "cig_code"
+        },
+        "to": {
+          "entity": "Comune",
+          "bridge": "anac_bandi_gara",
+          "on": "cig",
+          "semantic_type": "municipality_code"
+        }
+      },
+      {
+        "from": {
+          "entity": "Gara",
+          "dataset": "anac_cup",
+          "via": "cig_code"
+        },
+        "to": {
+          "entity": "Comune",
+          "bridge": "anac_bandi_gara",
+          "on": "cig",
+          "semantic_type": "municipality_code"
+        }
+      },
+      {
+        "from": {
+          "entity": "Progetto",
+          "dataset": "anac_cup",
+          "via": "cup_code"
+        },
+        "to": {
+          "entity": "Comune",
+          "bridge": "anac_cup",
+          "on": "cup",
+          "semantic_type": "municipality_code"
+        }
+      },
+      {
+        "from": {
+          "entity": "Gara",
+          "dataset": "anac_partecipanti",
+          "via": "cig_code"
+        },
+        "to": {
+          "entity": "Comune",
+          "bridge": "anac_bandi_gara",
+          "on": "cig",
+          "semantic_type": "municipality_code"
+        }
+      },
+      {
+        "from": {
+          "entity": "Gara",
+          "dataset": "anac_stati_avanzamento",
+          "via": "cig_code"
+        },
+        "to": {
+          "entity": "Comune",
+          "bridge": "anac_bandi_gara",
+          "on": "cig",
+          "semantic_type": "municipality_code"
+        }
+      },
+      {
+        "from": {
+          "entity": "Gara",
+          "dataset": "anac_subappalti",
+          "via": "cig_code"
+        },
+        "to": {
+          "entity": "Comune",
+          "bridge": "anac_bandi_gara",
+          "on": "cig",
+          "semantic_type": "municipality_code"
+        }
+      }
+    ]
+  }
+}

@@ -1,168 +1,137 @@
-"""Fonti dati ANAC — Appalti Pubblici Italiani.
+"""Data sources — usa load_mart_table / query_clean da lab_connectors.
 
-Legge i mart locali (parquet) + clean layer via DuckDB pushdown.
+anni e dataset derivati dal registry (registry.json).
 """
 
 from __future__ import annotations
 
 from pathlib import Path
 
-import duckdb
 import pandas as pd
 import streamlit as st
+from lab_connectors.duckdb.queries import load_mart_table, query_clean, years_from_registry
+from lab_connectors.duckdb.core import safe_connect
+from lab_connectors.formatters import fmt_num
+from lab_connectors.registry import load_registry
 
-# ── Path ──────────────────────────────────────────────────────────────────────
+ROOT = Path(__file__).parent.parent
+PREFIX = "appalti_pubblici/"
+_data_dir = ROOT / "out" / "data"
+LOCAL_ROOT = str(_data_dir) if _data_dir.is_dir() and any(_data_dir.rglob("*.parquet")) else None
 
-_MART_BASE = (
-    Path(__file__).resolve().parent.parent / "out" / "data" / "mart"
-)
-_CLEAN_BASE = (
-    Path(__file__).resolve().parent.parent / "out" / "data" / "clean"
-)
+# ── Registry-driven config ───────────────────────────────────────────────────
 
-ALL_YEARS = list(range(2016, 2026))
+_registry = load_registry(ROOT / "registry" / "registry.json")
+_all_years = years_from_registry(_registry)
+YEARS_BANDI = list(range(min(_all_years), max(_all_years) + 1)) if _all_years else list(range(2016, 2026))
+YEARS_SNAPSHOT = [2026]
 
 # ── Dataset registry (per SQL page) ───────────────────────────────────────────
 
 DATASETS = {
-    "anac_bandi_gara": {"label": "Bandi di Gara", "years": list(range(2016, 2026))},
-    "anac_aggiudicazioni": {"label": "Aggiudicazioni", "years": [2026]},
-    "anac_aggiudicatari": {"label": "Aggiudicatari", "years": [2026]},
-    "anac_partecipanti": {"label": "Partecipanti", "years": [2026]},
-    "anac_subappalti": {"label": "Subappalti", "years": [2026]},
-    "anac_stati_avanzamento": {"label": "Stati di Avanzamento", "years": [2026]},
-    "anac_collaudo": {"label": "Collaudo", "years": [2026]},
-    "anac_cup": {"label": "CUP", "years": [2026]},
+    "anac_bandi_gara": {"label": "Bandi di Gara", "years": YEARS_BANDI},
+    "anac_aggiudicazioni": {"label": "Aggiudicazioni", "years": YEARS_SNAPSHOT},
+    "anac_aggiudicatari": {"label": "Aggiudicatari", "years": YEARS_SNAPSHOT},
+    "anac_partecipanti": {"label": "Partecipanti", "years": YEARS_SNAPSHOT},
+    "anac_subappalti": {"label": "Subappalti", "years": YEARS_SNAPSHOT},
+    "anac_stati_avanzamento": {"label": "Stati di Avanzamento", "years": YEARS_SNAPSHOT},
+    "anac_collaudo": {"label": "Collaudo", "years": YEARS_SNAPSHOT},
+    "anac_cup": {"label": "CUP", "years": YEARS_SNAPSHOT},
 }
 
-# ── Low-level loaders ─────────────────────────────────────────────────────────
+# ── Core loaders (lab-connectors) ───────────────────────────────────────────
 
 
-def _read_parquet(path: Path) -> pd.DataFrame:
-    """Legge un singolo parquet via DuckDB."""
-    with duckdb.connect() as con:
-        return con.sql(f"SELECT * FROM read_parquet('{path}')").df()
+@st.cache_data(ttl=3600, show_spinner=False)
+def load_mart(table: str, year: int = 2026, slug: str = "") -> pd.DataFrame:
+    return load_mart_table(slug or table, table, year, prefix=PREFIX, local_root=LOCAL_ROOT)
 
 
-def _read_parquet_multi(paths: list[Path]) -> pd.DataFrame:
-    """Legge più parquet con UNIONByName."""
-    if not paths:
-        return pd.DataFrame()
-    if len(paths) == 1:
-        return _read_parquet(paths[0])
-    quoted = ", ".join(f"'{p}'" for p in paths)
-    with duckdb.connect() as con:
-        return con.sql(
-            f"SELECT * FROM read_parquet([{quoted}], union_by_name=true)"
-        ).df()
+@st.cache_data(ttl=3600, show_spinner=False)
+def query(sql: str, years: list[int] | None = None, slug: str = "anac_bandi_gara") -> pd.DataFrame:
+    if years is None:
+        years = DATASETS.get(slug, {}).get("years", YEARS_SNAPSHOT)
+    return query_clean(slug, sql, years, prefix=PREFIX, local_root=LOCAL_ROOT)
 
 
-def _mart_path(dataset: str, year: int, table: str) -> Path:
-    return _MART_BASE / dataset / str(year) / f"{table}.parquet"
+@st.cache_data(ttl=3600, show_spinner=False)
+def query_duckdb(sql: str) -> pd.DataFrame:
+    """Esegui SQL arbitrario su più parquet con DuckDB safe_connect."""
+    with safe_connect() as con:
+        return con.sql(sql).df()
 
 
-def _clean_path(dataset: str, year: int) -> Path:
-    return _CLEAN_BASE / dataset / str(year) / f"{dataset}_{year}_clean.parquet"
-
-
-# ── Mart loaders (leggeri, cached) ────────────────────────────────────────────
-
+# ── Panoramica ──────────────────────────────────────────────────────────────
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_annuale_bandi() -> pd.DataFrame:
-    """Riepilogo annuale bandi: 1 riga/anno, KPI complessivi."""
-    paths = [_mart_path("anac_bandi_gara", y, "mart_annuale") for y in ALL_YEARS]
-    return _read_parquet_multi([p for p in paths if p.exists()])
+    return load_mart("mart_annuale", year=max(YEARS_BANDI), slug="anac_bandi_gara")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def load_mart_top_stazioni(year: int = 2024) -> pd.DataFrame:
-    p = _mart_path("anac_bandi_gara", year, "mart_top_stazioni")
-    return _read_parquet(p) if p.exists() else pd.DataFrame()
+def load_mart_top_stazioni(year: int = 2025) -> pd.DataFrame:
+    return load_mart("mart_top_stazioni", year=year, slug="anac_bandi_gara")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def load_mart_trend_pnrr(year: int = 2024) -> pd.DataFrame:
-    p = _mart_path("anac_bandi_gara", year, "mart_trend_pnrr")
-    return _read_parquet(p) if p.exists() else pd.DataFrame()
+def load_mart_trend_pnrr(year: int = 2025) -> pd.DataFrame:
+    return load_mart("mart_trend_pnrr", year=year, slug="anac_bandi_gara")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def load_mart_esiti_procedura(year: int = 2024) -> pd.DataFrame:
-    p = _mart_path("anac_bandi_gara", year, "mart_esiti_per_procedura")
-    return _read_parquet(p) if p.exists() else pd.DataFrame()
+def load_mart_esiti_procedura(year: int = 2025) -> pd.DataFrame:
+    return load_mart("mart_esiti_per_procedura", year=year, slug="anac_bandi_gara")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def load_mart_trend_settore(year: int = 2024) -> pd.DataFrame:
-    p = _mart_path("anac_bandi_gara", year, "mart_trend_settore")
-    return _read_parquet(p) if p.exists() else pd.DataFrame()
+def load_mart_trend_settore(year: int = 2025) -> pd.DataFrame:
+    return load_mart("mart_trend_settore", year=year, slug="anac_bandi_gara")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_annuale_agg() -> pd.DataFrame:
-    """Riepilogo annuale aggiudicazioni."""
-    p = _mart_path("anac_aggiudicazioni", 2026, "mart_annuale")
-    return _read_parquet(p) if p.exists() else pd.DataFrame()
+    return load_mart("mart_annuale", year=2026, slug="anac_aggiudicazioni")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_top_aggiudicatari() -> pd.DataFrame:
-    p = _mart_path("anac_aggiudicatari", 2026, "mart_top_aggiudicatari")
-    return _read_parquet(p) if p.exists() else pd.DataFrame()
+    return load_mart("mart_top_aggiudicatari", year=2026, slug="anac_aggiudicatari")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_cup() -> pd.DataFrame:
-    p = _mart_path("anac_cup", 2026, "mart_cup")
-    return _read_parquet(p) if p.exists() else pd.DataFrame()
+    return load_mart("mart_cup", year=2026, slug="anac_cup")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_sal() -> pd.DataFrame:
-    p = _mart_path("anac_stati_avanzamento", 2026, "mart_sal")
-    return _read_parquet(p) if p.exists() else pd.DataFrame()
+    return load_mart("mart_sal", year=2026, slug="anac_stati_avanzamento")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_collaudo() -> pd.DataFrame:
-    p = _mart_path("anac_collaudo", 2026, "mart_collaudo")
-    return _read_parquet(p) if p.exists() else pd.DataFrame()
+    return load_mart("mart_collaudo", year=2026, slug="anac_collaudo")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_top_subappalti() -> pd.DataFrame:
-    p = _mart_path("anac_subappalti", 2026, "mart_top_subappalti")
-    return _read_parquet(p) if p.exists() else pd.DataFrame()
+    return load_mart("mart_top_subappalti", year=2026, slug="anac_subappalti")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_top_partecipanti() -> pd.DataFrame:
-    p = _mart_path("anac_partecipanti", 2026, "mart_top_partecipanti")
-    return _read_parquet(p) if p.exists() else pd.DataFrame()
+    return load_mart("mart_top_partecipanti", year=2026, slug="anac_partecipanti")
 
 
-# ── Compose marts (anac-cross) ───────────────────────────────────────────────
-
-_COMPOSE_MART_BASE = (
-    Path(__file__).resolve().parent.parent / "out" / "data" / "mart" / "anac_cross"
-)
-
-
-def _compose_mart_path(year: int, table: str) -> Path:
-    return _COMPOSE_MART_BASE / str(year) / f"{table}.parquet"
-
+# ── Compose (anac_cross) ───────────────────────────────────────────────────
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_compose_panoramica() -> pd.DataFrame:
-    """Compose: KPI aggregati per anno x settore x regione (691 righe, 25KB)."""
-    p = _compose_mart_path(2026, "mart_panoramica")
-    return _read_parquet(p) if p.exists() else pd.DataFrame()
+    return load_mart("mart_panoramica", year=2026, slug="anac_cross")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_compose_panoramica_annuale() -> pd.DataFrame:
-    """Compose panoramica aggregata a livello annuale (compatibile con formati esistenti)."""
     df = load_compose_panoramica()
     if df.empty:
         return df
@@ -185,135 +154,83 @@ def load_compose_panoramica_annuale() -> pd.DataFrame:
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def load_compose_cig_snapshot() -> pd.DataFrame:
-    """Compose: 1 riga per CIG con stats 2026 (aggiudicazioni, partecipanti, SAL, collaudo, CUP)."""
-    p = _compose_mart_path(2026, "mart_cig_snapshot")
-    return _read_parquet(p) if p.exists() else pd.DataFrame()
-
-
-@st.cache_data(ttl=3600, show_spinner=False)
 def load_compose_lifecycle() -> pd.DataFrame:
-    """Compose: bandi 2016-2025 con contesto 2026 (LEFT JOIN su snapshot)."""
-    p = _compose_mart_path(2026, "mart_lifecycle")
-    return _read_parquet(p) if p.exists() else pd.DataFrame()
+    return load_mart("mart_lifecycle", year=2026, slug="anac_cross")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_compose_imprese() -> pd.DataFrame:
-    """Compose: 1 riga per CF con profilo impresa (aggiudicatari, partecipanti, subappalti)."""
-    p = _compose_mart_path(2026, "mart_imprese")
-    return _read_parquet(p) if p.exists() else pd.DataFrame()
+    return load_mart("mart_imprese", year=2026, slug="anac_cross")
 
 
-# ── Clean layer: query con DuckDB pushdown ────────────────────────────────────
-
-
-def _clean_url(dataset: str, year: int) -> str:
-    """Path locale del clean parquet."""
-    p = _clean_path(dataset, year)
-    return str(p) if p.exists() else ""
-
-
-@st.cache_data(ttl=3600, show_spinner=False)
-def query_clean_local(sql: str, dataset: str, years: tuple[int, ...]) -> pd.DataFrame:
-    """Esegue SQL sul clean layer locale con CTE virtual."""
-    urls = [_clean_url(dataset, y) for y in years]
-    urls = [u for u in urls if u]
-    if not urls:
-        return pd.DataFrame()
-    paths = ", ".join(f"'{u}'" for u in urls)
-    cte = f"WITH clean_input AS (SELECT * FROM read_parquet([{paths}], union_by_name=true))"
-    with duckdb.connect() as con:
-        return con.sql(f"{cte} {sql}").df()
-
-
-@st.cache_data(ttl=3600, show_spinner=False)
-def load_clean_local(dataset: str, years: tuple[int, ...]) -> pd.DataFrame:
-    """Carica il clean layer locale per uno slug e anni specifici."""
-    urls = [_clean_url(dataset, y) for y in years]
-    urls = [u for u in urls if u]
-    if not urls:
-        return pd.DataFrame()
-    return _read_parquet_multi([Path(u) for u in urls])
-
+# ── Ricerca CIG (cross-dataset via DuckDB) ─────────────────────────────────
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def search_cig(cig: str) -> dict[str, pd.DataFrame]:
-    """Cerca un CIG in tutti i dataset e restituisce dict {dataset: DataFrame}."""
-    results = {}
+    """Cerca un CIG in tutti i dataset ANAC."""
     cig = cig.strip().upper()
+    results = {}
 
-    # bandi_gara: cerca in tutti gli anni
-    bandi_urls = [_clean_url("anac_bandi_gara", y) for y in ALL_YEARS]
-    bandi_urls = [u for u in bandi_urls if u]
-    if bandi_urls:
-        paths = ", ".join(f"'{u}'" for u in bandi_urls)
-        q = f"WITH ci AS (SELECT * FROM read_parquet([{paths}], union_by_name=true)) SELECT * FROM ci WHERE UPPER(cig) = '{cig}'"
-        with duckdb.connect() as con:
-            df = con.sql(q).df()
-            if not df.empty:
-                results["anac_bandi_gara"] = df
+    # Bandi gara: tutti gli anni
+    bandi = query(
+        "SELECT * FROM clean_input WHERE UPPER(cig) = ?",
+        years=YEARS_BANDI,
+        slug="anac_bandi_gara",
+    )
+    if not bandi.empty:
+        results["anac_bandi_gara"] = bandi
 
-    # altri dataset: snapshot 2026
+    # Altri dataset: snapshot 2026
     for dataset in ["anac_aggiudicazioni", "anac_aggiudicatari", "anac_cup",
                      "anac_partecipanti", "anac_collaudo", "anac_stati_avanzamento",
                      "anac_subappalti"]:
-        url = _clean_url(dataset, 2026)
-        if url:
-            q = f"SELECT * FROM read_parquet('{url}') WHERE UPPER(cig) = '{cig}'"
-            with duckdb.connect() as con:
-                df = con.sql(q).df()
-                if not df.empty:
-                    results[dataset] = df
+        try:
+            df = query(
+                "SELECT * FROM clean_input WHERE UPPER(cig) = ?",
+                years=YEARS_SNAPSHOT,
+                slug=dataset,
+            )
+            if not df.empty:
+                results[dataset] = df
+        except Exception:
+            pass
 
     return results
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def search_by_sa(query: str, limit: int = 50) -> pd.DataFrame:
-    """Cerca bandi per nome stazione appaltante. Restituisce CIG + info."""
-    query = query.strip().upper()
-    bandi_urls = [_clean_url("anac_bandi_gara", y) for y in ALL_YEARS]
-    bandi_urls = [u for u in bandi_urls if u]
-    if not bandi_urls:
-        return pd.DataFrame()
-    paths = ", ".join(f"'{u}'" for u in bandi_urls)
-    q = f"""
-        WITH ci AS (SELECT * FROM read_parquet([{paths}], union_by_name=true))
-        SELECT DISTINCT
+def search_by_sa(query_sa: str, limit: int = 50) -> pd.DataFrame:
+    """Cerca bandi per nome stazione appaltante."""
+    return query(
+        f"""SELECT DISTINCT
             cig,
             denominazione_amministrazione_appaltante AS sa,
             oggetto_gara,
             importo_lotto,
             anno_pubblicazione AS anno
-        FROM ci
-        WHERE UPPER(denominazione_amministrazione_appaltante) LIKE '%{query}%'
+        FROM clean_input
+        WHERE UPPER(denominazione_amministrazione_appaltante) LIKE ?
         ORDER BY importo_lotto DESC NULLS LAST
-        LIMIT {limit}
-    """
-    with duckdb.connect() as con:
-        return con.sql(q).df()
+        LIMIT {limit}""",
+        years=YEARS_BANDI,
+        slug="anac_bandi_gara",
+    )
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def top_cig_by_importo(limit: int = 20) -> pd.DataFrame:
-    """Top CIG per importo di lotto (dai bandi piu' recenti)."""
-    # Usa l'anno piu' recente disponibile
-    for y in reversed(ALL_YEARS):
-        url = _clean_url("anac_bandi_gara", y)
-        if url:
-            q = f"""
-                SELECT DISTINCT
-                    cig,
-                    denominazione_amministrazione_appaltante AS sa,
-                    oggetto_gara,
-                    importo_lotto,
-                    {y} AS anno
-                FROM read_parquet('{url}')
-                WHERE importo_lotto IS NOT NULL
-                ORDER BY importo_lotto DESC
-                LIMIT {limit}
-            """
-            with duckdb.connect() as con:
-                return con.sql(q).df()
-    return pd.DataFrame()
+    """Top CIG per importo di lotto."""
+    return query(
+        f"""SELECT DISTINCT
+            cig,
+            denominazione_amministrazione_appaltante AS sa,
+            oggetto_gara,
+            importo_lotto,
+            anno_pubblicazione AS anno
+        FROM clean_input
+        WHERE importo_lotto IS NOT NULL
+        ORDER BY importo_lotto DESC
+        LIMIT {limit}""",
+        years=YEARS_BANDI,
+        slug="anac_bandi_gara",
+    )

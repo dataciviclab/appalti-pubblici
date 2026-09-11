@@ -1,4 +1,4 @@
-name: pipeline
+name: Pipeline
 
 on:
   pull_request:
@@ -10,23 +10,28 @@ on:
     - cron: "0 6 1 * *"
   workflow_dispatch:
     inputs:
-      repo-slug:
-        description: "Repo slug (es. anac-int)"
-        required: true
-        type: string
-      sync-pattern:
-        description: "flat o per-dataset"
-        default: "per-dataset"
-        type: string
+      years:
+        description: "Anni (es. 2026 o all) -- default: dalla config dei dataset"
+        required: false
+        default: ""
+
+concurrency:
+  group: appalti-pubblici-pipeline-${{ github.event.pull_request.number || github.ref || 'schedule' }}
+  cancel-in-progress: false
 
 jobs:
   pipeline:
     if: github.event.pull_request.merged == true || github.event_name != 'pull_request'
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
     uses: dataciviclab/.github/.github/workflows/pipeline-reusable.yml@main
     with:
-      repo-slug: ${{ inputs.repo-slug }}
+      repo-slug: "appalti_pubblici"
       run-command: "make run-all"
-      sync-pattern: ${{ inputs.sync-pattern || 'per-dataset' }}
+      sync-pattern: "per-dataset"
+      python-extra-packages: "-r requirements.txt"
     secrets:
       GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
       GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
