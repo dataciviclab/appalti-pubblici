@@ -4,7 +4,7 @@ import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 from lab_connectors.formatters import fmt_num
-from sources import YEARS_BANDI, query
+from sources import YEARS_BANDI, query, _years_for
 
 st.title("⏱️ Ritardi e Monitoraggio")
 st.markdown(
@@ -15,7 +15,12 @@ st.markdown(
 # ── Caricamento dati ──────────────────────────────────────────────────────────
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_ritardi_data():
-    sal = query("SELECT * FROM clean_input", years=[2026], slug="anac_stati_avanzamento")
+    sal_years = _years_for("anac_stati_avanzamento")
+    sal = query(
+        "SELECT *, EXTRACT(YEAR FROM data_emissione_sal) AS anno "
+        "FROM clean_input WHERE data_emissione_sal IS NOT NULL",
+        years=sal_years or [2026], slug="anac_stati_avanzamento",
+    )
     bandi = query(
         "SELECT DISTINCT cig, denominazione_amministrazione_appaltante AS sa, "
         "oggetto_principale_contratto AS settore, importo_lotto FROM clean_input",
