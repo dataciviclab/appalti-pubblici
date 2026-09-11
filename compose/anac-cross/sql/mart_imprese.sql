@@ -8,6 +8,19 @@ WITH
 -- ma non i singoli CF. Per il profilo impresa serve ancora leggere i support.
 -- Usiamo il clean come base e aggiungiamo i dati impresa dai support.
 
+-- Lista ruoli che non sono nomi di impresa (da escludere da denominazione)
+ruoli_invalidi AS (
+    SELECT UNNEST(ARRAY[
+        'OPERATORE ECONOMICO MONOSOGGETTIVO', 'MONOSOGGETTIVO', 'Operatore Economico monosoggettivo',
+        'MANDATARIA', 'MANDANTE', '01-MANDANTE', '02-MANDATARIA', '04-CAPOGRUPPO',
+        'IMPRESA AUSILIARIA', 'AUSILIARIA', 'Impresa Ausiliaria',
+        'CONSORZIO STABILE', 'CONSORZIO ORDINARIO', 'Consorzio stabile', 'Consorzio ordinario',
+        '05-CONSORZIATA', '03-ASSOCIATA',
+        'OPERATORE ECONOMICO', 'IMPRESA COOPTATA', 'SUBAPPALTATORE QUALIFICANTE IN OFFERTA',
+        'MANDANTE IN RTI', 'MANDATARIO IN RTI'
+    ]) AS ruolo
+),
+
 impresa_agg AS (
     SELECT
         TRIM(codice_fiscale) AS cf,
@@ -17,6 +30,7 @@ impresa_agg AS (
         COUNT(DISTINCT id_aggiudicazione) AS n_lotti_vinti
     FROM read_parquet('{support.aggiudicatari.clean}')
     WHERE codice_fiscale IS NOT NULL AND TRIM(codice_fiscale) != ''
+      AND denominazione NOT IN (SELECT ruolo FROM ruoli_invalidi)
     GROUP BY TRIM(codice_fiscale)
 ),
 
@@ -29,6 +43,7 @@ impresa_part AS (
     FROM read_parquet('{support.partecipanti.clean}')
     WHERE codice_fiscale IS NOT NULL AND TRIM(codice_fiscale) != ''
       AND tipo_soggetto NOT ILIKE '%STAZIONE APPALTANTE%'
+      AND denominazione NOT IN (SELECT ruolo FROM ruoli_invalidi)
     GROUP BY TRIM(codice_fiscale)
 ),
 
@@ -39,6 +54,7 @@ impresa_sub AS (
         COUNT(DISTINCT cig) AS n_subappalti
     FROM read_parquet('{support.subappalti.clean}')
     WHERE codice_fiscale IS NOT NULL AND TRIM(codice_fiscale) != ''
+      AND denominazione NOT IN (SELECT ruolo FROM ruoli_invalidi)
     GROUP BY TRIM(codice_fiscale)
 ),
 
