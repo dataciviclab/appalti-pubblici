@@ -78,10 +78,16 @@ mart:
       sql: "sql/mart_lifecycle.sql"
     - name: "mart_imprese"
       sql: "sql/mart_imprese.sql"
+    - name: "mart_ritardi_per_sa"
+      sql: "sql/mart_ritardi_per_sa.sql"
+    - name: "mart_competitivita"
+      sql: "sql/mart_competitivita.sql"
   required_tables:
     - mart_panoramica
     - mart_lifecycle
     - mart_imprese
+    - mart_ritardi_per_sa
+    - mart_competitivita
   validate:
     table_rules:
       mart_panoramica:
@@ -90,6 +96,10 @@ mart:
         min_rows: 100000
       mart_imprese:
         min_rows: 100000
+      mart_ritardi_per_sa:
+        min_rows: 100
+      mart_competitivita:
+        min_rows: 100
 
 duckdb:
   memory_limit: "4GB"

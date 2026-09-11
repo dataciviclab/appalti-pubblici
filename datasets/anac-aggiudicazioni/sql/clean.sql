@@ -31,3 +31,5 @@ SELECT
     decode_flag(FLAG_PROC_ACCELERATA, 'S') AS FLAG_PROC_ACCELERATA,
     cast_int(N_MANIF_INTERESSE) AS N_MANIF_INTERESSE
 FROM raw_input
+WHERE TRY_CAST(data_aggiudicazione_definitiva AS DATE) IS NOT NULL
+  AND EXTRACT(YEAR FROM TRY_CAST(data_aggiudicazione_definitiva AS DATE)) BETWEEN 2005 AND 2026

@@ -2,7 +2,7 @@
 
 import streamlit as st
 import plotly.express as px
-from lab_connectors.formatters import fmt_num
+from lab_connectors.formatters import fmt_num, fmt_eur
 from sources import load_mart_annuale_agg
 
 st.title("🏆 Aggiudicazioni")

@@ -10,15 +10,35 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
-from lab_connectors.duckdb.queries import load_mart_table, query_clean
+from lab_connectors.duckdb.queries import load_mart_table, load_mart_all_years, query_clean
 from lab_connectors.duckdb.core import safe_connect
 from lab_connectors.formatters import fmt_num
 from lab_connectors.registry import load_registry
+
+
+def fmt_eur_short(val: float) -> str:
+    """Formatta importi in formato italiano abbreviato: € 634 mld, € 12 mln."""
+    if val is None or val == 0:
+        return "€ 0"
+    abs_val = abs(val)
+    if abs_val >= 1_000_000_000:
+        return f"€ {val / 1_000_000_000:,.1f} mld".replace(",", ".")
+    if abs_val >= 1_000_000:
+        return f"€ {val / 1_000_000:,.1f} mln".replace(",", ".")
+    if abs_val >= 1_000:
+        return f"€ {val / 1_000:,.1f} K".replace(",", ".")
+    return f"€ {val:,.0f}"
 
 ROOT = Path(__file__).parent.parent
 PREFIX = "appalti_pubblici/"
 _data_dir = ROOT / "out" / "data"
 LOCAL_ROOT = str(_data_dir) if _data_dir.is_dir() and any(_data_dir.rglob("*.parquet")) else None
+
+
+def _clean_path(dataset: str, year: int) -> str:
+    """Path locale del clean parquet per un dataset/anno."""
+    p = _data_dir / "clean" / dataset / str(year) / f"{dataset}_{year}_clean.parquet"
+    return str(p) if p.exists() else ""
 
 # ── Registry ─────────────────────────────────────────────────────────────────
 
@@ -26,15 +46,22 @@ _registry = load_registry(ROOT / "registry" / "registry.json")
 
 
 def _years_for(slug: str) -> list[int]:
-    """Anni disponibili per uno slug dal registry period."""
+    """Anni disponibili per uno slug dal registry period.
+    
+    Se LOCAL_ROOT e' impostato, filtra per anni che hanno file su disco.
+    """
     ds = next((d for d in _registry.datasets if d.slug == slug), None)
     if ds is None or ds.period is None:
         return []
     start = ds.period.get("start") if isinstance(ds.period, dict) else getattr(ds.period, "start", None)
     end = ds.period.get("end") if isinstance(ds.period, dict) else getattr(ds.period, "end", None)
-    if start and end:
-        return list(range(int(start), int(end) + 1))
-    return []
+    if not (start and end):
+        return []
+    years = list(range(int(start), int(end) + 1))
+    if LOCAL_ROOT:
+        clean_dir = Path(LOCAL_ROOT) / "clean" / slug
+        years = [y for y in years if (clean_dir / str(y)).is_dir()]
+    return years
 
 
 def _all_slugs() -> list[str]:
@@ -46,6 +73,13 @@ def _all_slugs() -> list[str]:
 _bandi_years = _years_for("anac_bandi_gara")
 YEARS_BANDI = _bandi_years if _bandi_years else list(range(2016, 2026))
 YEARS_SNAPSHOT = [2026]
+
+# ── Dataset registry (per SQL page) ───────────────────────────────────────────
+
+DATASETS = {}
+for _ds in _registry.datasets:
+    _y = _years_for(_ds.slug)
+    DATASETS[_ds.slug] = {"label": _ds.name, "years": _y if _y else YEARS_SNAPSHOT}
 
 # ── Core loaders ─────────────────────────────────────────────────────────────
 
@@ -72,8 +106,11 @@ def query_duckdb(sql: str) -> pd.DataFrame:
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_annuale_bandi() -> pd.DataFrame:
+    """Riepilogo annuale bandi: 1 riga/anno, KPI complessivi."""
     years = _years_for("anac_bandi_gara")
-    return load_mart("mart_annuale", year=max(years) if years else 2025, slug="anac_bandi_gara")
+    if not years:
+        return pd.DataFrame()
+    return load_mart_all_years("anac_bandi_gara", "mart_annuale", years, prefix=PREFIX, local_root=LOCAL_ROOT)
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -148,6 +185,30 @@ def load_mart_top_subappalti() -> pd.DataFrame:
 def load_mart_top_partecipanti() -> pd.DataFrame:
     years = _years_for("anac_partecipanti")
     return load_mart("mart_top_partecipanti", year=max(years) if years else 2026, slug="anac_partecipanti")
+
+
+# ── Intelligence marts ──────────────────────────────────────────────────────
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def load_mart_sa_profilo() -> pd.DataFrame:
+    """Profilo completo per SA: n_bandi, importi, settori, regione."""
+    years = _years_for("anac_bandi_gara")
+    year = max(years) if years else 2025
+    return load_mart("mart_sa_profilo", year=year, slug="anac_bandi_gara")
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def load_mart_ritardi_per_sa() -> pd.DataFrame:
+    """Ritardi per SA × settore (compose)."""
+    years = _years_for("anac_cross")
+    return load_mart("mart_ritardi_per_sa", year=max(years) if years else 2026, slug="anac_cross")
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def load_mart_competitivita() -> pd.DataFrame:
+    """Competitività per anno × regione (compose)."""
+    years = _years_for("anac_cross")
+    return load_mart("mart_competitivita", year=max(years) if years else 2026, slug="anac_cross")
 
 
 # ── Compose (anac_cross) ───────────────────────────────────────────────────

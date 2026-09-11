@@ -1,19 +1,19 @@
-"""Scheda CIG — Cerca e esplora CIG nei dataset ANAC."""
+"""Scheda CIG — Profilo completo di un CIG o SA negli appalti ANAC."""
 
 import streamlit as st
-import pandas as pd
-from lab_connectors.formatters import fmt_num
-from sources import search_cig, search_by_sa, top_cig_by_importo
+import plotly.express as px
+from lab_connectors.formatters import fmt_num, fmt_eur
+from sources import search_cig, search_by_sa, load_mart_sa_profilo, top_cig_by_importo, fmt_eur_short
 
 st.title("🔍 Scheda CIG")
 
 # ── Tabs principali ───────────────────────────────────────────────────────────
-tab_direct, tab_sa, tab_top = st.tabs(["Cerca per CIG", "Cerca per SA", "Top CIG"])
+tab_cig, tab_sa, tab_cig_top = st.tabs(["Cerca per CIG", "Cerca per SA", "Top CIG"])
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 1: Ricerca diretta CIG
+# TAB 1: Profilo completo CIG
 # ══════════════════════════════════════════════════════════════════════════════
-with tab_direct:
+with tab_cig:
     cig_input = st.text_input(
         "CIG",
         placeholder="es. B3F52D2",
@@ -23,7 +23,7 @@ with tab_direct:
 
     if cig_input:
         cig = cig_input.strip().upper()
-        with st.spinner(f"Ricerca `{cig}` in 8 dataset…"):
+        with st.spinner(f"Ricerca `{cig}` in tutti i dataset…"):
             results = search_cig(cig)
 
         if not results:
@@ -31,75 +31,80 @@ with tab_direct:
         else:
             st.success(f"CIG `{cig}` trovato in {len(results)} dataset")
 
+            # Profilo sintetico
+            bandi = results.get("anac_bandi_gara")
+            if bandi is not None and not bandi.empty:
+                st.subheader("📋 Bandi di Gara")
+                b = bandi.iloc[0]
+                c1, c2, c3 = st.columns(3)
+                c1.metric("SA", str(b.get("denominazione_amministrazione_appaltante", "—"))[:40])
+                c2.metric("Importo", fmt_eur_short(b.get('importo_lotto', 0)))
+                c3.metric("Regione", b.get("sezione_regionale", "—"))
+                st.dataframe(bandi, use_container_width=True, hide_index=True)
+
+            # Dettaglio per altri dataset
             order = [
-                ("anac_bandi_gara", "📋 Bandi di Gara"),
                 ("anac_aggiudicazioni", "🏆 Aggiudicazioni"),
                 ("anac_aggiudicatari", "👥 Aggiudicatari"),
-                ("anac_cup", "🔗 CUP"),
                 ("anac_partecipanti", "🤝 Partecipanti"),
-                ("anac_collaudo", "✅ Collaudo"),
+                ("anac_cup", "🔗 CUP"),
                 ("anac_stati_avanzamento", "📊 SAL"),
+                ("anac_collaudo", "✅ Collaudo"),
                 ("anac_subappalti", "📋 Subappalti"),
             ]
 
             for key, label in order:
                 if key in results:
                     df = results[key]
-                    with st.expander(f"{label} — {len(df)} righe", expanded=(key == "anac_bandi_gara")):
+                    with st.expander(f"{label} — {len(df)} righe"):
                         st.dataframe(df, use_container_width=True, hide_index=True)
 
-            cols = st.columns(min(len(results), 4))
-            for i, (key, label) in enumerate(order):
-                if key in results:
-                    with cols[i % len(cols)]:
-                        st.metric(label.split("—")[0].strip(), f"{len(results[key])} righe")
-
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 2: Ricerca per SA
+# TAB 2: Profilo SA
 # ══════════════════════════════════════════════════════════════════════════════
 with tab_sa:
-    st.markdown("Cerca per nome stazione appaltante per trovare CIG correlati.")
+    st.markdown("Cerca una stazione appaltante per vedere il suo profilo.")
 
     sa_input = st.text_input(
         "Nome SA",
         placeholder="es. CONSIP, ARIS, RFI, INPS…",
-        help="Ricerca parziale case-insensitive sul nome della stazione appaltante.",
+        help="Ricerca parziale case-insensitive.",
         key="sa_search",
     )
 
     if sa_input:
-        with st.spinner(f"Ricerca SA `{sa_input}` nei bandi…"):
-            df_sa = search_by_sa(sa_input, limit=50)
+        sa_profilo = load_mart_sa_profilo()
+        if not sa_profilo.empty:
+            mask = sa_profilo["denominazione_sa"].str.contains(sa_input, case=False, na=False)
+            matches = sa_profilo[mask]
 
-        if df_sa.empty:
-            st.warning(f"Nessun bando trovato per SA contenente `{sa_input}`.")
+            if matches.empty:
+                st.warning(f"Nessuna SA trovata con nome contenente `{sa_input}`.")
+            else:
+                st.success(f"Trovate {len(matches)} SA")
+
+                for _, row in matches.head(5).iterrows():
+                    with st.expander(f"**{row['denominazione_sa']}** — {fmt_num(row['n_bandi'])} bandi, {fmt_eur_short(row['importo_totale'])}", expanded=(len(matches) == 1)):
+                        c1, c2, c3, c4 = st.columns(4)
+                        c1.metric("Bandi", fmt_num(row['n_bandi']))
+                        c2.metric("Importo totale", fmt_eur_short(row['importo_totale']))
+                        c3.metric("Settori", fmt_num(row['n_settori']))
+                        c4.metric("Regione", row['regione'])
+
+                        c5, c6, c7 = st.columns(3)
+                        c5.metric("CIG", fmt_num(row['n_cig']))
+                        c6.metric("Importo medio", fmt_eur_short(row['importo_mediano']))
+                        c7.metric("PNRR", fmt_num(row['n_pnrr']))
+
+                        st.caption(f"Attiva dal {int(row['anno_primo'])} al {int(row['ultimo_anno'])}")
         else:
-            st.success(f"Trovati {len(df_sa)} bandi")
-
-            # Riepilogo
-            k1, k2, k3 = st.columns(3)
-            k1.metric("CIG trovati", fmt_num(df_sa["cig"].nunique()))
-            k2.metric("Importo totale", f"€ {fmt_num(df_sa['importo_lotto'].sum())}")
-            k3.metric("Anni coperti", f"{df_sa['anno'].min()}–{df_sa['anno'].max()}")
-
-            # Tabella CIG cliccabili
-            st.dataframe(
-                df_sa[["cig", "sa", "oggetto_gara", "importo_lotto", "anno"]],
-                use_container_width=True, hide_index=True,
-                column_config={
-                    "importo_lotto": st.column_config.NumberColumn("Importo", format="€%.0f"),
-                    "cig": st.column_config.TextColumn("CIG", width="medium"),
-                },
-            )
-
-            # Prompt per cercare un CIG trovato
-            st.info("💡 Copia un CIG dalla tabella e incollalo nel tab 'Cerca per CIG' per il dettaglio completo.")
+            st.info("Profilo SA non disponibile (serve il mart_sa_profilo).")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 3: Top CIG per importo
 # ══════════════════════════════════════════════════════════════════════════════
-with tab_top:
-    st.markdown("I bandi con gli importi piu' alti.")
+with tab_cig_top:
+    st.markdown("I bandi con gli importi piu' alti — per scoprire CIG da esplorare.")
 
     n_top = st.slider("Numero di CIG", 5, 50, 20, key="n_top_cig")
 
@@ -120,8 +125,6 @@ with tab_top:
             },
         )
 
-        # Bar chart importi
-        import plotly.express as px
         fig = px.bar(
             df_top.head(15), x="importo_lotto", y="cig",
             orientation="h",

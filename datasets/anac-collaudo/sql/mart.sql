@@ -8,5 +8,6 @@ SELECT
     ROUND(AVG(importo_contenz_risolto), 0) AS contenzioso_medio
 FROM clean_input
 WHERE data_delibera IS NOT NULL
+  AND EXTRACT(YEAR FROM data_delibera) BETWEEN 2000 AND 2026
 GROUP BY anno, esito_collaudo
 ORDER BY anno DESC, n_collaudi DESC

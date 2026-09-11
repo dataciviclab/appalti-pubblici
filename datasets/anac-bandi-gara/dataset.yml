@@ -55,13 +55,18 @@ mart:
       sql: "sql/mart_esiti_per_procedura.sql"
     - name: "mart_trend_settore"
       sql: "sql/mart_trend_settore.sql"
+    - name: "mart_sa_profilo"
+      sql: "sql/mart_sa_profilo.sql"
   required_tables:
     - "mart_annuale"
     - "mart_trend_pnrr"
+    - "mart_sa_profilo"
   validate:
     table_rules:
       mart_trend_pnrr:
         min_rows: 10
+      mart_sa_profilo:
+        min_rows: 100
 
 validation:
   fail_on_error: true

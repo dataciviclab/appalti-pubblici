@@ -1,15 +1,52 @@
-"""Query SQL — Interroga direttamente i dati ANAC."""
+"""Query SQL — Interroga direttamente i dati ANAC.
+
+Template predefiniti + editor SQL libero.
+"""
 
 import time
 
 import streamlit as st
-from sources import DATASETS, YEARS_BANDI, YEARS_SNAPSHOT, query
+from sources import DATASETS, _years_for, query
 
 st.title("🧪 Query SQL")
 st.markdown(
     "Interroga direttamente i dati ANAC. "
     "Seleziona un dataset, poi scrivi SQL su ``clean_input``."
 )
+
+# ── Template predefiniti ──────────────────────────────────────────────────────
+TEMPLATES = {
+    "Seleziona un template...": None,
+    "📊 Conta righe": "SELECT COUNT(*) AS n FROM clean_input",
+    "📋 Preview (10 righe)": "SELECT * FROM clean_input LIMIT 10",
+    "📊 Colonne disponibili": "DESCRIBE SELECT * FROM clean_input",
+    "🏆 Top SA per importo": (
+        "SELECT denominazione_amministrazione_appaltante AS sa, "
+        "COUNT(*) AS n_bandi, ROUND(SUM(importo_lotto), 0) AS importo_totale "
+        "FROM clean_input "
+        "WHERE cf_amministrazione_appaltante IS NOT NULL "
+        "GROUP BY sa ORDER BY importo_totale DESC LIMIT 20"
+    ),
+    "📈 Trend annuale": (
+        "SELECT anno_pubblicazione AS anno, COUNT(*) AS n_bandi, "
+        "ROUND(SUM(importo_lotto), 0) AS importo_totale "
+        "FROM clean_input GROUP BY anno ORDER BY anno"
+    ),
+    "🔍 CIG con un solo offerente": (
+        "SELECT cig, importo_aggiudicazione, num_imprese_offerenti "
+        "FROM clean_input WHERE num_imprese_offerenti = 1 "
+        "AND importo_aggiudicazione > 1000000 "
+        "ORDER BY importo_aggiudicazione DESC LIMIT 20"
+    ),
+    "⏱️ SAL in ritardo": (
+        "SELECT cig, n_giorni_scostamento, importo_sal "
+        "FROM clean_input WHERE flag_ritardo = 'IN RITARDO' "
+        "ORDER BY n_giorni_scostamento DESC LIMIT 20"
+    ),
+}
+
+template = st.selectbox("Template", list(TEMPLATES.keys()))
+default_sql = TEMPLATES.get(template, "SELECT * FROM clean_input LIMIT 10") or "SELECT * FROM clean_input LIMIT 10"
 
 # ── Selezione dataset ─────────────────────────────────────────────────────────
 dataset_keys = list(DATASETS.keys())
@@ -23,7 +60,9 @@ selected_idx = st.selectbox(
 selected_slug = dataset_keys[selected_idx]
 ds_info = DATASETS[selected_slug]
 
-ds_years = ds_info["years"]
+ds_years = _years_for(selected_slug)
+if not ds_years:
+    ds_years = [2026]
 if len(ds_years) > 1:
     year_range = st.slider(
         "Anni", min(ds_years), max(ds_years),
@@ -39,7 +78,6 @@ st.caption(
 )
 
 # ── Editor SQL ────────────────────────────────────────────────────────────────
-default_sql = "SELECT * FROM clean_input LIMIT 10"
 sql = st.text_area(
     "SQL",
     value=st.session_state.get("sql_query_sql", default_sql),
