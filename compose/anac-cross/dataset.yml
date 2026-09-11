@@ -1,0 +1,111 @@
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "anac_cross"
+  source_id: "dataciviclab_composite"
+  tags: [appalti, anac, compose, cross]
+  category: appalti
+  description: "Compose ANAC: CIG-level snapshot unificato (2026) da tutti i dataset ANAC + vista lifecycle (bandi 2016-2025 + snapshot)."
+  years: [2026]
+  time_coverage:
+    mode: snapshot
+
+# Compose: clean unifica tutti i dataset ANAC a livello CIG (2026).
+# I mart derivano viste aggregate dal clean unificato.
+# Eseguire prima: toolkit run per tutti i dataset singoli in datasets/.
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "aggiudicazioni"
+      type: local_file
+      args:
+        path: "../../out/data/clean/anac_aggiudicazioni/2026/anac_aggiudicazioni_2026_clean.parquet"
+        filename: "aggiudicazioni.parquet"
+      primary: true
+
+support:
+  - type: dataset
+    name: aggiudicatari
+    config: ../../datasets/anac-aggiudicatari/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: partecipanti
+    config: ../../datasets/anac-partecipanti/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: subappalti
+    config: ../../datasets/anac-subappalti/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: stati_avanzamento
+    config: ../../datasets/anac-stati-avanzamento/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: collaudo
+    config: ../../datasets/anac-collaudo/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: cup
+    config: ../../datasets/anac-cup/dataset.yml
+    years: [2026]
+
+clean:
+  sql: "sql/clean.sql"
+  read:
+    source: config_only
+    mode: latest
+  required_columns:
+    - "cig"
+    - "n_aggiudicazioni"
+    - "importo_totale_agg"
+    - "n_aggiudicatari"
+    - "n_partecipanti"
+    - "n_subappalti"
+    - "n_sal"
+    - "cup"
+  validate:
+    primary_key:
+      - "cig"
+    not_null:
+      - "cig"
+    min_rows: 1
+
+mart:
+  tables:
+    - name: "mart_panoramica"
+      sql: "sql/mart_panoramica.sql"
+    - name: "mart_lifecycle"
+      sql: "sql/mart_lifecycle.sql"
+    - name: "mart_imprese"
+      sql: "sql/mart_imprese.sql"
+  required_tables:
+    - mart_panoramica
+    - mart_lifecycle
+    - mart_imprese
+  validate:
+    table_rules:
+      mart_panoramica:
+        primary_key:
+          - "anno"
+          - "settore"
+          - "regione"
+        min_rows: 10
+      mart_lifecycle:
+        primary_key:
+          - "cig"
+        min_rows: 100000
+      mart_imprese:
+        primary_key:
+          - "cf"
+        min_rows: 100000
+
+duckdb:
+  memory_limit: "4GB"
+
+validation:
+  fail_on_error: true
+
+output:
+  artifacts: "standard"

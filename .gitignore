@@ -1,0 +1,69 @@
+# =========================
+# OUTPUT DI RUN (NON VERSIONARE)
+# =========================
+out/*
+!out/.gitkeep
+
+# =========================
+# NOTEBOOK / PYTHON
+# =========================
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.pytest_cache/
+.env
+.venv/
+venv/
+.envrc
+.coverage
+
+# =========================
+# TOOL / TEMP
+# =========================
+.tmp/
+.tmp/**
+_tmp/
+_tmp/**
+.cache/
+.cache/**
+logs/
+*.log
+
+# =========================
+# IDE / EDITOR
+# =========================
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+.idea/
+*.code-workspace
+
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# CREDENTIALS (MAI)
+# =========================
+credentials.json
+service_account.json
+*.key
+*.pem
+
+# =========================
+# ARCHIVI
+# =========================
+*.zip
+*.tar
+*.gz
+
+# =========================
+# ALTRO
+# =========================
+nohup.out
+_local/

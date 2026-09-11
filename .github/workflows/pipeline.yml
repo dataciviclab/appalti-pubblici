@@ -1,0 +1,32 @@
+name: pipeline
+
+on:
+  pull_request:
+    types: [closed]
+    paths:
+      - "datasets/**"
+      - "compose/**"
+  schedule:
+    - cron: "0 6 1 * *"
+  workflow_dispatch:
+    inputs:
+      repo-slug:
+        description: "Repo slug (es. anac-int)"
+        required: true
+        type: string
+      sync-pattern:
+        description: "flat o per-dataset"
+        default: "per-dataset"
+        type: string
+
+jobs:
+  pipeline:
+    if: github.event.pull_request.merged == true || github.event_name != 'pull_request'
+    uses: dataciviclab/.github/.github/workflows/pipeline-reusable.yml@main
+    with:
+      repo-slug: ${{ inputs.repo-slug }}
+      run-command: "make run-all"
+      sync-pattern: ${{ inputs.sync-pattern || 'per-dataset' }}
+    secrets:
+      GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+      GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}

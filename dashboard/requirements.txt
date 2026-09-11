@@ -1,0 +1,4 @@
+streamlit>=1.61
+plotly>=5.18
+pandas>=3.0
+lab-connectors[duckdb] @ git+https://github.com/dataciviclab/lab-connectors.git
