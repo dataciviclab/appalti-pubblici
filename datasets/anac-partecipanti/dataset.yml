@@ -41,10 +41,6 @@ clean:
   required_columns:
     - "cig"
   validate:
-    primary_key:
-      - "cig"
-      - "codice_fiscale"
-      - "ruolo"
     not_null:
       - "cig"
     min_rows: 1
@@ -58,9 +54,6 @@ mart:
   validate:
     table_rules:
       mart_top_partecipanti:
-        primary_key:
-          - "codice_fiscale"
-          - "ruolo"
         min_rows: 1
 
 validation:

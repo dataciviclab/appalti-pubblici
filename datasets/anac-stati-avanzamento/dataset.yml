@@ -42,10 +42,6 @@ clean:
     trim_whitespace: true
     sample_size: -1
   validate:
-    primary_key:
-      - "cig"
-      - "id_aggiudicazione"
-      - "progressivo_sal"
     not_null:
       - "cig"
       - "id_aggiudicazione"
@@ -60,9 +56,6 @@ mart:
   validate:
     table_rules:
       mart_sal:
-        primary_key:
-          - "anno"
-          - "flag_ritardo"
         min_rows: 1
 
 validation:

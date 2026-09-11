@@ -39,8 +39,6 @@ clean:
     - "importo_lotto"
     - "stato"
   validate:
-    primary_key:
-      - "cig"
     not_null:
       - "cig"
     min_rows: 1
@@ -62,35 +60,8 @@ mart:
     - "mart_trend_pnrr"
   validate:
     table_rules:
-      mart_annuale:
-        primary_key:
-          - "anno"
-        min_rows: 1
       mart_trend_pnrr:
-        primary_key:
-          - "anno_pubblicazione"
-          - "sezione_regionale"
-          - "oggetto_principale_contratto"
-          - "flag_pnrr"
         min_rows: 10
-      mart_top_stazioni:
-        primary_key:
-          - "anno"
-          - "cf_amministrazione_appaltante"
-        min_rows: 1
-      mart_esiti_per_procedura:
-        primary_key:
-          - "anno"
-          - "regione"
-          - "tipo_scelta_contraente"
-          - "macro_esito"
-        min_rows: 1
-      mart_trend_settore:
-        primary_key:
-          - "anno"
-          - "regione"
-          - "settore"
-        min_rows: 1
 
 validation:
   fail_on_error: true

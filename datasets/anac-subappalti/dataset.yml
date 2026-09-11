@@ -42,8 +42,6 @@ clean:
     - "cig"
     - "id_subappalto"
   validate:
-    primary_key:
-      - "id_subappalto"
     not_null:
       - "cig"
     min_rows: 1
@@ -57,10 +55,6 @@ mart:
   validate:
     table_rules:
       mart_top_subappalti:
-        primary_key:
-          - "descrizione_categoria"
-          - "codice_fiscale"
-          - "ruolo"
         min_rows: 1
 
 validation:

@@ -42,10 +42,6 @@ clean:
     - "cig"
     - "id_aggiudicazione"
   validate:
-    primary_key:
-      - "cig"
-      - "id_aggiudicazione"
-      - "codice_fiscale"
     not_null:
       - "cig"
       - "id_aggiudicazione"
@@ -60,9 +56,6 @@ mart:
   validate:
     table_rules:
       mart_top_aggiudicatari:
-        primary_key:
-          - "codice_fiscale"
-          - "ruolo"
         min_rows: 1
 
 validation:

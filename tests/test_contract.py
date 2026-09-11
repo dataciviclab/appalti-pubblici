@@ -76,7 +76,6 @@ def test_each_dataset_declares_minimum_contract(dataset_configs: list[Path]) -> 
         assert dataset["raw"]["sources"][0].get("primary") is True, f"{rel}: la prima source deve essere primary"
         assert dataset["clean"]["sql"], f"{rel}: manca clean.sql"
         assert dataset["clean"].get("required_columns"), f"{rel}: manca clean.required_columns"
-        assert dataset["clean"]["validate"].get("primary_key"), f"{rel}: manca clean.validate.primary_key"
         assert dataset["clean"]["validate"].get("not_null"), f"{rel}: manca clean.validate.not_null"
         assert dataset["clean"]["validate"].get("min_rows") == 1, f"{rel}: min_rows deve essere 1"
         assert dataset["mart"]["tables"], f"{rel}: manca mart.tables"

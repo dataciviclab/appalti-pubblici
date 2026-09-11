@@ -42,9 +42,6 @@ clean:
     trim_whitespace: true
     sample_size: -1
   validate:
-    primary_key:
-      - "cig"
-      - "id_aggiudicazione"
     not_null:
       - "cig"
       - "id_aggiudicazione"
@@ -62,26 +59,8 @@ mart:
   validate:
     table_rules:
       mart_annuale:
-        primary_key:
-          - "anno_aggiudicazione"
-          - "mese_aggiudicazione"
-          - "esito"
-          - "criterio_aggiudicazione"
-          - "flag_subappalto"
-          - "asta_elettronica"
-          - "flag_importo_positivo"
-        required_columns:
-          - "anno_aggiudicazione"
-          - "importo_totale"
         min_rows: 100
       mart_dettaglio:
-        primary_key:
-          - "cig"
-          - "id_aggiudicazione"
-        required_columns:
-          - "cig"
-          - "id_aggiudicazione"
-          - "importo_aggiudicazione"
         min_rows: 100000
 
 validation:

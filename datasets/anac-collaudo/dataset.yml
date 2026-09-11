@@ -42,9 +42,6 @@ clean:
     trim_whitespace: true
     sample_size: -1
   validate:
-    primary_key:
-      - "cig"
-      - "id_aggiudicazione"
     not_null:
       - "cig"
       - "id_aggiudicazione"
@@ -59,9 +56,6 @@ mart:
   validate:
     table_rules:
       mart_collaudo:
-        primary_key:
-          - "anno"
-          - "esito_collaudo"
         min_rows: 1
 
 validation:

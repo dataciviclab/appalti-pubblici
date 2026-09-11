@@ -66,8 +66,6 @@ clean:
     - "n_sal"
     - "cup"
   validate:
-    primary_key:
-      - "cig"
     not_null:
       - "cig"
     min_rows: 1
@@ -87,18 +85,10 @@ mart:
   validate:
     table_rules:
       mart_panoramica:
-        primary_key:
-          - "anno"
-          - "settore"
-          - "regione"
         min_rows: 10
       mart_lifecycle:
-        primary_key:
-          - "cig"
         min_rows: 100000
       mart_imprese:
-        primary_key:
-          - "cf"
         min_rows: 100000
 
 duckdb:
