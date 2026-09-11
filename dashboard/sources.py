@@ -40,6 +40,14 @@ def _clean_path(dataset: str, year: int) -> str:
     p = _data_dir / "clean" / dataset / str(year) / f"{dataset}_{year}_clean.parquet"
     return str(p) if p.exists() else ""
 
+
+def _clean_path_latest(dataset: str) -> str:
+    """Path del clean parquet piu' recente per un dataset (tutti gli anni disponibili)."""
+    years = _years_for(dataset)
+    if not years:
+        return ""
+    return _clean_path(dataset, max(years))
+
 # ── Registry ─────────────────────────────────────────────────────────────────
 
 _registry = load_registry(ROOT / "registry" / "registry.json")
@@ -69,30 +77,37 @@ def _all_slugs() -> list[str]:
     return [d.slug for d in _registry.datasets]
 
 
+def _latest_year(slug: str, fallback: int = 2025) -> int:
+    """Anno piu' recente disponibile per uno slug, con fallback."""
+    years = _years_for(slug)
+    return max(years) if years else fallback
+
+
 # Anni globali (per bandi multi-anno)
 _bandi_years = _years_for("anac_bandi_gara")
 YEARS_BANDI = _bandi_years if _bandi_years else list(range(2016, 2026))
-YEARS_SNAPSHOT = [2026]
 
 # ── Dataset registry (per SQL page) ───────────────────────────────────────────
 
 DATASETS = {}
 for _ds in _registry.datasets:
     _y = _years_for(_ds.slug)
-    DATASETS[_ds.slug] = {"label": _ds.name, "years": _y if _y else YEARS_SNAPSHOT}
+    DATASETS[_ds.slug] = {"label": _ds.name, "years": _y if _y else YEARS_BANDI}
 
 # ── Core loaders ─────────────────────────────────────────────────────────────
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def load_mart(table: str, year: int = 2026, slug: str = "") -> pd.DataFrame:
+def load_mart(table: str, year: int | None = None, slug: str = "") -> pd.DataFrame:
+    if year is None:
+        year = _latest_year(slug or table)
     return load_mart_table(slug or table, table, year, prefix=PREFIX, local_root=LOCAL_ROOT)
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def query(sql: str, years: list[int] | None = None, slug: str = "anac_bandi_gara") -> pd.DataFrame:
     if years is None:
-        years = _years_for(slug) or YEARS_SNAPSHOT
+        years = _years_for(slug) or YEARS_BANDI
     return query_clean(slug, sql, years, prefix=PREFIX, local_root=LOCAL_ROOT)
 
 
@@ -102,7 +117,7 @@ def query_duckdb(sql: str) -> pd.DataFrame:
         return con.sql(sql).df()
 
 
-# ── Panoramica ──────────────────────────────────────────────────────────────
+# ── Panoramica / Monitoraggio ────────────────────────────────────────────────
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_annuale_bandi() -> pd.DataFrame:
@@ -115,76 +130,61 @@ def load_mart_annuale_bandi() -> pd.DataFrame:
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_top_stazioni(year: int | None = None) -> pd.DataFrame:
-    if year is None:
-        years = _years_for("anac_bandi_gara")
-        year = max(years) if years else 2025
     return load_mart("mart_top_stazioni", year=year, slug="anac_bandi_gara")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_trend_pnrr(year: int | None = None) -> pd.DataFrame:
-    if year is None:
-        years = _years_for("anac_bandi_gara")
-        year = max(years) if years else 2025
     return load_mart("mart_trend_pnrr", year=year, slug="anac_bandi_gara")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_esiti_procedura(year: int | None = None) -> pd.DataFrame:
-    if year is None:
-        years = _years_for("anac_bandi_gara")
-        year = max(years) if years else 2025
     return load_mart("mart_esiti_per_procedura", year=year, slug="anac_bandi_gara")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_trend_settore(year: int | None = None) -> pd.DataFrame:
-    if year is None:
-        years = _years_for("anac_bandi_gara")
-        year = max(years) if years else 2025
     return load_mart("mart_trend_settore", year=year, slug="anac_bandi_gara")
 
 
+# ── Aggiudicazioni ──────────────────────────────────────────────────────────
+
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_annuale_agg() -> pd.DataFrame:
-    years = _years_for("anac_aggiudicazioni")
-    return load_mart("mart_annuale", year=max(years) if years else 2026, slug="anac_aggiudicazioni")
+    return load_mart("mart_annuale", slug="anac_aggiudicazioni")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_top_aggiudicatari() -> pd.DataFrame:
-    years = _years_for("anac_aggiudicatari")
-    return load_mart("mart_top_aggiudicatari", year=max(years) if years else 2026, slug="anac_aggiudicatari")
+    return load_mart("mart_top_aggiudicatari", slug="anac_aggiudicatari")
 
+
+# ── Support dataset marts ────────────────────────────────────────────────────
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_cup() -> pd.DataFrame:
-    years = _years_for("anac_cup")
-    return load_mart("mart_cup", year=max(years) if years else 2026, slug="anac_cup")
+    return load_mart("mart_cup", slug="anac_cup")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_sal() -> pd.DataFrame:
-    years = _years_for("anac_stati_avanzamento")
-    return load_mart("mart_sal", year=max(years) if years else 2026, slug="anac_stati_avanzamento")
+    return load_mart("mart_sal", slug="anac_stati_avanzamento")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_collaudo() -> pd.DataFrame:
-    years = _years_for("anac_collaudo")
-    return load_mart("mart_collaudo", year=max(years) if years else 2026, slug="anac_collaudo")
+    return load_mart("mart_collaudo", slug="anac_collaudo")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_top_subappalti() -> pd.DataFrame:
-    years = _years_for("anac_subappalti")
-    return load_mart("mart_top_subappalti", year=max(years) if years else 2026, slug="anac_subappalti")
+    return load_mart("mart_top_subappalti", slug="anac_subappalti")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_top_partecipanti() -> pd.DataFrame:
-    years = _years_for("anac_partecipanti")
-    return load_mart("mart_top_partecipanti", year=max(years) if years else 2026, slug="anac_partecipanti")
+    return load_mart("mart_top_partecipanti", slug="anac_partecipanti")
 
 
 # ── Intelligence marts ──────────────────────────────────────────────────────
@@ -192,38 +192,32 @@ def load_mart_top_partecipanti() -> pd.DataFrame:
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_sa_profilo() -> pd.DataFrame:
     """Profilo completo per SA: n_bandi, importi, settori, regione."""
-    years = _years_for("anac_bandi_gara")
-    year = max(years) if years else 2025
-    return load_mart("mart_sa_profilo", year=year, slug="anac_bandi_gara")
+    return load_mart("mart_sa_profilo", slug="anac_bandi_gara")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_ritardi_per_sa() -> pd.DataFrame:
-    """Ritardi per SA × settore (compose)."""
-    years = _years_for("anac_cross")
-    return load_mart("mart_ritardi_per_sa", year=max(years) if years else 2026, slug="anac_cross")
+    """Ritardi per SA x settore (compose)."""
+    return load_mart("mart_ritardi_per_sa", slug="anac_cross")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_competitivita() -> pd.DataFrame:
-    """Competitività per anno × regione (compose)."""
-    years = _years_for("anac_cross")
-    return load_mart("mart_competitivita", year=max(years) if years else 2026, slug="anac_cross")
+    """Competitivita per anno x regione (compose)."""
+    return load_mart("mart_competitivita", slug="anac_cross")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_mart_imprese() -> pd.DataFrame:
     """Profilo impresa: CF, ruolo, aggiudicazioni, partecipazioni, subappalti (compose)."""
-    years = _years_for("anac_cross")
-    return load_mart("mart_imprese", year=max(years) if years else 2026, slug="anac_cross")
+    return load_mart("mart_imprese", slug="anac_cross")
 
 
 # ── Compose (anac_cross) ───────────────────────────────────────────────────
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_compose_panoramica() -> pd.DataFrame:
-    years = _years_for("anac_cross")
-    return load_mart("mart_panoramica", year=max(years) if years else 2026, slug="anac_cross")
+    return load_mart("mart_panoramica", slug="anac_cross")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -251,14 +245,7 @@ def load_compose_panoramica_annuale() -> pd.DataFrame:
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_compose_lifecycle() -> pd.DataFrame:
-    years = _years_for("anac_cross")
-    return load_mart("mart_lifecycle", year=max(years) if years else 2026, slug="anac_cross")
-
-
-@st.cache_data(ttl=3600, show_spinner=False)
-def load_compose_imprese() -> pd.DataFrame:
-    years = _years_for("anac_cross")
-    return load_mart("mart_imprese", year=max(years) if years else 2026, slug="anac_cross")
+    return load_mart("mart_lifecycle", slug="anac_cross")
 
 
 # ── Ricerca CIG (cross-dataset) ─────────────────────────────────────────────
