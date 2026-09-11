@@ -26,6 +26,7 @@ pages = {
     "Analisi": [
         st.Page("pages/02_Bandi.py", title="Bandi di Gara", icon="📋"),
         st.Page("pages/03_Aggiudicazioni.py", title="Aggiudicazioni", icon="🏆"),
+        st.Page("pages/07_Imprese.py", title="Imprese", icon="🏢"),
         st.Page("pages/06_Ritardi.py", title="Ritardi e Monitoraggio", icon="⏱️"),
     ],
     "Strumenti": [

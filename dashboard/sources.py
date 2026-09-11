@@ -211,6 +211,13 @@ def load_mart_competitivita() -> pd.DataFrame:
     return load_mart("mart_competitivita", year=max(years) if years else 2026, slug="anac_cross")
 
 
+@st.cache_data(ttl=3600, show_spinner=False)
+def load_mart_imprese() -> pd.DataFrame:
+    """Profilo impresa: CF, ruolo, aggiudicazioni, partecipazioni, subappalti (compose)."""
+    years = _years_for("anac_cross")
+    return load_mart("mart_imprese", year=max(years) if years else 2026, slug="anac_cross")
+
+
 # ── Compose (anac_cross) ───────────────────────────────────────────────────
 
 @st.cache_data(ttl=3600, show_spinner=False)
