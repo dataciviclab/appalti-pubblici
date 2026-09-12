@@ -9,30 +9,74 @@ on:
   schedule:
     - cron: "0 6 1 * *"
   workflow_dispatch:
-    inputs:
-      years:
-        description: "Anni (es. 2026 o all) -- default: dalla config dei dataset"
-        required: false
-        default: ""
 
 concurrency:
   group: appalti-pubblici-pipeline-${{ github.event.pull_request.number || github.ref || 'schedule' }}
   cancel-in-progress: false
 
+env:
+  GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+  GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+  BLOCKED_SOURCE_PROXY: ${{ vars.BLOCKED_SOURCE_PROXY }}
+
 jobs:
   pipeline:
     if: github.event.pull_request.merged == true || github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
       id-token: write
-    uses: dataciviclab/.github/.github/workflows/pipeline-reusable.yml@main
-    with:
-      repo-slug: "appalti_pubblici"
-      run-command: "make run-all"
-      sync-pattern: "per-dataset"
-      python-extra-packages: "-r requirements.txt"
-      runs-on: "self-hosted"
-    secrets:
-      GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-      GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha || github.ref }}
+          fetch-depth: 0
+
+      - uses: dataciviclab/.github/actions/python-setup@main
+        with:
+          extra-packages: "-r requirements.txt"
+
+      - name: Run datasets
+        env:
+          TOOLKIT_ALLOW_SCRIPT_SOURCE: "1"
+        run: make run-all
+
+      - name: GCP Auth
+        if: env.GCP_WORKLOAD_IDENTITY_PROVIDER != '' && env.GCP_SERVICE_ACCOUNT != ''
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        if: env.GCP_WORKLOAD_IDENTITY_PROVIDER != '' && env.GCP_SERVICE_ACCOUNT != ''
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Sync to GCS
+        if: env.GCP_WORKLOAD_IDENTITY_PROVIDER != '' && env.GCP_SERVICE_ACCOUNT != ''
+        run: |
+          for slug_dir in out/data/clean/*/; do
+            [ -d "$slug_dir" ] || continue
+            slug=$(basename "$slug_dir")
+            year=$(ls "$slug_dir" 2>/dev/null | sort -rn | head -1)
+            [ -z "$year" ] && echo "No clean for $slug" && continue
+            gsutil -m rsync -r "${slug_dir}${year}/" "gs://dataciviclab-clean/appalti_pubblici/$slug/$year/"
+            echo "$slug clean synced"
+          done
+          for slug_dir in out/data/mart/*/; do
+            [ -d "$slug_dir" ] || continue
+            slug=$(basename "$slug_dir")
+            year=$(ls "$slug_dir" 2>/dev/null | sort -rn | head -1)
+            [ -z "$year" ] && echo "No mart for $slug" && continue
+            gsutil -m rsync -r "${slug_dir}${year}/" "gs://dataciviclab-mart/appalti_pubblici/$slug/$year/"
+            echo "$slug mart synced"
+          done
+
+      - name: Registry update PR
+        uses: dataciviclab/.github/actions/registry-update-pr@main
+        with:
+          prefix: appalti_pubblici
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
