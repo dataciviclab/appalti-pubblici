@@ -32,7 +32,7 @@ jobs:
       run-command: "make run-all"
       sync-pattern: "per-dataset"
       python-extra-packages: "-r requirements.txt"
-      extra-env: "BLOCKED_SOURCE_PROXY=${{ vars.BLOCKED_SOURCE_PROXY }}"
+      runs-on: "self-hosted"
     secrets:
       GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
       GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
