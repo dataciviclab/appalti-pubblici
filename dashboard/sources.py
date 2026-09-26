@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
-from lab_connectors.duckdb.queries import load_mart_table, load_mart_all_years, query_clean
+from lab_connectors.duckdb.queries import detect_local_root, load_mart_table, load_mart_all_years, query_clean
 from lab_connectors.duckdb.core import safe_connect
 from lab_connectors.formatters import fmt_num
 from lab_connectors.registry import load_registry
@@ -31,8 +31,8 @@ def fmt_eur_short(val: float) -> str:
 
 ROOT = Path(__file__).parent.parent
 PREFIX = "appalti_pubblici/"
-_data_dir = ROOT / "out" / "data"
-LOCAL_ROOT = str(_data_dir) if _data_dir.is_dir() and any(_data_dir.rglob("*.parquet")) else None
+LOCAL_ROOT = detect_local_root(repo_root=ROOT)
+_data_dir = Path(LOCAL_ROOT) if LOCAL_ROOT else ROOT / "out" / "data"
 
 
 def _clean_path(dataset: str, year: int) -> str:
