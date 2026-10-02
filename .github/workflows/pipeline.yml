@@ -27,7 +27,7 @@ jobs:
       run-command: "make run-all"
       sync-pattern: "per-dataset"
       install-extras: "dev,pipeline"
-      extra-env: "TOOLKIT_ALLOW_SCRIPT_SOURCE=1"
+      extra-env: "TOOLKIT_ALLOW_SCRIPT_SOURCE=1\nBLOCKED_SOURCE_PROXY=${{ vars.BLOCKED_SOURCE_PROXY }}"
     secrets:
       GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
       GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
