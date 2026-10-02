@@ -28,7 +28,6 @@ jobs:
       sync-pattern: "per-dataset"
       install-extras: "dev,pipeline"
       extra-env: "TOOLKIT_ALLOW_SCRIPT_SOURCE=1"
-      runs-on: "self-hosted"
     secrets:
       GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
       GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
