@@ -26,6 +26,10 @@ dev = [
 pipeline = [
     "dataciviclab-toolkit @ git+https://github.com/dataciviclab/toolkit.git",
 ]
+# Catalog engine per-repo (probe, inventory, source report).
+observatory = [
+    "dataciviclab-source-observatory @ git+https://github.com/dataciviclab/source-observatory.git@main",
+]
 dashboard = [
     "streamlit>=1.61",
     "plotly>=5.18",
@@ -40,3 +44,12 @@ Home = "https://github.com/dataciviclab/appalti-pubblici"
 
 [tool.toolkit.extends]
 source_id = "appalti-pubblici"
+
+[tool.observatory]
+source_id = "anac"
+protocol = "ckan"
+base_url = "https://dati.anticorruzione.it/opendata/api/3/action/package_list"
+observation_mode = "catalog-watch"
+verdict = "go"
+user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+note = "CKAN diretto ANAC (dati.anticorruzione.it, 70 package) — diverso dall'aggregato dati.gov.it monitorato in SO centrale. WAF richiede User-Agent browser. toolkit.extends dichiara 'appalti-pubblici', i dataset.yml usano 'anac'."
