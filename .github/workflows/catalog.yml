@@ -21,4 +21,5 @@ jobs:
     with:
       repo-slug: appalti-pubblici
       catalog-args: "--workers 4"
+      blocked-source-proxy: ${{ vars.BLOCKED_SOURCE_PROXY }}
       dry-run: ${{ github.event_name == 'pull_request' }}
