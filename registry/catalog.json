@@ -1,0 +1,209 @@
+{
+  "source_id": "anac",
+  "generated_at": "2026-10-13T09:22:30+00:00",
+  "report_version": 1,
+  "timing": {},
+  "identity": {
+    "source_id": "anac",
+    "protocol": "ckan",
+    "base_url": "https://dati.anticorruzione.it/opendata/api/3/action/package_list",
+    "source_kind": "catalog",
+    "observation_mode": "catalog-watch",
+    "verdict": "go",
+    "note": "CKAN diretto ANAC (dati.anticorruzione.it, 70 package) — diverso dall'aggregato dati.gov.it monitorato in SO centrale. WAF richiede User-Agent browser. toolkit.extends dichiara 'appalti-pubblici', i dataset.yml usano 'anac'.",
+    "last_probed": "2026-10-13"
+  },
+  "health": {
+    "radar_status": "YELLOW",
+    "http_code": "200",
+    "note": "CKAN API returned non-JSON content",
+    "ssl_fallback": false,
+    "streak": 3
+  },
+  "inventory": {
+    "total_items": 70,
+    "method": null,
+    "captured_at": "2026-10-13T09:22:09+00:00",
+    "baseline_value": null,
+    "baseline_date": null,
+    "freshness_hours": 0.0,
+    "delta": null,
+    "delta_pct": 0.0,
+    "formats": {
+      "CSV,JSON,TTL": 53,
+      "JSON": 9,
+      "JSON,CSV": 2,
+      "JSON,CSV,TTL": 2,
+      "CSV,TTL,JSON": 2,
+      "CSV": 1,
+      "TTL,CSV,JSON": 1
+    }
+  },
+  "source_check": {
+    "last_run": "2026-10-13T09:22:30Z",
+    "total_scored": 48,
+    "reachable": 47,
+    "csv_count": 47,
+    "with_csv_schema": 22,
+    "avg_readiness": 4.6,
+    "top_items": [
+      {
+        "name": "anac/010d0429-7112-4b66-9c76-f43c7b26a1db",
+        "score": 9,
+        "year_range": [
+          2009,
+          2009
+        ],
+        "format": "csv,json,ttl",
+        "reachable": true
+      },
+      {
+        "name": "anac/03644cca-3a08-4241-b636-fd48945a7d58",
+        "score": 9,
+        "year_range": [
+          2018,
+          2018
+        ],
+        "format": "csv,json,ttl",
+        "reachable": true
+      },
+      {
+        "name": "anac/21fe8c53-9e66-46e3-9bc5-1291c69099de",
+        "score": 9,
+        "year_range": [
+          2008,
+          2008
+        ],
+        "format": "csv,json,ttl",
+        "reachable": true
+      },
+      {
+        "name": "anac/2b91a51f-7a96-4b2e-9e4c-64a2887e0685",
+        "score": 9,
+        "year_range": [
+          2014,
+          2014
+        ],
+        "format": "csv,json,ttl",
+        "reachable": true
+      },
+      {
+        "name": "anac/3ee859a4-ca60-43f6-a7c6-d5a1bbefb948",
+        "score": 9,
+        "year_range": [
+          2021,
+          2021
+        ],
+        "format": "csv,json,ttl",
+        "reachable": true
+      }
+    ],
+    "coverage_pct": 68.6,
+    "formato_aperto": {
+      "score": 5.0,
+      "perc_aperto": 0.0,
+      "perc_reachable": 97.9,
+      "total": 48,
+      "fonte": "source_check"
+    }
+  },
+  "datasets_in_use": [
+    {
+      "slug": "anac_aggiudicatari",
+      "status": "incubating",
+      "upstream": [
+        {
+          "kind": "ckan_dataset",
+          "id": "aggiudicatari"
+        }
+      ]
+    },
+    {
+      "slug": "anac_aggiudicazioni",
+      "status": "incubating",
+      "upstream": [
+        {
+          "kind": "ckan_dataset",
+          "id": "aggiudicazioni"
+        }
+      ]
+    },
+    {
+      "slug": "anac_bandi_gara",
+      "status": "incubating",
+      "upstream": [
+        {
+          "kind": "ckan_dataset",
+          "id": "cig-{year}"
+        }
+      ]
+    },
+    {
+      "slug": "anac_collaudo",
+      "status": "incubating",
+      "upstream": [
+        {
+          "kind": "ckan_dataset",
+          "id": "collaudo"
+        }
+      ]
+    },
+    {
+      "slug": "anac_cup",
+      "status": "incubating",
+      "upstream": [
+        {
+          "kind": "ckan_dataset",
+          "id": "cup"
+        }
+      ]
+    },
+    {
+      "slug": "anac_partecipanti",
+      "status": "incubating",
+      "upstream": [
+        {
+          "kind": "ckan_dataset",
+          "id": "partecipanti"
+        }
+      ]
+    },
+    {
+      "slug": "anac_stati_avanzamento",
+      "status": "incubating",
+      "upstream": [
+        {
+          "kind": "ckan_dataset",
+          "id": "stati-avanzamento"
+        }
+      ]
+    },
+    {
+      "slug": "anac_subappalti",
+      "status": "incubating",
+      "upstream": [
+        {
+          "kind": "ckan_dataset",
+          "id": "subappalti"
+        }
+      ]
+    }
+  ],
+  "signals": [
+    {
+      "type": "validated_metrics",
+      "result": "stabile",
+      "detail": "Metriche da validated.parquet."
+    }
+  ],
+  "operational_verdict": {
+    "label": "STABLE",
+    "score": "stable",
+    "triggers": [
+      "all_green"
+    ],
+    "next_action": null
+  },
+  "repo": "appalti-pubblici",
+  "catalog_schema_version": 1
+}
