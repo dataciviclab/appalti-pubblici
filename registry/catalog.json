@@ -1,6 +1,6 @@
 {
   "source_id": "anac",
-  "generated_at": "2026-10-13T09:22:30+00:00",
+  "generated_at": "2026-10-16T15:32:02+00:00",
   "report_version": 1,
   "timing": {},
   "identity": {
@@ -11,36 +11,36 @@
     "observation_mode": "catalog-watch",
     "verdict": "go",
     "note": "CKAN diretto ANAC (dati.anticorruzione.it, 70 package) — diverso dall'aggregato dati.gov.it monitorato in SO centrale. WAF richiede User-Agent browser. toolkit.extends dichiara 'appalti-pubblici', i dataset.yml usano 'anac'.",
-    "last_probed": "2026-10-13"
+    "last_probed": "2026-10-16"
   },
   "health": {
-    "radar_status": "YELLOW",
+    "radar_status": "GREEN",
     "http_code": "200",
-    "note": "CKAN API returned non-JSON content",
+    "note": null,
     "ssl_fallback": false,
-    "streak": 3
+    "streak": 1
   },
   "inventory": {
     "total_items": 70,
     "method": null,
-    "captured_at": "2026-10-13T09:22:09+00:00",
+    "captured_at": "2026-10-16T15:31:30+00:00",
     "baseline_value": null,
     "baseline_date": null,
     "freshness_hours": 0.0,
     "delta": null,
     "delta_pct": 0.0,
     "formats": {
-      "CSV,JSON,TTL": 53,
+      "CSV,JSON,TTL": 52,
       "JSON": 9,
-      "JSON,CSV": 2,
+      "CSV,TTL,JSON": 3,
       "JSON,CSV,TTL": 2,
-      "CSV,TTL,JSON": 2,
-      "CSV": 1,
-      "TTL,CSV,JSON": 1
+      "JSON,CSV": 2,
+      "TTL,CSV,JSON": 1,
+      "CSV": 1
     }
   },
   "source_check": {
-    "last_run": "2026-10-13T09:22:30Z",
+    "last_run": "2026-10-16T15:32:02Z",
     "total_scored": 48,
     "reachable": 47,
     "csv_count": 47,
