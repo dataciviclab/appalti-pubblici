@@ -15,7 +15,7 @@ li trasforma in mart analitici e li rende interrogabili via dashboard Streamlit.
 1. **Quanto si spende negli appalti e come varia nel tempo?** → trend bandi e importi 2016-2025
 2. **Dove si concentra la spesa?** → top regioni, SA, settori per importo
 3. **Quanti affidamenti sono diretti vs gara?** → distribuzione tipo scelta contraente
-4. **Dove ci sono ritardi nell'esecuzione?** → SAL in ritardo per SA e settore
+4. **Dove ci sono ritardi nell'esecuzione?** → scostamento dal termine contrattuale, sospensioni e varianti per SA e settore
 5. **Quali imprese dominano il mercato?** → concentrazione, ruolo (aggiudicatario/partecipante/subappaltante)
 6. **Come si organizzano i raggruppamenti?** → RTI (mandataria + mandanti), catene di subappalto
 
@@ -31,9 +31,13 @@ li trasforma in mart analitici e li rende interrogabili via dashboard Streamlit.
 | `anac-stati-avanzamento` | Stati di avanzamento (SAL) | 2008-2026 | 1 |
 | `anac-collaudo` | Collaudo dei lavori | 2005-2026 | 1 |
 | `anac-cup` | CUP associati ai CIG | 2005-2026 | 1 |
-| `compose/anac-cross` | CIG snapshot unificato (cross-dataset) | 2026 | 5 |
+| `anac-avvio-contratto` | Date di avvio esecuzione | 2000-2026 | 1 |
+| `anac-fine-contratto` | Conclusione e motivi di interruzione | 2000-2026 | 2 |
+| `anac-sospensioni` | Sospensioni e motivi | 2000-2026 | 1 |
+| `anac-varianti` | Varianti contrattuali | 2000-2026 | 1 |
+| `compose/anac-cross` | CIG snapshot unificato (cross-dataset) | 2026 | 7 |
 
-### Mart analitici (19 totali)
+### Mart analitici (26 totali)
 
 **Bandi** (6): mart_annuale, mart_trend_pnrr, mart_top_stazioni, mart_esiti_per_procedura, mart_trend_settore, mart_sa_profilo
 
@@ -41,7 +45,9 @@ li trasforma in mart analitici e li rende interrogabili via dashboard Streamlit.
 
 **Support** (4): mart_top_aggiudicatari, mart_top_partecipanti, mart_top_subappalti, mart_sal
 
-**Compose** (5): mart_panoramica, mart_lifecycle, mart_imprese, mart_ritardi_per_sa, mart_competitivita
+**Esecuzione** (5): mart_avvio_contratto, mart_fine_contratto, mart_motivi_fine, mart_sospensioni, mart_varianti
+
+**Compose** (7): mart_panoramica, mart_lifecycle, mart_imprese, mart_ritardi_per_sa, mart_competitivita, mart_esecuzione, mart_ritardi_contratto
 
 **Altri** (2): mart_collaudo, mart_cup
 
@@ -64,7 +70,7 @@ Dashboard Streamlit con 3 livelli:
 
 ```bash
 # Setup
-pip install -r requirements.txt
+pip install -e ".[dev,pipeline]"
 
 # Validare config
 make check
@@ -86,7 +92,7 @@ python -m pytest tests/
 
 ```
 appalti-pubblici/
-├── datasets/                   # 8 dataset singoli (toolkit pipeline)
+├── datasets/                   # 12 dataset singoli (toolkit pipeline)
 │   ├── anac-bandi-gara/
 │   ├── anac-aggiudicazioni/
 │   ├── anac-aggiudicatari/
@@ -94,7 +100,11 @@ appalti-pubblici/
 │   ├── anac-subappalti/
 │   ├── anac-stati-avanzamento/
 │   ├── anac-collaudo/
-│   └── anac-cup/
+│   ├── anac-cup/
+│   ├── anac-avvio-contratto/
+│   ├── anac-fine-contratto/
+│   ├── anac-sospensioni/
+│   └── anac-varianti/
 ├── compose/
 │   └── anac-cross/             # cross-dataset (CIG snapshot unificato)
 ├── dashboard/                  # Streamlit (3 livelli, 8 pagine)

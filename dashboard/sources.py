@@ -10,9 +10,13 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
-from lab_connectors.duckdb.queries import detect_local_root, load_mart_table, load_mart_all_years, query_clean
 from lab_connectors.duckdb.core import safe_connect
-from lab_connectors.formatters import fmt_num
+from lab_connectors.duckdb.queries import (
+    detect_local_root,
+    load_mart_all_years,
+    load_mart_table,
+    query_clean,
+)
 from lab_connectors.registry import load_registry
 
 
@@ -55,7 +59,7 @@ _registry = load_registry(ROOT / "registry" / "registry.json")
 
 def _years_for(slug: str) -> list[int]:
     """Anni disponibili per uno slug dal registry period.
-    
+
     Se LOCAL_ROOT e' impostato, filtra per anni che hanno file su disco.
     """
     ds = next((d for d in _registry.datasets if d.slug == slug), None)
@@ -199,6 +203,18 @@ def load_mart_sa_profilo() -> pd.DataFrame:
 def load_mart_ritardi_per_sa() -> pd.DataFrame:
     """Ritardi per SA x settore (compose)."""
     return load_mart("mart_ritardi_per_sa", slug="anac_cross")
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def load_mart_esecuzione() -> pd.DataFrame:
+    """Tempi e ritardi reali per anno x regione x settore (compose)."""
+    return load_mart("mart_esecuzione", slug="anac_cross")
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def load_mart_ritardi_contratto() -> pd.DataFrame:
+    """Ritardi reali per SA x regione x settore (compose)."""
+    return load_mart("mart_ritardi_contratto", slug="anac_cross")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)

@@ -54,6 +54,15 @@ SELECT
     s.esito_collaudo,
     s.data_cert_collaudo,
     s.riserve_avanzate,
-    s.cup
+    s.cup,
+    s.data_stipula_contratto,
+    s.data_inizio_effettiva,
+    s.data_effettiva_ultimazione,
+    s.giorni_aggiudicazione_stipula,
+    s.giorni_stipula_inizio,
+    s.giorni_scostamento_termine,
+    s.n_sospensioni,
+    s.giorni_sospensione,
+    s.n_varianti
 FROM bandi b
 LEFT JOIN snapshot s ON b.cig = s.cig

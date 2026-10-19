@@ -13,13 +13,13 @@ Markers: contract (contratto pubblico, artifact format).
 from __future__ import annotations
 
 import re
+import subprocess
 from pathlib import Path
 
 import pytest
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-OUT_DIR = REPO_ROOT / "out"
 REQUIRED_FILES = [
     REPO_ROOT / "Makefile",
     REPO_ROOT / "conftest.py",
@@ -158,14 +158,21 @@ def test_required_tables_and_rules_match_declared_marts(dataset_configs: list[Pa
 
 @pytest.mark.contract
 def test_no_run_outputs_committed() -> None:
-    if not OUT_DIR.exists():
-        return
+    """Verifica i file tracciati da git, non gli output locali di run."""
+    proc = subprocess.run(
+        ["git", "ls-files", "out"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode != 0:
+        pytest.skip("git non disponibile: skip controllo output tracciati")
+
     offenders: list[str] = []
-    for path in OUT_DIR.rglob("*"):
-        if not path.is_file():
-            continue
+    for line in proc.stdout.splitlines():
+        path = Path(line)
         if path.name == "README.md":
             continue
         if path.suffix.lower() in BLOCKED_OUT_EXTENSIONS or "_runs" in path.parts:
-            offenders.append(str(path.relative_to(REPO_ROOT)).replace("\\", "/"))
+            offenders.append(line.replace("\\", "/"))
     assert not offenders, f"Non committare output di run in out/: {offenders}"
