@@ -8,7 +8,7 @@ WITH bandi AS (
         MAX(anno_pubblicazione) AS anno,
         MAX(sezione_regionale) AS regione,
         MAX(oggetto_principale_contratto) AS settore
-    FROM read_parquet('{root_posix}/data/clean/anac_bandi_gara/*/*_clean.parquet')
+    FROM read_parquet('{support.bandi_gara.clean}')
     WHERE cf_amministrazione_appaltante IS NOT NULL
     GROUP BY cig
 ),

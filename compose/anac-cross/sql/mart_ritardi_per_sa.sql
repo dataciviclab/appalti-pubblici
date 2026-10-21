@@ -8,7 +8,7 @@ WITH sal_ritardo AS (
         flag_ritardo,
         n_giorni_scostamento,
         importo_sal
-    FROM read_parquet('{root_posix}/data/clean/anac_stati_avanzamento/*/*_clean.parquet')
+    FROM read_parquet('{support.stati_avanzamento.clean}')
     WHERE flag_ritardo = 'IN RITARDO'
 ),
 bandi AS (
@@ -17,7 +17,7 @@ bandi AS (
         MAX(denominazione_amministrazione_appaltante) AS sa,
         MAX(oggetto_principale_contratto) AS settore,
         MAX(sezione_regionale) AS regione
-    FROM read_parquet('{root_posix}/data/clean/anac_bandi_gara/*/*_clean.parquet')
+    FROM read_parquet('{support.bandi_gara.clean}')
     WHERE cf_amministrazione_appaltante IS NOT NULL
       AND cf_amministrazione_appaltante != ''
     GROUP BY cig

@@ -1,6 +1,6 @@
 -- mart_lifecycle.sql — Bandi 2016-2025 LEFT JOIN CIG snapshot 2026 (clean)
 -- La snapshot 2026 e' il clean stesso: 1 riga per CIG con tutti gli attributi.
--- I bandi 2016-2025 restano da fonte esterna (bandi_gara clean parquet).
+-- I bandi 2016-2025 arrivano dal support bandi_gara.
 
 WITH
 snapshot AS (
@@ -23,7 +23,7 @@ bandi AS (
         tipo_scelta_contraente,
         descrizione_cpv,
         data_pubblicazione
-    FROM read_parquet('{root_posix}/data/clean/anac_bandi_gara/*/*_clean.parquet')
+    FROM read_parquet('{support.bandi_gara.clean}')
 )
 
 SELECT

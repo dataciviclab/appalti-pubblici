@@ -18,7 +18,7 @@ SELECT
         / NULLIF(COUNT(*), 0), 1) AS tasso_aggiudicazione_pct,
     ROUND(SUM(CASE WHEN flag_pnrr = TRUE THEN importo_lotto ELSE 0 END) * 100.0
         / NULLIF(SUM(importo_lotto), 0), 1) AS quota_pnrr_pct
-FROM read_parquet('{root_posix}/data/clean/anac_bandi_gara/*/*_clean.parquet')
+FROM read_parquet('{support.bandi_gara.clean}')
 WHERE stato = 'ATTIVO'
   AND oggetto_principale_contratto IS NOT NULL
   AND sezione_regionale IS NOT NULL

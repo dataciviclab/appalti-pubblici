@@ -10,7 +10,7 @@ WITH bandi AS (
         oggetto_principale_contratto AS settore,
         importo_lotto,
         esito
-    FROM read_parquet('{root_posix}/data/clean/anac_bandi_gara/*/*_clean.parquet')
+    FROM read_parquet('{support.bandi_gara.clean}')
     WHERE stato = 'ATTIVO'
       AND sezione_regionale IS NOT NULL
       AND sezione_regionale != ''
@@ -21,7 +21,7 @@ agg AS (
         num_imprese_offerenti,
         importo_aggiudicazione,
         ribasso_aggiudicazione
-    FROM read_parquet('{root_posix}/data/clean/anac_aggiudicazioni/*/*_clean.parquet')
+    FROM read_parquet('{support.aggiudicazioni.clean}')
     WHERE importo_aggiudicazione > 0
       AND importo_aggiudicazione < 100000000000
 )

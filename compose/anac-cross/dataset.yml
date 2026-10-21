@@ -66,6 +66,14 @@ support:
     name: varianti
     config: ../../datasets/anac-varianti/dataset.yml
     years: [2026]
+  - type: dataset
+    name: bandi_gara
+    config: ../../datasets/anac-bandi-gara/dataset.yml
+    years: [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+  - type: dataset
+    name: aggiudicazioni
+    config: ../../datasets/anac-aggiudicazioni/dataset.yml
+    years: [2026]
 
 clean:
   sql: "sql/clean.sql"
