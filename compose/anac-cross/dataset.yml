@@ -50,6 +50,33 @@ support:
     name: cup
     config: ../../datasets/anac-cup/dataset.yml
     years: [2026]
+  - type: dataset
+    name: avvio_contratto
+    config: ../../datasets/anac-avvio-contratto/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: fine_contratto
+    config: ../../datasets/anac-fine-contratto/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: sospensioni
+    config: ../../datasets/anac-sospensioni/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: varianti
+    config: ../../datasets/anac-varianti/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: bandi_gara
+    config: ../../datasets/anac-bandi-gara/dataset.yml
+    years: [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+  # aggiudicazioni è anche il raw source primario del compose: qui serve
+  # come support per i mart che leggono i campi originali (importo,
+  # offerte, ribassi).
+  - type: dataset
+    name: aggiudicazioni
+    config: ../../datasets/anac-aggiudicazioni/dataset.yml
+    years: [2026]
 
 clean:
   sql: "sql/clean.sql"
@@ -65,6 +92,11 @@ clean:
     - "n_subappalti"
     - "n_sal"
     - "cup"
+    - "data_stipula_contratto"
+    - "data_effettiva_ultimazione"
+    - "giorni_scostamento_termine"
+    - "n_sospensioni"
+    - "n_varianti"
   validate:
     not_null:
       - "cig"
@@ -82,12 +114,18 @@ mart:
       sql: "sql/mart_ritardi_per_sa.sql"
     - name: "mart_competitivita"
       sql: "sql/mart_competitivita.sql"
+    - name: "mart_esecuzione"
+      sql: "sql/mart_esecuzione.sql"
+    - name: "mart_ritardi_contratto"
+      sql: "sql/mart_ritardi_contratto.sql"
   required_tables:
     - mart_panoramica
     - mart_lifecycle
     - mart_imprese
     - mart_ritardi_per_sa
     - mart_competitivita
+    - mart_esecuzione
+    - mart_ritardi_contratto
   validate:
     table_rules:
       mart_panoramica:
@@ -100,6 +138,10 @@ mart:
         min_rows: 100
       mart_competitivita:
         min_rows: 100
+      mart_esecuzione:
+        min_rows: 10
+      mart_ritardi_contratto:
+        min_rows: 10
 
 duckdb:
   memory_limit: "4GB"

@@ -1,18 +1,17 @@
 """Esecuzione -- Funnel, ritardi SAL, monitoraggio esecuzione appalti."""
 
-import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
+import streamlit as st
 from lab_connectors.formatters import fmt_num
 from sources import (
-    load_mart_ritardi_per_sa,
-    load_mart_sal,
-    load_compose_panoramica_annuale,
-    YEARS_BANDI,
-    fmt_eur_short,
-    query_duckdb,
     _clean_path,
     _latest_year,
+    load_mart_esecuzione,
+    load_mart_ritardi_contratto,
+    load_mart_ritardi_per_sa,
+    load_mart_sal,
+    query_duckdb,
 )
 
 st.title("Esecuzione -- Dal bando al collaudo")
@@ -186,5 +185,112 @@ if not ritardi_sa.empty:
         )
         fig6.update_layout(yaxis={"categoryorder": "total ascending"}, height=400)
         st.plotly_chart(fig6, use_container_width=True, key="esecuzione_settori_ritardi_eur")
+
+# -- Ritardi contrattuali (date reali) ----------------------------------------
+st.subheader("Ritardi contrattuali (date reali, non SAL)")
+st.caption(
+    "Ritardo = data effettiva di ultimazione - termine contrattuale. "
+    "Copertura: ~14,5% dei CIG e ~5,9% degli importi (bandi 2016-2025), "
+    "solo contratti con date di esecuzione utilizzabili. I totali sono sulle "
+    "celle anno x regione x settore con almeno 3 contratti, quindi non sono "
+    "il totale del mercato. 2024-2025 sono censurati: il calo riflette i "
+    "contratti non ancora conclusi, non un miglioramento."
+)
+
+esec = load_mart_esecuzione()
+rit_contr = load_mart_ritardi_contratto()
+
+
+def _weighted_avg(df, value_col: str, weight_col: str) -> float | None:
+    valid = df[[value_col, weight_col]].dropna()
+    weight = valid[weight_col].sum()
+    if weight == 0:
+        return None
+    return float((valid[value_col] * valid[weight_col]).sum() / weight)
+
+
+if not esec.empty:
+    n_contratti = int(esec["n_contratti"].sum())
+    n_con_ultimazione = int(esec["n_con_ultimazione"].sum())
+    n_ritardo = int(esec["n_in_ritardo"].sum())
+    gg_scost = _weighted_avg(esec, "giorni_medi_scostamento_termine", "n_con_ultimazione")
+    gg_agg_stip = _weighted_avg(esec, "giorni_medi_aggiudicazione_stipula", "n_con_stipula")
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Contratti nelle celle >=3", fmt_num(n_contratti))
+    col2.metric(
+        "In ritardo sul termine",
+        fmt_num(n_ritardo),
+        f"{n_ritardo / n_con_ultimazione * 100:.1f}% dei conclusi"
+        if n_con_ultimazione
+        else None,
+    )
+    col3.metric(
+        "Scostamento medio dal termine",
+        f"{gg_scost:+.0f} gg" if gg_scost is not None else "n/d",
+    )
+    col4.metric(
+        "Aggiudicazione -> stipula",
+        f"{gg_agg_stip:.0f} gg" if gg_agg_stip is not None else "n/d",
+    )
+
+    trend_esec = (
+        esec.groupby("anno")
+        .agg(
+            n_con_ultimazione=("n_con_ultimazione", "sum"),
+            n_in_ritardo=("n_in_ritardo", "sum"),
+        )
+        .reset_index()
+    )
+    trend_esec["pct_ritardo"] = (
+        trend_esec["n_in_ritardo"] / trend_esec["n_con_ultimazione"] * 100
+    ).round(1)
+
+    fig_ec = px.line(
+        trend_esec,
+        x="anno",
+        y="pct_ritardo",
+        title="% contratti oltre il termine contrattuale per anno",
+        labels={"pct_ritardo": "% in ritardo", "anno": "Anno"},
+        markers=True,
+    )
+    fig_ec.update_layout(xaxis=dict(dtick=2), height=350)
+    st.plotly_chart(fig_ec, use_container_width=True, key="esecuzione_contratti_pct")
+
+if not rit_contr.empty:
+    top_contr = rit_contr.nlargest(20, "n_in_ritardo")
+    col1, col2 = st.columns(2)
+    with col1:
+        fig_ec2 = px.bar(
+            top_contr,
+            x="n_in_ritardo",
+            y="sa",
+            orientation="h",
+            title="Top 20 SA per contratti oltre il termine",
+            labels={"sa": "Stazione Appaltante", "n_in_ritardo": "Contratti in ritardo"},
+        )
+        fig_ec2.update_layout(yaxis={"categoryorder": "total ascending"}, height=600)
+        st.plotly_chart(fig_ec2, use_container_width=True, key="esecuzione_contratti_sa")
+    with col2:
+        st.dataframe(
+            top_contr[
+                [
+                    "sa",
+                    "settore",
+                    "n_contratti",
+                    "n_in_ritardo",
+                    "quota_in_ritardo_pct",
+                    "giorni_mediani_scostamento",
+                    "importo_in_ritardo",
+                ]
+            ],
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "quota_in_ritardo_pct": st.column_config.NumberColumn("Quota in ritardo", format="%.1f%%"),
+                "giorni_mediani_scostamento": st.column_config.NumberColumn("Ritardo mediano (gg)"),
+                "importo_in_ritardo": st.column_config.NumberColumn("Importo in ritardo", format="€%.0f"),
+            },
+        )
 
 st.caption("Dati: ANAC (dati.anticorruzione.it) -- CC BY 4.0")

@@ -77,6 +77,67 @@ cup AS (
     FROM read_parquet('{support.cup.clean}')
 ),
 
+avvio AS (
+    -- Un CIG può avere più contratti: prendi la stipula più recente.
+    SELECT
+        cig,
+        data_stipula_contratto,
+        data_inizio_effettiva,
+        data_termine_contrattuale,
+        n_avvii
+    FROM (
+        SELECT
+            cig,
+            data_stipula_contratto,
+            data_inizio_effettiva,
+            data_termine_contrattuale,
+            COUNT(*) OVER (PARTITION BY cig) AS n_avvii,
+            ROW_NUMBER() OVER (
+                PARTITION BY cig
+                ORDER BY data_stipula_contratto DESC NULLS LAST
+            ) AS rn
+        FROM read_parquet('{support.avvio_contratto.clean}')
+    ) ranked
+    WHERE rn = 1
+),
+
+fine AS (
+    SELECT
+        cig,
+        MAX(data_effettiva_ultimazione) AS data_effettiva_ultimazione,
+        MAX(data_conclusione_anticipata) AS data_conclusione_anticipata,
+        MAX(motivo_risoluzione) AS motivo_risoluzione,
+        MAX(motivo_interruzione_anticipata) AS motivo_interruzione_anticipata,
+        COUNT(*) AS n_fini
+    FROM read_parquet('{support.fine_contratto.clean}')
+    GROUP BY cig
+),
+
+sospensioni AS (
+    SELECT
+        cig,
+        COUNT(*) AS n_sospensioni,
+        SUM(CASE WHEN data_ripresa >= data_sospensione
+                  AND date_diff('day', data_sospensione, data_ripresa) <= 3650
+             THEN date_diff('day', data_sospensione, data_ripresa) ELSE 0 END)
+            AS giorni_sospensione,
+        COUNT(*) FILTER (WHERE data_ripresa IS NULL OR data_ripresa < data_sospensione)
+            AS n_sospensioni_senza_ripresa
+    FROM read_parquet('{support.sospensioni.clean}')
+    WHERE data_sospensione IS NOT NULL
+    GROUP BY cig
+),
+
+varianti AS (
+    SELECT
+        cig,
+        COUNT(*) AS n_varianti,
+        COUNT(DISTINCT id_variante) AS n_varianti_distinte,
+        COUNT(*) FILTER (WHERE cig_proroga IS NOT NULL) AS n_varianti_con_proroga
+    FROM read_parquet('{support.varianti.clean}')
+    GROUP BY cig
+),
+
 -- Tutti i CIG unici da tutte le sorgenti
 tutti_cig AS (
     SELECT cig FROM aggiudicazioni
@@ -92,6 +153,14 @@ tutti_cig AS (
     SELECT cig FROM collaudo
     UNION
     SELECT cig FROM cup
+    UNION
+    SELECT cig FROM avvio
+    UNION
+    SELECT cig FROM fine
+    UNION
+    SELECT cig FROM sospensioni
+    UNION
+    SELECT cig FROM varianti
 )
 
 SELECT
@@ -121,7 +190,40 @@ SELECT
     c.riserve_avanzate,
     c.importo_contenz_risolto,
     -- CUP
-    cu.cup
+    cu.cup,
+    -- avvio contratto
+    av.data_stipula_contratto,
+    av.data_inizio_effettiva,
+    av.data_termine_contrattuale,
+    CASE WHEN av.data_stipula_contratto IS NOT NULL
+          AND a.data_ultima_agg IS NOT NULL
+          AND date_diff('day', a.data_ultima_agg, av.data_stipula_contratto)
+              BETWEEN 0 AND 3650
+        THEN date_diff('day', a.data_ultima_agg, av.data_stipula_contratto) END
+        AS giorni_aggiudicazione_stipula,
+    CASE WHEN av.data_stipula_contratto IS NOT NULL AND av.data_inizio_effettiva IS NOT NULL
+          AND date_diff('day', av.data_stipula_contratto, av.data_inizio_effettiva)
+              BETWEEN -365 AND 3650
+        THEN date_diff('day', av.data_stipula_contratto, av.data_inizio_effettiva) END
+        AS giorni_stipula_inizio,
+    -- fine contratto
+    fi.data_effettiva_ultimazione,
+    fi.motivo_risoluzione,
+    fi.motivo_interruzione_anticipata,
+    CASE WHEN av.data_termine_contrattuale IS NOT NULL
+          AND fi.data_effettiva_ultimazione IS NOT NULL
+          AND date_diff('day', av.data_termine_contrattuale, fi.data_effettiva_ultimazione)
+              BETWEEN -3650 AND 3650
+        THEN date_diff('day', av.data_termine_contrattuale, fi.data_effettiva_ultimazione) END
+        AS giorni_scostamento_termine,
+    -- sospensioni
+    COALESCE(so.n_sospensioni, 0) AS n_sospensioni,
+    COALESCE(so.giorni_sospensione, 0) AS giorni_sospensione,
+    COALESCE(so.n_sospensioni_senza_ripresa, 0) AS n_sospensioni_senza_ripresa,
+    -- varianti
+    COALESCE(va.n_varianti, 0) AS n_varianti,
+    COALESCE(va.n_varianti_distinte, 0) AS n_varianti_distinte,
+    COALESCE(va.n_varianti_con_proroga, 0) AS n_varianti_con_proroga
 FROM tutti_cig t
 LEFT JOIN aggiudicazioni a ON t.cig = a.cig
 LEFT JOIN aggiudicatari ag ON t.cig = ag.cig
@@ -130,3 +232,7 @@ LEFT JOIN subappalti su ON t.cig = su.cig
 LEFT JOIN sal sa ON t.cig = sa.cig
 LEFT JOIN collaudo c ON t.cig = c.cig
 LEFT JOIN cup cu ON t.cig = cu.cig
+LEFT JOIN avvio av ON t.cig = av.cig
+LEFT JOIN fine fi ON t.cig = fi.cig
+LEFT JOIN sospensioni so ON t.cig = so.cig
+LEFT JOIN varianti va ON t.cig = va.cig

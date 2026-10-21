@@ -3,6 +3,9 @@
 Il flag valido nella fonte e' ``'IN RITARDO'`` (valori osservati: ``IN LINEA``,
 ``IN RITARDO``, ``IN ANTICIPO``). Il vecchio confronto con ``'S'`` produceva
 ``sal_in_ritardo = 0`` su tutte le righe.
+
+Il test costruisce support minimi e risolve i placeholder ``{support.*.clean}``
+del compose, cosi' resta valido quando cambia il set di support.
 """
 
 from __future__ import annotations
@@ -15,9 +18,6 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CLEAN_SQL = REPO_ROOT / "compose" / "anac-cross" / "sql" / "clean.sql"
 MART_SQL = REPO_ROOT / "compose" / "anac-cross" / "sql" / "mart_ritardi_per_sa.sql"
-
-SUPPORTI = ("aggiudicatari", "partecipanti", "subappalti", "stati_avanzamento", "collaudo", "cup")
-
 
 def _scrivi_parquet(con: duckdb.DuckDBPyConnection, percorso: Path, sql: str) -> Path:
     con.execute(f"COPY ({sql}) TO '{percorso.as_posix()}' (FORMAT PARQUET)")
@@ -66,6 +66,26 @@ def _supporti(con: duckdb.DuckDBPyConnection, tmp_path: Path) -> dict[str, Path]
             "CAST(NULL AS DOUBLE) AS riserve_avanzate, CAST(NULL AS DOUBLE) AS importo_contenz_risolto"
         ),
         "cup": "SELECT 'CIG1' AS cig, 'CUP1' AS cup",
+        "avvio_contratto": (
+            "SELECT CAST(NULL AS VARCHAR) AS cig, CAST(NULL AS DATE) AS data_stipula_contratto, "
+            "CAST(NULL AS DATE) AS data_inizio_effettiva, "
+            "CAST(NULL AS DATE) AS data_termine_contrattuale WHERE FALSE"
+        ),
+        "fine_contratto": (
+            "SELECT CAST(NULL AS VARCHAR) AS cig, "
+            "CAST(NULL AS DATE) AS data_effettiva_ultimazione, "
+            "CAST(NULL AS DATE) AS data_conclusione_anticipata, "
+            "CAST(NULL AS VARCHAR) AS motivo_risoluzione, "
+            "CAST(NULL AS VARCHAR) AS motivo_interruzione_anticipata WHERE FALSE"
+        ),
+        "sospensioni": (
+            "SELECT CAST(NULL AS VARCHAR) AS cig, CAST(NULL AS DATE) AS data_sospensione, "
+            "CAST(NULL AS DATE) AS data_ripresa WHERE FALSE"
+        ),
+        "varianti": (
+            "SELECT CAST(NULL AS VARCHAR) AS cig, CAST(NULL AS BIGINT) AS id_variante, "
+            "CAST(NULL AS VARCHAR) AS cig_proroga WHERE FALSE"
+        ),
     }
     percorsi = {nome: _scrivi_parquet(con, tmp_path / f"{nome}.parquet", sql) for nome, sql in vuoto.items()}
     percorsi["stati_avanzamento"] = _stati_avanzamento(con, tmp_path / "stati_avanzamento.parquet")
@@ -131,7 +151,15 @@ def test_mart_ritardi_conta_anche_sal_senza_giorni(tmp_path: Path) -> None:
         """,
     )
 
-    sql = MART_SQL.read_text(encoding="utf-8").replace("{root_posix}", tmp_path.as_posix())
+    sql = MART_SQL.read_text(encoding="utf-8")
+    sql = sql.replace(
+        "{support.stati_avanzamento.clean}",
+        (clean / "anac_stati_avanzamento_2026_clean.parquet").as_posix(),
+    )
+    sql = sql.replace(
+        "{support.bandi_gara.clean}",
+        (bandi / "anac_bandi_gara_2026_clean.parquet").as_posix(),
+    )
     righe = con.execute(sql).fetchall()
 
     assert len(righe) == 1
