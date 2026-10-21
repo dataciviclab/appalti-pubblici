@@ -5,7 +5,7 @@ Verifica la struttura del repo, non il motore del toolkit:
   - ogni dataset espone un contratto minimo (dataset.yml, SQL dichiarati)
   - i path dichiarati sono relativi e POSIX
   - non si committano output di run (out/)
-  - presenza dei componenti condivisi (Makefile, requirements.txt, workflows)
+  - presenza dei componenti condivisi (Makefile, manifest dipendenze, workflows)
 
 Markers: contract (contratto pubblico, artifact format).
 """
@@ -22,13 +22,13 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = REPO_ROOT / "out"
 REQUIRED_FILES = [
     REPO_ROOT / "Makefile",
-    REPO_ROOT / "requirements.txt",
     REPO_ROOT / "conftest.py",
     REPO_ROOT / "LICENSE",
     REPO_ROOT / "README.md",
     REPO_ROOT / ".github" / "workflows" / "check.yml",
     REPO_ROOT / ".github" / "workflows" / "pipeline.yml",
 ]
+DEPENDENCY_MANIFESTS = [REPO_ROOT / "pyproject.toml", REPO_ROOT / "requirements.txt"]
 BLOCKED_OUT_EXTENSIONS = {".parquet", ".csv", ".jsonl", ".zip", ".xlsx", ".tsv"}
 
 
@@ -52,6 +52,13 @@ def dataset_configs() -> list[Path]:
 def test_required_files_exist() -> None:
     missing = [str(p.relative_to(REPO_ROOT)) for p in REQUIRED_FILES if not p.exists()]
     assert not missing, f"Missing required template files: {missing}"
+
+
+@pytest.mark.contract
+def test_dependency_manifest_exists() -> None:
+    assert any(p.exists() for p in DEPENDENCY_MANIFESTS), (
+        "Serve almeno un manifest delle dipendenze: pyproject.toml o requirements.txt"
+    )
 
 
 @pytest.mark.contract
