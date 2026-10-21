@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repo": "appalti-pubblici",
   "source_repo": "dataciviclab/appalti-pubblici",
-  "updated_at": "2026-10-02",
+  "updated_at": "2026-10-21",
   "datasets": [
     {
       "slug": "anac_aggiudicatari",
@@ -267,6 +267,103 @@
       "mart_refs": [
         "anac_aggiudicazioni__mart_annuale",
         "anac_aggiudicazioni__mart_dettaglio"
+      ]
+    },
+    {
+      "slug": "anac_avvio_contratto",
+      "name": "Anac Avvio Contratto",
+      "description": "",
+      "source": "",
+      "source_id": "anac",
+      "period": {
+        "start": 2000,
+        "end": 2026
+      },
+      "tags": [
+        "appalti",
+        "anac",
+        "avvio",
+        "contratto",
+        "esecuzione"
+      ],
+      "category": "appalti",
+      "columns": [
+        {
+          "name": "cig",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cig_code"
+        },
+        {
+          "name": "data_stipula_contratto",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_esecutivita_contratto",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_termine_contrattuale",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_verbale_consegna_definitiva",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_inizio_effettiva",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_verbale_prima_consegna",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "consegna_frazionata",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "consegna_sotto_riserva",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "id_aggiudicazione",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "data_appr_prog_ese",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/appalti_pubblici/anac_avvio_contratto/2026/anac_avvio_contratto_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "anac_avvio_contratto__mart_avvio_contratto"
       ]
     },
     {
@@ -564,7 +661,8 @@
           "name": "CF_SA_DELEGANTE",
           "type": "VARCHAR",
           "role": "dimension",
-          "description": ""
+          "description": "",
+          "semantic_type": "fiscal_code"
         },
         {
           "name": "DENOMINAZIONE_SA_DELEGANTE",
@@ -576,7 +674,8 @@
           "name": "CF_SA_DELEGATA",
           "type": "VARCHAR",
           "role": "dimension",
-          "description": ""
+          "description": "",
+          "semantic_type": "fiscal_code"
         },
         {
           "name": "DENOMINAZIONE_SA_DELEGATA",
@@ -894,6 +993,96 @@
           "role": "dimension",
           "description": "",
           "semantic_type": "cup_code"
+        },
+        {
+          "name": "data_stipula_contratto",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_inizio_effettiva",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_termine_contrattuale",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "giorni_aggiudicazione_stipula",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "giorni_stipula_inizio",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "data_effettiva_ultimazione",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "motivo_risoluzione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "motivo_interruzione_anticipata",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "giorni_scostamento_termine",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "n_sospensioni",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "giorni_sospensione",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "n_sospensioni_senza_ripresa",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "n_varianti",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "n_varianti_distinte",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "n_varianti_con_proroga",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
         }
       ],
       "location": {
@@ -907,7 +1096,9 @@
         "anac_cross__mart_lifecycle",
         "anac_cross__mart_imprese",
         "anac_cross__mart_ritardi_per_sa",
-        "anac_cross__mart_competitivita"
+        "anac_cross__mart_competitivita",
+        "anac_cross__mart_esecuzione",
+        "anac_cross__mart_ritardi_contratto"
       ]
     },
     {
@@ -950,6 +1141,92 @@
       "stage": "incubating",
       "mart_refs": [
         "anac_cup__mart_cup"
+      ]
+    },
+    {
+      "slug": "anac_fine_contratto",
+      "name": "Anac Fine Contratto",
+      "description": "",
+      "source": "",
+      "source_id": "anac",
+      "period": {
+        "start": 2000,
+        "end": 2026
+      },
+      "tags": [
+        "appalti",
+        "anac",
+        "fine",
+        "contratto",
+        "esecuzione"
+      ],
+      "category": "appalti",
+      "columns": [
+        {
+          "name": "cig",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cig_code"
+        },
+        {
+          "name": "cod_motivo_risoluzione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "motivo_risoluzione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "cod_motivo_interruzione_anticipata",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "motivo_interruzione_anticipata",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_conclusione_anticipata",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_effettiva_ultimazione",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "id_aggiudicazione",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "giorni_proroga",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/appalti_pubblici/anac_fine_contratto/2026/anac_fine_contratto_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "anac_fine_contratto__mart_fine_contratto",
+        "anac_fine_contratto__mart_motivi_fine"
       ]
     },
     {
@@ -1010,6 +1287,67 @@
       "stage": "incubating",
       "mart_refs": [
         "anac_partecipanti__mart_top_partecipanti"
+      ]
+    },
+    {
+      "slug": "anac_sospensioni",
+      "name": "Anac Sospensioni",
+      "description": "",
+      "source": "",
+      "source_id": "anac",
+      "period": {
+        "start": 2000,
+        "end": 2026
+      },
+      "tags": [
+        "appalti",
+        "anac",
+        "sospensioni",
+        "ritardi",
+        "esecuzione"
+      ],
+      "category": "appalti",
+      "columns": [
+        {
+          "name": "cig",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cig_code"
+        },
+        {
+          "name": "data_sospensione",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_ripresa",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "descrizione_motivo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "id_aggiudicazione",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/appalti_pubblici/anac_sospensioni/2026/anac_sospensioni_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "anac_sospensioni__mart_sospensioni"
       ]
     },
     {
@@ -1229,6 +1567,85 @@
       "mart_refs": [
         "anac_subappalti__mart_top_subappalti"
       ]
+    },
+    {
+      "slug": "anac_varianti",
+      "name": "Anac Varianti",
+      "description": "",
+      "source": "",
+      "source_id": "anac",
+      "period": {
+        "start": 2000,
+        "end": 2026
+      },
+      "tags": [
+        "appalti",
+        "anac",
+        "varianti",
+        "modifiche",
+        "esecuzione"
+      ],
+      "category": "appalti",
+      "columns": [
+        {
+          "name": "id_variante",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "cod_motivo_variante",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "motivo_variante",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_approvazione_variante",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "cig",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cig_code"
+        },
+        {
+          "name": "id_aggiudicazione",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "cig_proroga",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_atto_aggiuntivo",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/appalti_pubblici/anac_varianti/2026/anac_varianti_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "anac_varianti__mart_varianti"
+      ]
     }
   ],
   "marts": [
@@ -1259,6 +1676,16 @@
       "location": {
         "type": "gcs",
         "path": "gs://dataciviclab-mart/appalti_pubblici/anac_aggiudicazioni/2026/mart_dettaglio.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_avvio_contratto__mart_avvio_contratto",
+      "dataset": "anac_avvio_contratto",
+      "table": "mart_avvio_contratto",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_avvio_contratto/2026/mart_avvio_contratto.parquet",
         "multi_file": false
       }
     },
@@ -1343,6 +1770,16 @@
       }
     },
     {
+      "slug": "anac_cross__mart_esecuzione",
+      "dataset": "anac_cross",
+      "table": "mart_esecuzione",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_cross/2026/mart_esecuzione.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "anac_cross__mart_imprese",
       "dataset": "anac_cross",
       "table": "mart_imprese",
@@ -1373,6 +1810,16 @@
       }
     },
     {
+      "slug": "anac_cross__mart_ritardi_contratto",
+      "dataset": "anac_cross",
+      "table": "mart_ritardi_contratto",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_cross/2026/mart_ritardi_contratto.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "anac_cross__mart_ritardi_per_sa",
       "dataset": "anac_cross",
       "table": "mart_ritardi_per_sa",
@@ -1393,12 +1840,42 @@
       }
     },
     {
+      "slug": "anac_fine_contratto__mart_fine_contratto",
+      "dataset": "anac_fine_contratto",
+      "table": "mart_fine_contratto",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_fine_contratto/2026/mart_fine_contratto.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_fine_contratto__mart_motivi_fine",
+      "dataset": "anac_fine_contratto",
+      "table": "mart_motivi_fine",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_fine_contratto/2026/mart_motivi_fine.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "anac_partecipanti__mart_top_partecipanti",
       "dataset": "anac_partecipanti",
       "table": "mart_top_partecipanti",
       "location": {
         "type": "gcs",
         "path": "gs://dataciviclab-mart/appalti_pubblici/anac_partecipanti/2026/mart_top_partecipanti.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_sospensioni__mart_sospensioni",
+      "dataset": "anac_sospensioni",
+      "table": "mart_sospensioni",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_sospensioni/2026/mart_sospensioni.parquet",
         "multi_file": false
       }
     },
@@ -1421,6 +1898,16 @@
         "path": "gs://dataciviclab-mart/appalti_pubblici/anac_subappalti/2026/mart_top_subappalti.parquet",
         "multi_file": false
       }
+    },
+    {
+      "slug": "anac_varianti__mart_varianti",
+      "dataset": "anac_varianti",
+      "table": "mart_varianti",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_varianti/2026/mart_varianti.parquet",
+        "multi_file": false
+      }
     }
   ],
   "signals": [
@@ -1432,26 +1919,26 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261002T123539Z_2d198f5c",
+        "run_id": "20261021T121556Z_00af3093",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
           "raw": 100,
-          "clean": 95,
+          "clean": 100,
           "mart": 100
         },
         "output_rows": {
-          "clean": 10907169,
-          "mart": 6780983
+          "clean": 10967761,
+          "mart": 6800991
         },
         "output_bytes": {
           "raw": 109267407,
-          "clean": 185328698,
-          "mart": 407195962
+          "clean": 206238116,
+          "mart": 416785335
         },
-        "started_at": "2026-10-02T12:35:39.442694+00:00",
-        "finished_at": "2026-10-02T12:36:55.208125+00:00",
-        "duration_seconds": 75.765
+        "started_at": "2026-10-21T12:15:56.895438+00:00",
+        "finished_at": "2026-10-21T12:17:19.809956+00:00",
+        "duration_seconds": 82.915
       }
     },
     {
@@ -1462,7 +1949,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261002T122218Z_4346f10d",
+        "run_id": "20261021T120219Z_9ff5ad2a",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -1478,11 +1965,11 @@
         "output_bytes": {
           "raw": 800016719,
           "clean": 106609215,
-          "mart": 15392514
+          "mart": 15398585
         },
-        "started_at": "2026-10-02T12:22:18.863935+00:00",
-        "finished_at": "2026-10-02T12:23:16.087537+00:00",
-        "duration_seconds": 57.224
+        "started_at": "2026-10-21T12:02:19.126190+00:00",
+        "finished_at": "2026-10-21T12:03:15.750596+00:00",
+        "duration_seconds": 56.624
       }
     },
     {
@@ -1493,7 +1980,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261002T122317Z_a4eda0b3",
+        "run_id": "20261021T120316Z_76d0a83a",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -1509,11 +1996,42 @@
         "output_bytes": {
           "raw": 758859815,
           "clean": 109267407,
-          "mart": 96865209
+          "mart": 96865309
         },
-        "started_at": "2026-10-02T12:23:17.445902+00:00",
-        "finished_at": "2026-10-02T12:24:17.256783+00:00",
-        "duration_seconds": 59.811
+        "started_at": "2026-10-21T12:03:16.823342+00:00",
+        "finished_at": "2026-10-21T12:04:22.843773+00:00",
+        "duration_seconds": 66.02
+      }
+    },
+    {
+      "id": "anac_avvio_contratto",
+      "source_id": "anac",
+      "status": "ok",
+      "label": "anac_avvio_contratto",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20261021T120424Z_c0d58553",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 1925829,
+          "clean": 1925829,
+          "mart": 27
+        },
+        "output_bytes": {
+          "raw": 148803587,
+          "clean": 33387642,
+          "mart": 2504
+        },
+        "started_at": "2026-10-21T12:04:24.134121+00:00",
+        "finished_at": "2026-10-21T12:04:42.937127+00:00",
+        "duration_seconds": 18.803
       }
     },
     {
@@ -1524,7 +2042,7 @@
       "detail": "anni 2016-2025 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261002T123132Z_617bbc29",
+        "run_id": "20261021T121126Z_fc0a682b",
         "year": 2025,
         "status": "SUCCESS",
         "quality_score": {
@@ -1540,11 +2058,11 @@
         "output_bytes": {
           "raw": 1230464640,
           "clean": 190730892,
-          "mart": 474927
+          "mart": 474881
         },
-        "started_at": "2026-10-02T12:31:32.604157+00:00",
-        "finished_at": "2026-10-02T12:33:18.850490+00:00",
-        "duration_seconds": 106.246
+        "started_at": "2026-10-21T12:11:26.610498+00:00",
+        "finished_at": "2026-10-21T12:13:16.573063+00:00",
+        "duration_seconds": 109.963
       }
     },
     {
@@ -1555,7 +2073,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261002T123320Z_8deddda7",
+        "run_id": "20261021T121317Z_f92bd9bf",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -1573,9 +2091,9 @@
           "clean": 8790939,
           "mart": 1552
         },
-        "started_at": "2026-10-02T12:33:20.799450+00:00",
-        "finished_at": "2026-10-02T12:33:27.681394+00:00",
-        "duration_seconds": 6.882
+        "started_at": "2026-10-21T12:13:17.965029+00:00",
+        "finished_at": "2026-10-21T12:13:24.476505+00:00",
+        "duration_seconds": 6.511
       }
     },
     {
@@ -1586,7 +2104,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261002T123328Z_b7100866",
+        "run_id": "20261021T121325Z_5369ef04",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -1595,18 +2113,49 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 7167369,
-          "clean": 7167369,
-          "mart": 1549627
+          "raw": 7228216,
+          "clean": 7228216,
+          "mart": 1569918
         },
         "output_bytes": {
-          "raw": 196624143,
-          "clean": 75613882,
-          "mart": 9007214
+          "raw": 198701008,
+          "clean": 76432020,
+          "mart": 9128948
         },
-        "started_at": "2026-10-02T12:33:28.751261+00:00",
-        "finished_at": "2026-10-02T12:33:59.753440+00:00",
-        "duration_seconds": 31.002
+        "started_at": "2026-10-21T12:13:25.549433+00:00",
+        "finished_at": "2026-10-21T12:13:53.035568+00:00",
+        "duration_seconds": 27.486
+      }
+    },
+    {
+      "id": "anac_fine_contratto",
+      "source_id": "anac",
+      "status": "ok",
+      "label": "anac_fine_contratto",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20261021T121354Z_738578ca",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 1070254,
+          "clean": 1070254,
+          "mart": 46
+        },
+        "output_bytes": {
+          "raw": 48005446,
+          "clean": 12603921,
+          "mart": 3380
+        },
+        "started_at": "2026-10-21T12:13:54.129480+00:00",
+        "finished_at": "2026-10-21T12:14:03.080669+00:00",
+        "duration_seconds": 8.951
       }
     },
     {
@@ -1617,7 +2166,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261002T123400Z_8334a58f",
+        "run_id": "20261021T121404Z_b3655daa",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -1633,11 +2182,42 @@
         "output_bytes": {
           "raw": 1015712571,
           "clean": 122769801,
-          "mart": 19706336
+          "mart": 19708913
         },
-        "started_at": "2026-10-02T12:34:00.768899+00:00",
-        "finished_at": "2026-10-02T12:35:11.655234+00:00",
-        "duration_seconds": 70.886
+        "started_at": "2026-10-21T12:14:04.393713+00:00",
+        "finished_at": "2026-10-21T12:15:12.652346+00:00",
+        "duration_seconds": 68.259
+      }
+    },
+    {
+      "id": "anac_sospensioni",
+      "source_id": "anac",
+      "status": "ok",
+      "label": "anac_sospensioni",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20261021T121514Z_ee88df95",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 227747,
+          "clean": 227747,
+          "mart": 145
+        },
+        "output_bytes": {
+          "raw": 18686262,
+          "clean": 2976769,
+          "mart": 4370
+        },
+        "started_at": "2026-10-21T12:15:14.010318+00:00",
+        "finished_at": "2026-10-21T12:15:18.419157+00:00",
+        "duration_seconds": 4.409
       }
     },
     {
@@ -1648,7 +2228,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261002T123513Z_f7f0d2c0",
+        "run_id": "20261021T121519Z_02df26d6",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -1666,9 +2246,9 @@
           "clean": 22916030,
           "mart": 2104
         },
-        "started_at": "2026-10-02T12:35:13.302608+00:00",
-        "finished_at": "2026-10-02T12:35:25.599970+00:00",
-        "duration_seconds": 12.297
+        "started_at": "2026-10-21T12:15:19.652850+00:00",
+        "finished_at": "2026-10-21T12:15:33.853367+00:00",
+        "duration_seconds": 14.201
       }
     },
     {
@@ -1679,7 +2259,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261002T123526Z_a7708cc2",
+        "run_id": "20261021T121535Z_4b6f4a69",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -1695,11 +2275,42 @@
         "output_bytes": {
           "raw": 122508885,
           "clean": 16901551,
-          "mart": 3913712
+          "mart": 3907364
         },
-        "started_at": "2026-10-02T12:35:26.640487+00:00",
-        "finished_at": "2026-10-02T12:35:39.125722+00:00",
-        "duration_seconds": 12.485
+        "started_at": "2026-10-21T12:15:35.055832+00:00",
+        "finished_at": "2026-10-21T12:15:47.791403+00:00",
+        "duration_seconds": 12.736
+      }
+    },
+    {
+      "id": "anac_varianti",
+      "source_id": "anac",
+      "status": "ok",
+      "label": "anac_varianti",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20261021T121549Z_589bb4af",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 321294,
+          "clean": 321294,
+          "mart": 102873
+        },
+        "output_bytes": {
+          "raw": 40592281,
+          "clean": 9450952,
+          "mart": 2864652
+        },
+        "started_at": "2026-10-21T12:15:49.181699+00:00",
+        "finished_at": "2026-10-21T12:15:56.350317+00:00",
+        "duration_seconds": 7.169
       }
     }
   ],
@@ -1759,6 +2370,18 @@
             "semantic_type": "fiscal_code"
           },
           {
+            "slug": "anac_bandi_gara",
+            "name": "Anac Bandi Gara",
+            "column": "CF_SA_DELEGANTE",
+            "semantic_type": "fiscal_code"
+          },
+          {
+            "slug": "anac_bandi_gara",
+            "name": "Anac Bandi Gara",
+            "column": "CF_SA_DELEGATA",
+            "semantic_type": "fiscal_code"
+          },
+          {
             "slug": "anac_partecipanti",
             "name": "Anac Partecipanti",
             "column": "codice_fiscale",
@@ -1778,7 +2401,7 @@
           }
         ],
         "types": {
-          "fiscal_code": 5
+          "fiscal_code": 7
         }
       },
       "Gara": {
@@ -1801,6 +2424,12 @@
             "slug": "anac_aggiudicazioni",
             "name": "Anac Aggiudicazioni",
             "column": "CIG_PROG_ESTERNA",
+            "semantic_type": "cig_code"
+          },
+          {
+            "slug": "anac_avvio_contratto",
+            "name": "Anac Avvio Contratto",
+            "column": "cig",
             "semantic_type": "cig_code"
           },
           {
@@ -1840,8 +2469,20 @@
             "semantic_type": "cig_code"
           },
           {
+            "slug": "anac_fine_contratto",
+            "name": "Anac Fine Contratto",
+            "column": "cig",
+            "semantic_type": "cig_code"
+          },
+          {
             "slug": "anac_partecipanti",
             "name": "Anac Partecipanti",
+            "column": "cig",
+            "semantic_type": "cig_code"
+          },
+          {
+            "slug": "anac_sospensioni",
+            "name": "Anac Sospensioni",
             "column": "cig",
             "semantic_type": "cig_code"
           },
@@ -1856,10 +2497,16 @@
             "name": "Anac Subappalti",
             "column": "cig",
             "semantic_type": "cig_code"
+          },
+          {
+            "slug": "anac_varianti",
+            "name": "Anac Varianti",
+            "column": "cig",
+            "semantic_type": "cig_code"
           }
         ],
         "types": {
-          "cig_code": 12
+          "cig_code": 16
         }
       },
       "Nazione": {
@@ -1947,6 +2594,19 @@
         "from": {
           "entity": "Gara",
           "dataset": "anac_aggiudicazioni",
+          "via": "cig_code"
+        },
+        "to": {
+          "entity": "Comune",
+          "bridge": "anac_bandi_gara",
+          "on": "cig",
+          "semantic_type": "municipality_code"
+        }
+      },
+      {
+        "from": {
+          "entity": "Gara",
+          "dataset": "anac_avvio_contratto",
           "via": "cig_code"
         },
         "to": {
@@ -2050,7 +2710,33 @@
       {
         "from": {
           "entity": "Gara",
+          "dataset": "anac_fine_contratto",
+          "via": "cig_code"
+        },
+        "to": {
+          "entity": "Comune",
+          "bridge": "anac_bandi_gara",
+          "on": "cig",
+          "semantic_type": "municipality_code"
+        }
+      },
+      {
+        "from": {
+          "entity": "Gara",
           "dataset": "anac_partecipanti",
+          "via": "cig_code"
+        },
+        "to": {
+          "entity": "Comune",
+          "bridge": "anac_bandi_gara",
+          "on": "cig",
+          "semantic_type": "municipality_code"
+        }
+      },
+      {
+        "from": {
+          "entity": "Gara",
+          "dataset": "anac_sospensioni",
           "via": "cig_code"
         },
         "to": {
@@ -2077,6 +2763,19 @@
         "from": {
           "entity": "Gara",
           "dataset": "anac_subappalti",
+          "via": "cig_code"
+        },
+        "to": {
+          "entity": "Comune",
+          "bridge": "anac_bandi_gara",
+          "on": "cig",
+          "semantic_type": "municipality_code"
+        }
+      },
+      {
+        "from": {
+          "entity": "Gara",
+          "dataset": "anac_varianti",
           "via": "cig_code"
         },
         "to": {
