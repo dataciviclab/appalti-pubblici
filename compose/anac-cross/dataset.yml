@@ -70,6 +70,9 @@ support:
     name: bandi_gara
     config: ../../datasets/anac-bandi-gara/dataset.yml
     years: [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+  # aggiudicazioni è anche il raw source primario del compose: qui serve
+  # come support per i mart che leggono i campi originali (importo,
+  # offerte, ribassi).
   - type: dataset
     name: aggiudicazioni
     config: ../../datasets/anac-aggiudicazioni/dataset.yml

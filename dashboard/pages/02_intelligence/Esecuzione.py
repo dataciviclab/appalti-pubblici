@@ -190,7 +190,11 @@ if not ritardi_sa.empty:
 st.subheader("Ritardi contrattuali (date reali, non SAL)")
 st.caption(
     "Ritardo = data effettiva di ultimazione - termine contrattuale. "
-    "Copre i contratti con date di avvio/fine valorizzate (bandi 2016-2025)."
+    "Copertura: ~14,5% dei CIG e ~5,9% degli importi (bandi 2016-2025), "
+    "solo contratti con date di esecuzione utilizzabili. I totali sono sulle "
+    "celle anno x regione x settore con almeno 3 contratti, quindi non sono "
+    "il totale del mercato. 2024-2025 sono censurati: il calo riflette i "
+    "contratti non ancora conclusi, non un miglioramento."
 )
 
 esec = load_mart_esecuzione()
@@ -213,7 +217,7 @@ if not esec.empty:
     gg_agg_stip = _weighted_avg(esec, "giorni_medi_aggiudicazione_stipula", "n_con_stipula")
 
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Contratti con dati esecuzione", fmt_num(n_contratti))
+    col1.metric("Contratti nelle celle >=3", fmt_num(n_contratti))
     col2.metric(
         "In ritardo sul termine",
         fmt_num(n_ritardo),
@@ -232,11 +236,14 @@ if not esec.empty:
 
     trend_esec = (
         esec.groupby("anno")
-        .agg(n_contratti=("n_contratti", "sum"), n_in_ritardo=("n_in_ritardo", "sum"))
+        .agg(
+            n_con_ultimazione=("n_con_ultimazione", "sum"),
+            n_in_ritardo=("n_in_ritardo", "sum"),
+        )
         .reset_index()
     )
     trend_esec["pct_ritardo"] = (
-        trend_esec["n_in_ritardo"] / trend_esec["n_contratti"] * 100
+        trend_esec["n_in_ritardo"] / trend_esec["n_con_ultimazione"] * 100
     ).round(1)
 
     fig_ec = px.line(

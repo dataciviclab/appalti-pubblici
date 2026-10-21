@@ -164,6 +164,7 @@ def test_no_run_outputs_committed() -> None:
         cwd=REPO_ROOT,
         capture_output=True,
         text=True,
+        check=False,
     )
     if proc.returncode != 0:
         pytest.skip("git non disponibile: skip controllo output tracciati")

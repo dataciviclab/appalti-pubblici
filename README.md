@@ -19,6 +19,12 @@ li trasforma in mart analitici e li rende interrogabili via dashboard Streamlit.
 5. **Quali imprese dominano il mercato?** → concentrazione, ruolo (aggiudicatario/partecipante/subappaltante)
 6. **Come si organizzano i raggruppamenti?** → RTI (mandataria + mandanti), catene di subappalto
 
+> **Nota esecuzione**: i ritardi contrattuali sono calcolati sui contratti con
+> date di avvio/fine utilizzabili (~14,5% dei CIG, ~5,9% degli importi). I mart
+> filtrano le celle con almeno 3 contratti; il 2024-2025 è censurato (contratti
+> non ancora conclusi), quindi il trend recente non è confrontabile con il
+> 2016-2022.
+
 ## Dataset
 
 | Dataset | Cosa contiene | Anni | Mart |

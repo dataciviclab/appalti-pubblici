@@ -38,6 +38,12 @@ gara all'avvio reale dei lavori/servizi.
 | `id_aggiudicazione` | BIGINT | FK aggiudicazioni |
 | `data_appr_prog_ese` | DATE | Approvazione progetto esecutivo |
 
+## Mart
+
+`mart_avvio_contratto`: per anno di stipula, numero contratti, giorni medi
+tra stipula e inizio effettivo, durata contrattuale e quota di consegna
+sotto riserva/frazionata.
+
 ## Join
 
 - `cig` → `anac_bandi_gara`, `anac_aggiudicazioni`
@@ -47,6 +53,7 @@ gara all'avvio reale dei lavori/servizi.
 
 - `data_esecutivita_contratto` è valorizzata solo nel ~21% dei casi.
 - Date sentinella `0001-01-01` e date malformate (es. `2710-08-24`) normalizzate
-  a NULL: restano solo valori tra 2000 e oggi.
+  a NULL: stipula, esecutività e consegne restano tra 2000 e oggi;
+  `data_termine_contrattuale` ammette fino al 2060 (contratti pluriennali).
 - Un CIG può avere più contratti (fino a 6 righe): nel compose si usa la
   stipula più recente.
