@@ -10,7 +10,6 @@ WITH sal_ritardo AS (
         importo_sal
     FROM read_parquet('{root_posix}/data/clean/anac_stati_avanzamento/*/*_clean.parquet')
     WHERE flag_ritardo = 'IN RITARDO'
-      AND n_giorni_scostamento IS NOT NULL
 ),
 bandi AS (
     SELECT
