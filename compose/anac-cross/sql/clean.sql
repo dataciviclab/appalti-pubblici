@@ -56,7 +56,7 @@ sal AS (
         cig,
         COUNT(*) AS n_sal,
         SUM(importo_sal) AS importo_totale_sal,
-        SUM(CASE WHEN flag_ritardo = 'S' THEN 1 ELSE 0 END) AS sal_in_ritardo
+        SUM(CASE WHEN flag_ritardo = 'IN RITARDO' THEN 1 ELSE 0 END) AS sal_in_ritardo
     FROM read_parquet('{support.stati_avanzamento.clean}')
     WHERE data_emissione_sal IS NOT NULL
     GROUP BY cig
