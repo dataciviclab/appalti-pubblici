@@ -21,7 +21,8 @@ CKAN dataset `avvio-contratto` su dati.anticorruzione.it:
 - `consegna_frazionata` / `consegna_sotto_riserva`: `0`/`1`, decodificati a BOOLEAN.
 - `id_aggiudicazione` sempre presente e positivo.
 - Date `0001-01-01` e valori malformati (es. `2710-08-24`, `0024-08-07`)
-  → NULL in clean; resta solo l'intervallo 2000-oggi.
+  → NULL in clean; stipula/esecutività/consegne restano 2000-oggi,
+  `data_termine_contrattuale` ammette fino al 2060.
 - 1.925.829 righe ma 1.922.826 CIG: un CIG può avere fino a 6 contratti.
 
 ## Uso
