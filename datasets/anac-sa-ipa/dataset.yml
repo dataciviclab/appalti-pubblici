@@ -1,0 +1,108 @@
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "anac_sa_ipa"
+  source_id: "agid"
+  tags: [appalti, anac, ipa, stazione-appaltante, agid]
+  category: appalti
+  years: [2026]
+  time_coverage:
+    start_year: 2016
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "ipa_enti"
+      type: "http_file"
+      args:
+        url: "https://indicepa.gov.it/ipa-dati/datastore/dump/d09adf99-dc10-4349-8c53-27b1e5aa97b6?bom=True"
+        filename: "ipa_enti.csv"
+      primary: true
+
+support:
+  # Il CF della stazione appaltante e' in anac_bandi_gara (non nelle aggiudicazioni).
+  - name: bandi_gara
+    config: "../anac-bandi-gara/dataset.yml"
+    years: [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+
+clean:
+  sql: "sql/clean.sql"
+  read:
+    source: config_only
+    mode: all
+    header: true
+    delim: ","
+    encoding: "utf-8"
+    quote: '"'
+    escape: '"'
+    null_padding: true
+    strict_mode: false
+    ignore_errors: true
+    trim_whitespace: true
+    sample_size: -1
+    # Il dump IPA e' posizionale: "columns" deve elencare tutte le 35 colonne
+    # nell'ordine della fonte. Tutte VARCHAR per non perdere gli zeri iniziali
+    # (es. Codice_ISTAT 058091) e per non far fallire il parse su righe irregolari.
+    columns:
+      _id: "VARCHAR"
+      Codice_IPA: "VARCHAR"
+      Denominazione_ente: "VARCHAR"
+      Codice_fiscale_ente: "VARCHAR"
+      Tipologia: "VARCHAR"
+      Codice_Categoria: "VARCHAR"
+      Codice_natura: "VARCHAR"
+      Codice_ateco: "VARCHAR"
+      Ente_in_liquidazione: "VARCHAR"
+      Codice_MIUR: "VARCHAR"
+      Codice_ISTAT: "VARCHAR"
+      Acronimo: "VARCHAR"
+      Nome_responsabile: "VARCHAR"
+      Cognome_responsabile: "VARCHAR"
+      Titolo_responsabile: "VARCHAR"
+      Codice_comune_ISTAT: "VARCHAR"
+      Codice_catastale_comune: "VARCHAR"
+      CAP: "VARCHAR"
+      Indirizzo: "VARCHAR"
+      Mail1: "VARCHAR"
+      Tipo_Mail1: "VARCHAR"
+      Mail2: "VARCHAR"
+      Tipo_Mail2: "VARCHAR"
+      Mail3: "VARCHAR"
+      Tipo_Mail3: "VARCHAR"
+      Mail4: "VARCHAR"
+      Tipo_Mail4: "VARCHAR"
+      Mail5: "VARCHAR"
+      Tipo_Mail5: "VARCHAR"
+      Sito_istituzionale: "VARCHAR"
+      Url_facebook: "VARCHAR"
+      Url_linkedin: "VARCHAR"
+      Url_twitter: "VARCHAR"
+      Url_youtube: "VARCHAR"
+      Data_aggiornamento: "VARCHAR"
+  required_columns:
+    - "cig"
+    - "cf_sa"
+    - "codice_ipa_sa"
+  validate:
+    not_null:
+      - "cig"
+    min_rows: 1
+
+mart:
+  tables:
+    - name: "mart_copertura_sa"
+      sql: "sql/mart_copertura_sa.sql"
+  required_tables:
+    - "mart_copertura_sa"
+  validate:
+    table_rules:
+      mart_copertura_sa:
+        min_rows: 10
+
+validation:
+  fail_on_error: true
+
+output:
+  artifacts: "standard"
