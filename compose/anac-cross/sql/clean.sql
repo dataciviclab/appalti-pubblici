@@ -55,26 +55,46 @@ sal AS (
     SELECT
         cig,
         COUNT(*) AS n_sal,
-        SUM(importo_sal) AS importo_totale_sal,
-        SUM(CASE WHEN flag_ritardo = 'IN RITARDO' THEN 1 ELSE 0 END) AS sal_in_ritardo
+        SUM(importo_quota) AS importo_totale_sal,
+        SUM(CASE WHEN flag_ritardo = 'IN RITARDO' THEN 1 ELSE 0 END) AS sal_in_ritardo,
+        COUNT(DISTINCT COALESCE(CAST(id_aggiudicazione AS VARCHAR), 'cig:' || cig)) AS n_serie_sal,
+        COUNT(DISTINCT CASE
+            WHEN tipo_serie = 'ambigua'
+            THEN COALESCE(CAST(id_aggiudicazione AS VARCHAR), 'cig:' || cig)
+        END) AS n_serie_ambigue
     FROM read_parquet('{support.stati_avanzamento.clean}')
     WHERE data_emissione_sal IS NOT NULL
     GROUP BY cig
 ),
 
 collaudo AS (
+    -- Un CIG puo' avere piu' collaudi: tieni il piu' recente (grain 1 riga per CIG).
     SELECT
         cig,
         esito_collaudo,
         data_cert_collaudo,
         riserve_avanzate,
         importo_contenz_risolto
-    FROM read_parquet('{support.collaudo.clean}')
+    FROM (
+        SELECT
+            *,
+            ROW_NUMBER() OVER (
+                PARTITION BY cig
+                ORDER BY data_cert_collaudo DESC NULLS LAST, esito_collaudo NULLS LAST
+            ) AS rn
+        FROM read_parquet('{support.collaudo.clean}')
+    )
+    WHERE rn = 1
 ),
 
 cup AS (
-    SELECT cig, cup
+    -- Un CIG puo' avere piu' CUP: aggrega per evitare la moltiplicazione delle righe.
+    SELECT
+        cig,
+        STRING_AGG(DISTINCT cup, ' | ' ORDER BY cup) AS cup
     FROM read_parquet('{support.cup.clean}')
+    WHERE cup IS NOT NULL AND TRIM(cup) != ''
+    GROUP BY cig
 ),
 
 avvio AS (
@@ -184,6 +204,8 @@ SELECT
     COALESCE(sa.n_sal, 0) AS n_sal,
     COALESCE(sa.importo_totale_sal, 0) AS importo_totale_sal,
     COALESCE(sa.sal_in_ritardo, 0) AS sal_in_ritardo,
+    COALESCE(sa.n_serie_sal, 0) AS n_serie_sal,
+    COALESCE(sa.n_serie_ambigue, 0) AS n_serie_ambigue,
     -- collaudo
     c.esito_collaudo,
     c.data_cert_collaudo,

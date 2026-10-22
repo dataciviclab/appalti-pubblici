@@ -46,12 +46,15 @@ def _stati_avanzamento(con: duckdb.DuckDBPyConnection, percorso: Path) -> Path:
         percorso,
         """
         SELECT * FROM (VALUES
-            ('CIG1', 1, 1, DATE '2025-01-10', 100.0, 'IN LINEA'),
-            ('CIG1', 1, 2, DATE '2025-02-10', 250.0, 'IN RITARDO'),
-            ('CIG2', 2, 1, DATE '2025-03-10',  50.0, 'IN RITARDO'),
-            ('CIG3', 3, 1, DATE '2025-03-15',  10.0, 'S'),
-            ('CIG4', 4, 1, CAST(NULL AS DATE), 75.0, 'IN RITARDO')
-        ) AS t(cig, id_aggiudicazione, progressivo_sal, data_emissione_sal, importo_sal, flag_ritardo)
+            ('CIG1', 1, 1, DATE '2025-01-10', 100.0, 'IN LINEA',   'cumulativa',   100.0),
+            ('CIG1', 1, 2, DATE '2025-02-10', 250.0, 'IN RITARDO', 'cumulativa',   150.0),
+            ('CIG2', 2, 1, DATE '2025-03-10',  50.0, 'IN RITARDO', 'singola',       50.0),
+            ('CIG3', 3, 1, DATE '2025-03-15',  10.0, 'S',          'singola',       10.0),
+            ('CIG4', 4, 1, CAST(NULL AS DATE), 75.0, 'IN RITARDO', 'singola',       75.0),
+            ('CIG5', 5, 1, DATE '2025-04-10',  60.0, 'IN LINEA',   'incrementale',  60.0),
+            ('CIG5', 5, 2, DATE '2025-05-10',  90.0, 'IN LINEA',   'incrementale',  90.0)
+        ) AS t(cig, id_aggiudicazione, progressivo_sal, data_emissione_sal, importo_sal, flag_ritardo,
+               tipo_serie, importo_quota)
         """,
     )
 
@@ -62,10 +65,15 @@ def _supporti(con: duckdb.DuckDBPyConnection, tmp_path: Path) -> dict[str, Path]
         "partecipanti": "SELECT 'CIG1' AS cig, '111' AS codice_fiscale",
         "subappalti": "SELECT 'CIG1' AS cig, '222' AS codice_fiscale",
         "collaudo": (
-            "SELECT 'CIG1' AS cig, 'positivo' AS esito_collaudo, CAST(NULL AS DATE) AS data_cert_collaudo, "
-            "CAST(NULL AS DOUBLE) AS riserve_avanzate, CAST(NULL AS DOUBLE) AS importo_contenz_risolto"
+            "SELECT * FROM (VALUES "
+            "('CIG1', 'positivo', DATE '2025-06-01', NULL, 10.0), "
+            "('CIG1', 'negativo', DATE '2025-07-01', 5.0, NULL) "
+            ") AS t(cig, esito_collaudo, data_cert_collaudo, riserve_avanzate, importo_contenz_risolto)"
         ),
-        "cup": "SELECT 'CIG1' AS cig, 'CUP1' AS cup",
+        "cup": (
+            "SELECT * FROM (VALUES ('CIG1', 'CUP1'), ('CIG1', 'CUP2'), ('CIG2', 'CUP3')) "
+            "AS t(cig, cup)"
+        ),
         "avvio_contratto": (
             "SELECT CAST(NULL AS VARCHAR) AS cig, CAST(NULL AS DATE) AS data_stipula_contratto, "
             "CAST(NULL AS DATE) AS data_inizio_effettiva, "
@@ -111,12 +119,26 @@ def _per_cig(con: duckdb.DuckDBPyConnection, colonne: str) -> dict[str, tuple]:
 @pytest.mark.regression
 def test_sal_in_ritardo_usa_il_flag_della_fonte(tmp_path: Path) -> None:
     con = _esegui_clean(tmp_path)
-    esiti = _per_cig(con, "n_sal, sal_in_ritardo, importo_totale_sal")
+    esiti = _per_cig(con, "n_sal, sal_in_ritardo, importo_totale_sal, n_serie_sal, n_serie_ambigue")
 
-    assert esiti["CIG1"] == (2, 1, 350.0)
-    assert esiti["CIG2"] == (1, 1, 50.0)
-    assert esiti["CIG3"] == (1, 0, 10.0), "il flag legacy 'S' non deve essere conteggiato"
-    assert esiti["CIG4"] == (0, 0, 0.0), "SAL senza data di emissione escluso dal conteggio"
+    assert esiti["CIG1"] == (2, 1, 250.0, 1, 0), "serie cumulativa: totale = MAX, non SUM"
+    assert esiti["CIG2"] == (1, 1, 50.0, 1, 0)
+    assert esiti["CIG3"] == (1, 0, 10.0, 1, 0), "il flag legacy 'S' non deve essere conteggiato"
+    assert esiti["CIG4"] == (0, 0, 0.0, 0, 0), "SAL senza data di emissione escluso dal conteggio"
+    assert esiti["CIG5"] == (2, 0, 150.0, 1, 0), "serie incrementale: totale = SUM"
+
+
+@pytest.mark.regression
+def test_grain_unico_per_cig_con_support_multipli(tmp_path: Path) -> None:
+    con = _esegui_clean(tmp_path)
+
+    cig_totali = con.execute("SELECT COUNT(DISTINCT cig) FROM esito").fetchone()[0]
+    righe = con.execute("SELECT COUNT(*) FROM esito").fetchone()[0]
+    assert righe == cig_totali, "CUP e collaudi multipli non devono moltiplicare le righe"
+
+    esiti = _per_cig(con, "n_sal, importo_totale_sal, cup, esito_collaudo")
+    assert esiti["CIG1"] == (2, 250.0, "CUP1 | CUP2", "negativo")
+    assert esiti["CIG2"] == (1, 50.0, "CUP3", None)
 
 
 @pytest.mark.regression
@@ -132,11 +154,11 @@ def test_mart_ritardi_conta_anche_sal_senza_giorni(tmp_path: Path) -> None:
         clean / "anac_stati_avanzamento_2026_clean.parquet",
         """
         SELECT * FROM (VALUES
-            ('CIG1', 1, 1, DATE '2025-01-10', 100.0, 'IN RITARDO', 10),
-            ('CIG1', 1, 2, DATE '2025-02-10', 250.0, 'IN RITARDO', CAST(NULL AS INTEGER)),
-            ('CIG2', 2, 1, DATE '2025-03-10',  50.0, 'IN RITARDO', 20)
+            ('CIG1', 1, 1, DATE '2025-01-10', 100.0, 'IN RITARDO', 10, 'cumulativa', 100.0),
+            ('CIG1', 1, 2, DATE '2025-02-10', 250.0, 'IN RITARDO', CAST(NULL AS INTEGER), 'cumulativa', 150.0),
+            ('CIG2', 2, 1, DATE '2025-03-10',  50.0, 'IN RITARDO', 20, 'singola', 50.0)
         ) AS t(cig, id_aggiudicazione, progressivo_sal, data_emissione_sal, importo_sal,
-               flag_ritardo, n_giorni_scostamento)
+               flag_ritardo, n_giorni_scostamento, tipo_serie, importo_quota)
         """,
     )
     _scrivi_parquet(
@@ -169,4 +191,4 @@ def test_mart_ritardi_conta_anche_sal_senza_giorni(tmp_path: Path) -> None:
     assert n_cig == 2
     assert max_gg == 20.0
     assert media_gg == 15.0, "la media ignora i NULL"
-    assert importo == 400.0
+    assert importo == 300.0, "le quote evitano di sommare due volte la serie cumulativa"

@@ -1,13 +1,14 @@
--- mart_ritardi_per_sa.sql — SA × settore: ritardi e importi
+-- mart_ritardi_per_sa.sql - SA / settore: ritardi e importi
 -- Cross-dataset: legge SAL clean + bandi clean via read_parquet diretto.
 -- Base per l'analisi "dove ci sono problemi" nella dashboard intelligence.
+-- importo_quota (da clean.sql) evita di sommare piu' volte le serie cumulative (#15).
 
 WITH sal_ritardo AS (
     SELECT
         cig,
         flag_ritardo,
         n_giorni_scostamento,
-        importo_sal
+        importo_quota
     FROM read_parquet('{support.stati_avanzamento.clean}')
     WHERE flag_ritardo = 'IN RITARDO'
 ),
@@ -30,7 +31,7 @@ SELECT
     COUNT(DISTINCT r.cig) AS n_cig_ritardo,
     ROUND(MAX(r.n_giorni_scostamento), 0) AS max_gg_ritardo,
     ROUND(AVG(r.n_giorni_scostamento), 0) AS media_gg_ritardo,
-    ROUND(SUM(r.importo_sal), 0) AS importo_ritardo_totale
+    ROUND(SUM(r.importo_quota), 0) AS importo_ritardo_totale
 FROM sal_ritardo r
 LEFT JOIN bandi b ON r.cig = b.cig
 WHERE b.sa IS NOT NULL AND b.sa != ''
