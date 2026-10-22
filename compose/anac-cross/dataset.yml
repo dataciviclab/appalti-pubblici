@@ -70,6 +70,10 @@ support:
     name: bandi_gara
     config: ../../datasets/anac-bandi-gara/dataset.yml
     years: [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+  - type: dataset
+    name: sa_ipa
+    config: ../../datasets/anac-sa-ipa/dataset.yml
+    years: [2026]
   # aggiudicazioni è anche il raw source primario del compose: qui serve
   # come support per i mart che leggono i campi originali (importo,
   # offerte, ribassi).
@@ -100,6 +104,10 @@ clean:
     - "giorni_scostamento_termine"
     - "n_sospensioni"
     - "n_varianti"
+    - "codice_ipa_sa"
+    - "denominazione_sa"
+    - "tipologia_sa"
+    - "codice_istat_sa"
   validate:
     not_null:
       - "cig"

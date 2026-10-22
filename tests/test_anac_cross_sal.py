@@ -74,6 +74,11 @@ def _supporti(con: duckdb.DuckDBPyConnection, tmp_path: Path) -> dict[str, Path]
             "SELECT * FROM (VALUES ('CIG1', 'CUP1'), ('CIG1', 'CUP2'), ('CIG2', 'CUP3')) "
             "AS t(cig, cup)"
         ),
+        "sa_ipa": (
+            "SELECT * FROM (VALUES "
+            "('CIG1', 'CF1', 'IPA001', 'Comune di X', 'Comuni', '058091') "
+            ") AS t(cig, cf_sa, codice_ipa_sa, denominazione_sa, tipologia_sa, codice_istat_sa)"
+        ),
         "avvio_contratto": (
             "SELECT CAST(NULL AS VARCHAR) AS cig, CAST(NULL AS DATE) AS data_stipula_contratto, "
             "CAST(NULL AS DATE) AS data_inizio_effettiva, "
@@ -136,9 +141,9 @@ def test_grain_unico_per_cig_con_support_multipli(tmp_path: Path) -> None:
     righe = con.execute("SELECT COUNT(*) FROM esito").fetchone()[0]
     assert righe == cig_totali, "CUP e collaudi multipli non devono moltiplicare le righe"
 
-    esiti = _per_cig(con, "n_sal, importo_totale_sal, cup, esito_collaudo")
-    assert esiti["CIG1"] == (2, 250.0, "CUP1 | CUP2", "negativo")
-    assert esiti["CIG2"] == (1, 50.0, "CUP3", None)
+    esiti = _per_cig(con, "n_sal, importo_totale_sal, cup, esito_collaudo, codice_ipa_sa, denominazione_sa")
+    assert esiti["CIG1"] == (2, 250.0, "CUP1 | CUP2", "negativo", "IPA001", "Comune di X")
+    assert esiti["CIG2"] == (1, 50.0, "CUP3", None, None, None)
 
 
 @pytest.mark.regression

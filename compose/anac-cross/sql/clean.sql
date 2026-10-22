@@ -97,6 +97,17 @@ cup AS (
     GROUP BY cig
 ),
 
+sa_ipa AS (
+    -- 1 riga per CIG (bridge gia' deduplicato): identita' IPA della stazione appaltante.
+    SELECT
+        cig,
+        codice_ipa_sa,
+        denominazione_sa,
+        tipologia_sa,
+        codice_istat_sa
+    FROM read_parquet('{support.sa_ipa.clean}')
+),
+
 avvio AS (
     -- Un CIG può avere più contratti: prendi la stipula più recente.
     SELECT
@@ -245,7 +256,12 @@ SELECT
     -- varianti
     COALESCE(va.n_varianti, 0) AS n_varianti,
     COALESCE(va.n_varianti_distinte, 0) AS n_varianti_distinte,
-    COALESCE(va.n_varianti_con_proroga, 0) AS n_varianti_con_proroga
+    COALESCE(va.n_varianti_con_proroga, 0) AS n_varianti_con_proroga,
+    -- stazione appaltante (IPA, enrichment parziale: NULL se ente fuori IPA)
+    ip.codice_ipa_sa,
+    ip.denominazione_sa,
+    ip.tipologia_sa,
+    ip.codice_istat_sa
 FROM tutti_cig t
 LEFT JOIN aggiudicazioni a ON t.cig = a.cig
 LEFT JOIN aggiudicatari ag ON t.cig = ag.cig
@@ -258,3 +274,4 @@ LEFT JOIN avvio av ON t.cig = av.cig
 LEFT JOIN fine fi ON t.cig = fi.cig
 LEFT JOIN sospensioni so ON t.cig = so.cig
 LEFT JOIN varianti va ON t.cig = va.cig
+LEFT JOIN sa_ipa ip ON t.cig = ip.cig
