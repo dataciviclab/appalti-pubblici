@@ -30,6 +30,8 @@ clean:
   required_columns:
     - "cig"
     - "id_aggiudicazione"
+    - "tipo_serie"
+    - "importo_quota"
   read:
     source: config_only
     mode: all

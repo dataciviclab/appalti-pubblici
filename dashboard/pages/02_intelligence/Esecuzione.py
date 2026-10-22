@@ -38,9 +38,9 @@ if bandi_p and sal_p:
         sal AS (
             SELECT
                 COUNT(*) AS n_sal,
-                ROUND(SUM(importo_sal)/1e9, 1) AS importo_sal_mld,
+                ROUND(SUM(importo_quota)/1e9, 1) AS importo_sal_mld,
                 SUM(CASE WHEN flag_ritardo = 'IN RITARDO' THEN 1 ELSE 0 END) AS n_ritardi,
-                ROUND(SUM(CASE WHEN flag_ritardo = 'IN RITARDO' THEN importo_sal ELSE 0 END)/1e9, 1) AS importo_ritardi_mld
+                ROUND(SUM(CASE WHEN flag_ritardo = 'IN RITARDO' THEN importo_quota ELSE 0 END)/1e9, 1) AS importo_ritardi_mld
             FROM read_parquet('{sal_p}')
             WHERE data_emissione_sal IS NOT NULL
               AND EXTRACT(YEAR FROM data_emissione_sal) = {bandi_year}
