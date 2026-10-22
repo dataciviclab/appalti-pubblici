@@ -65,10 +65,15 @@ def _supporti(con: duckdb.DuckDBPyConnection, tmp_path: Path) -> dict[str, Path]
         "partecipanti": "SELECT 'CIG1' AS cig, '111' AS codice_fiscale",
         "subappalti": "SELECT 'CIG1' AS cig, '222' AS codice_fiscale",
         "collaudo": (
-            "SELECT 'CIG1' AS cig, 'positivo' AS esito_collaudo, CAST(NULL AS DATE) AS data_cert_collaudo, "
-            "CAST(NULL AS DOUBLE) AS riserve_avanzate, CAST(NULL AS DOUBLE) AS importo_contenz_risolto"
+            "SELECT * FROM (VALUES "
+            "('CIG1', 'positivo', DATE '2025-06-01', NULL, 10.0), "
+            "('CIG1', 'negativo', DATE '2025-07-01', 5.0, NULL) "
+            ") AS t(cig, esito_collaudo, data_cert_collaudo, riserve_avanzate, importo_contenz_risolto)"
         ),
-        "cup": "SELECT 'CIG1' AS cig, 'CUP1' AS cup",
+        "cup": (
+            "SELECT * FROM (VALUES ('CIG1', 'CUP1'), ('CIG1', 'CUP2'), ('CIG2', 'CUP3')) "
+            "AS t(cig, cup)"
+        ),
         "avvio_contratto": (
             "SELECT CAST(NULL AS VARCHAR) AS cig, CAST(NULL AS DATE) AS data_stipula_contratto, "
             "CAST(NULL AS DATE) AS data_inizio_effettiva, "
@@ -121,6 +126,19 @@ def test_sal_in_ritardo_usa_il_flag_della_fonte(tmp_path: Path) -> None:
     assert esiti["CIG3"] == (1, 0, 10.0, 1, 0), "il flag legacy 'S' non deve essere conteggiato"
     assert esiti["CIG4"] == (0, 0, 0.0, 0, 0), "SAL senza data di emissione escluso dal conteggio"
     assert esiti["CIG5"] == (2, 0, 150.0, 1, 0), "serie incrementale: totale = SUM"
+
+
+@pytest.mark.regression
+def test_grain_unico_per_cig_con_support_multipli(tmp_path: Path) -> None:
+    con = _esegui_clean(tmp_path)
+
+    cig_totali = con.execute("SELECT COUNT(DISTINCT cig) FROM esito").fetchone()[0]
+    righe = con.execute("SELECT COUNT(*) FROM esito").fetchone()[0]
+    assert righe == cig_totali, "CUP e collaudi multipli non devono moltiplicare le righe"
+
+    esiti = _per_cig(con, "n_sal, importo_totale_sal, cup, esito_collaudo")
+    assert esiti["CIG1"] == (2, 250.0, "CUP1 | CUP2", "negativo")
+    assert esiti["CIG2"] == (1, 50.0, "CUP3", None)
 
 
 @pytest.mark.regression

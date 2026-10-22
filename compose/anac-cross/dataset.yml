@@ -147,7 +147,7 @@ mart:
         min_rows: 10
 
 duckdb:
-  memory_limit: "4GB"
+  memory_limit: "8GB"
 
 validation:
   fail_on_error: true

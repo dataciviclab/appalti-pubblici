@@ -68,18 +68,33 @@ sal AS (
 ),
 
 collaudo AS (
+    -- Un CIG puo' avere piu' collaudi: tieni il piu' recente (grain 1 riga per CIG).
     SELECT
         cig,
         esito_collaudo,
         data_cert_collaudo,
         riserve_avanzate,
         importo_contenz_risolto
-    FROM read_parquet('{support.collaudo.clean}')
+    FROM (
+        SELECT
+            *,
+            ROW_NUMBER() OVER (
+                PARTITION BY cig
+                ORDER BY data_cert_collaudo DESC NULLS LAST, esito_collaudo NULLS LAST
+            ) AS rn
+        FROM read_parquet('{support.collaudo.clean}')
+    )
+    WHERE rn = 1
 ),
 
 cup AS (
-    SELECT cig, cup
+    -- Un CIG puo' avere piu' CUP: aggrega per evitare la moltiplicazione delle righe.
+    SELECT
+        cig,
+        STRING_AGG(DISTINCT cup, ' | ' ORDER BY cup) AS cup
     FROM read_parquet('{support.cup.clean}')
+    WHERE cup IS NOT NULL AND TRIM(cup) != ''
+    GROUP BY cig
 ),
 
 avvio AS (
