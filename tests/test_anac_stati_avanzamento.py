@@ -41,7 +41,13 @@ SELECT * FROM (VALUES
     ('CIG6', 'SAL 2', 'IN LINEA',   DATE '2024-11-11',  30.0,  0, 2, NULL),
     ('CIG7', 'SAL 1', 'IN LINEA',   DATE '2024-06-01', 500.0,  0, 1, 7),
     ('CIG7', 'SAL 1', 'IN LINEA',   DATE '2024-06-01', 500.0,  0, 2, 7),
-    ('CIG7', 'SAL 1', 'IN LINEA',   DATE '2024-06-01', 500.0,  0, 3, 7)
+    ('CIG7', 'SAL 1', 'IN LINEA',   DATE '2024-06-01', 500.0,  0, 3, 7),
+    ('CIG8', 'SAL 1', 'IN LINEA',   DATE '2024-01-01',  10.0,  0, 1, 8),
+    ('CIG8', 'SAL 2', 'IN LINEA',   DATE '2024-02-01', 100.0,  0, 2, 8),
+    ('CIG8', 'SAL 3', 'IN LINEA',   DATE '2024-03-01',  10.0,  0, 3, 8),
+    ('CIG8', 'SAL 4', 'IN LINEA',   DATE '2024-04-01', 100.0,  0, 4, 8),
+    ('CIG8', 'SAL 5', 'IN LINEA',   DATE '2024-05-01',  10.0,  0, 5, 8),
+    ('CIG8', 'SAL 6', 'IN LINEA',   DATE '2024-06-01', 100.0,  0, 6, 8)
 ) AS t(cig, denominazione_sal, flag_ritardo, data_emissione_sal, importo_sal,
        n_giorni_scostamento, progressivo_sal, id_aggiudicazione)
 """
@@ -77,6 +83,7 @@ def test_classificazione_serie_sal() -> None:
         ("CIG5", "singola", 75.0),
         ("CIG6", "cumulativa", 30.0),
         ("CIG7", "singola", 500.0),
+        ("CIG8", "incrementale", 330.0),
     ]
 
 
@@ -120,7 +127,7 @@ def test_mart_sal_non_gonfia_i_cumulativi() -> None:
         "SELECT anno, SUM(importo_totale), SUM(n_serie_ambigue) FROM mart_sal GROUP BY anno ORDER BY anno"
     ).fetchall()
 
-    assert totali == [(2024, 1405.0, 1), (2025, 550.0, 1)]
+    assert totali == [(2024, 1735.0, 1), (2025, 550.0, 1)]
 
     grezzo = con.execute(
         """
@@ -129,4 +136,4 @@ def test_mart_sal_non_gonfia_i_cumulativi() -> None:
         WHERE EXTRACT(YEAR FROM data_emissione_sal) = 2024
         """
     ).fetchone()[0]
-    assert grezzo == 2865.0, "la somma grezza gonfia il 2024: il mart non deve usarla"
+    assert grezzo == 3195.0, "la somma grezza gonfia il 2024: il mart non deve usarla"

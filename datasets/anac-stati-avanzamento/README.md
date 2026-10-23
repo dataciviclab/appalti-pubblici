@@ -8,13 +8,13 @@
 
 Stati di Avanzamento Lavori (SAL) degli appalti ordinari. Ogni SAL rappresenta una tranche di pagamento in corso d'opera, con importo, date e scostamenti rispetto al cronoprogramma.
 
-`importo_sal` nella fonte non ha semantica univoca: per alcune aggiudicazioni e' cumulativo (valore progressivo), per altre e' incrementale (importo del singolo SAL). Il clean classifica ogni serie per `id_aggiudicazione` in `tipo_serie` e calcola `importo_quota`, il contributo attribuito al singolo SAL: per le serie cumulative e ambigue e' il MAX della serie (sulla riga del picco), per quelle incrementali e' l'importo pieno. Le righe duplicate (stessa data e stesso importo) contano una sola volta. Sommare `importo_quota` (non `importo_sal`) da' il totale corretto.
+`importo_sal` nella fonte non ha semantica univoca: per alcune aggiudicazioni e' cumulativo (valore progressivo), per altre e' incrementale (importo del singolo SAL). Il clean classifica ogni serie per `id_aggiudicazione` in `tipo_serie` e calcola `importo_quota`, il contributo attribuito al singolo SAL: per le serie cumulative e ambigue e' il MAX della serie (sulla riga del picco), per quelle incrementali e' l'importo pieno. Le righe duplicate (stessa data e stesso importo) non contribuiscono all'importo, ma restano in output e sono contate da `n_sal`. Sommare `importo_quota` (non `importo_sal`) da' il totale corretto.
 
 | `tipo_serie` | Significato |
 |---|---|
-| `cumulativa` | serie in crescita: il totale e' il MAX |
-| `incrementale` | valori costanti (rate/installmenti) o oscillanti senza trend: il totale e' la SUM |
-| `ambigua` | trend misto (correzioni in corso): trattata come cumulativa, stima conservativa |
+| `cumulativa` | serie in crescita (>=80% delta positivi o incrementi piccoli): il totale e' il MAX |
+| `incrementale` | valori costanti, oscillanti senza trend o con forti variazioni (`somma delta positivi > 2x MAX`): il totale e' la SUM |
+| `ambigua` | trend misto non riconducibile ai casi sopra: trattata come cumulativa, stima conservativa |
 | `singola` | un solo SAL nella serie |
 
 ## Schema

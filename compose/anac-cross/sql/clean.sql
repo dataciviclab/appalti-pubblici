@@ -88,10 +88,14 @@ collaudo AS (
 ),
 
 cup AS (
-    -- Un CIG puo' avere piu' CUP: aggrega per evitare la moltiplicazione delle righe.
+    -- Un CIG puo' avere piu' CUP: mantieni `cup` scalare per retrocompatibilita'
+    -- (i consumer CUP-level joinano su una stringa singola) ed esponi `n_cup`
+    -- e `cups` per il dettaglio.
     SELECT
         cig,
-        STRING_AGG(DISTINCT cup, ' | ' ORDER BY cup) AS cup
+        MIN(cup) AS cup,
+        COUNT(DISTINCT cup) AS n_cup,
+        STRING_AGG(DISTINCT cup, ' | ' ORDER BY cup) AS cups
     FROM read_parquet('{support.cup.clean}')
     WHERE cup IS NOT NULL AND TRIM(cup) != ''
     GROUP BY cig
@@ -213,6 +217,8 @@ SELECT
     c.importo_contenz_risolto,
     -- CUP
     cu.cup,
+    COALESCE(cu.n_cup, 0) AS n_cup,
+    cu.cups,
     -- avvio contratto
     av.data_stipula_contratto,
     av.data_inizio_effettiva,

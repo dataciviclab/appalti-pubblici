@@ -3,10 +3,11 @@
 -- importo_sal nella fonte puo' essere cumulativo (valore progressivo) o incrementale
 -- (importo del singolo SAL): sommare tutte le righe gonfia i totali.
 --   singola      -> un solo SAL
---   incrementale -> valori costanti (rate/installmenti) o oscillanti senza trend: si somma
+--   incrementale -> valori costanti (rate/installmenti), oscillanti senza trend
+--                   o con forti variazioni (somma dei delta positivi > 2x MAX): si somma
 --   cumulativa   -> serie in crescita: il totale e' il MAX della serie
 --   ambigua      -> trend misto: trattata come cumulativa (stima conservativa)
--- Le righe duplicate (stessa data e stesso importo) contano una sola volta.
+-- Le righe duplicate (stessa data e stesso importo) contano una sola volta per l'importo.
 -- importo_quota e' il contributo attribuito al singolo SAL: il MAX per le serie
 -- cumulative/ambigue (sulla riga del picco), l'importo per le incrementali.
 WITH base AS (
@@ -72,6 +73,8 @@ metriche AS (
         MAX(importo_sal) OVER (PARTITION BY serie_key) AS importo_max,
         SUM(CASE WHEN importo_delta > 0 THEN 1 ELSE 0 END)
             OVER (PARTITION BY serie_key) AS n_delta_pos,
+        SUM(CASE WHEN importo_delta > 0 THEN importo_delta ELSE 0 END)
+            OVER (PARTITION BY serie_key) AS somma_delta_pos,
         SUM(CASE WHEN importo_delta <> 0 THEN 1 ELSE 0 END)
             OVER (PARTITION BY serie_key) AS n_delta_nonzero,
         SUM(CASE WHEN importo_delta IS NOT NULL AND ABS(importo_delta) <= 0.25 * importo_sal
@@ -95,6 +98,9 @@ classificata AS (
             WHEN importo_min = importo_max THEN 'incrementale'
             WHEN n_delta_pos::DOUBLE / NULLIF(n_delta_nonzero, 0) >= 0.8
               OR n_delta_piccoli::DOUBLE / NULLIF(n_serie - 1, 0) >= 0.7 THEN 'cumulativa'
+            -- Oscillazione forte (molti delta positivi che si annullano): tipica
+            -- delle serie incrementali, non delle cumulative.
+            WHEN somma_delta_pos > 2 * importo_max THEN 'incrementale'
             WHEN n_delta_pos::DOUBLE / NULLIF(n_delta_nonzero, 0) <= 0.4
               AND n_delta_piccoli::DOUBLE / NULLIF(n_serie - 1, 0) < 0.5 THEN 'incrementale'
             ELSE 'ambigua'

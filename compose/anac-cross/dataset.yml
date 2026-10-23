@@ -95,6 +95,8 @@ clean:
     - "n_serie_sal"
     - "n_serie_ambigue"
     - "cup"
+    - "n_cup"
+    - "cups"
     - "data_stipula_contratto"
     - "data_effettiva_ultimazione"
     - "giorni_scostamento_termine"

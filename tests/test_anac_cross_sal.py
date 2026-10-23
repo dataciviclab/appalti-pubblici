@@ -136,9 +136,9 @@ def test_grain_unico_per_cig_con_support_multipli(tmp_path: Path) -> None:
     righe = con.execute("SELECT COUNT(*) FROM esito").fetchone()[0]
     assert righe == cig_totali, "CUP e collaudi multipli non devono moltiplicare le righe"
 
-    esiti = _per_cig(con, "n_sal, importo_totale_sal, cup, esito_collaudo")
-    assert esiti["CIG1"] == (2, 250.0, "CUP1 | CUP2", "negativo")
-    assert esiti["CIG2"] == (1, 50.0, "CUP3", None)
+    esiti = _per_cig(con, "n_sal, importo_totale_sal, cup, n_cup, cups, esito_collaudo")
+    assert esiti["CIG1"] == (2, 250.0, "CUP1", 2, "CUP1 | CUP2", "negativo")
+    assert esiti["CIG2"] == (1, 50.0, "CUP3", 1, "CUP3", None)
 
 
 @pytest.mark.regression
