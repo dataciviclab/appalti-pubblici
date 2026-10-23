@@ -30,6 +30,7 @@ li trasforma in mart analitici e li rende interrogabili via dashboard Streamlit.
 | Dataset | Cosa contiene | Anni | Mart |
 |---|---|---|---|
 | `anac-bandi-gara` | Bandi di gara e lotti (CIG) | 2016-2025 | 6 |
+| `anac-smartcig` | Affidamenti diretti sotto soglia (SMARTCIG) | 2025 | 3 |
 | `anac-aggiudicazioni` | Esiti e importi delle aggiudicazioni | 2005-2026 | 2 |
 | `anac-aggiudicatari` | Imprese aggiudicatarie | 2005-2026 | 1 |
 | `anac-partecipanti` | Imprese partecipanti alle gare | 2005-2026 | 1 |
@@ -43,9 +44,11 @@ li trasforma in mart analitici e li rende interrogabili via dashboard Streamlit.
 | `anac-varianti` | Varianti contrattuali | 2000-2026 | 1 |
 | `compose/anac-cross` | CIG snapshot unificato (cross-dataset) | 2026 | 7 |
 
-### Mart analitici (26 totali)
+### Mart analitici (29 totali)
 
 **Bandi** (6): mart_annuale, mart_trend_pnrr, mart_top_stazioni, mart_esiti_per_procedura, mart_trend_settore, mart_sa_profilo
+
+**SmartCIG** (3): mart_annuale, mart_fasce, mart_top_sa
 
 **Aggiudicazioni** (2): mart_annuale, mart_dettaglio
 
@@ -98,8 +101,9 @@ python -m pytest tests/
 
 ```
 appalti-pubblici/
-├── datasets/                   # 12 dataset singoli (toolkit pipeline)
+├── datasets/                   # 13 dataset singoli (toolkit pipeline)
 │   ├── anac-bandi-gara/
+│   ├── anac-smartcig/
 │   ├── anac-aggiudicazioni/
 │   ├── anac-aggiudicatari/
 │   ├── anac-partecipanti/
