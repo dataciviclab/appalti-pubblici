@@ -1,6 +1,6 @@
 {
   "source_id": "anac",
-  "generated_at": "2026-10-19T10:42:41+00:00",
+  "generated_at": "2026-10-26T11:00:52+00:00",
   "report_version": 1,
   "timing": {},
   "identity": {
@@ -11,19 +11,19 @@
     "observation_mode": "catalog-watch",
     "verdict": "go",
     "note": "CKAN diretto ANAC (dati.anticorruzione.it, 70 package) — diverso dall'aggregato dati.gov.it monitorato in SO centrale. WAF richiede User-Agent browser. toolkit.extends dichiara 'appalti-pubblici', i dataset.yml usano 'anac'.",
-    "last_probed": "2026-10-19"
+    "last_probed": "2026-10-26"
   },
   "health": {
     "radar_status": "GREEN",
     "http_code": "200",
     "note": null,
     "ssl_fallback": false,
-    "streak": 2
+    "streak": 3
   },
   "inventory": {
     "total_items": 70,
     "method": null,
-    "captured_at": "2026-10-19T10:42:17+00:00",
+    "captured_at": "2026-10-26T11:00:25+00:00",
     "baseline_value": null,
     "baseline_date": null,
     "freshness_hours": 0.0,
@@ -40,7 +40,7 @@
     }
   },
   "source_check": {
-    "last_run": "2026-10-19T10:42:41Z",
+    "last_run": "2026-10-26T11:00:52Z",
     "total_scored": 48,
     "reachable": 47,
     "csv_count": 47,
@@ -129,6 +129,16 @@
       ]
     },
     {
+      "slug": "anac_avvio_contratto",
+      "status": "incubating",
+      "upstream": [
+        {
+          "kind": "ckan_dataset",
+          "id": "avvio-contratto"
+        }
+      ]
+    },
+    {
       "slug": "anac_bandi_gara",
       "status": "incubating",
       "upstream": [
@@ -159,12 +169,32 @@
       ]
     },
     {
+      "slug": "anac_fine_contratto",
+      "status": "incubating",
+      "upstream": [
+        {
+          "kind": "ckan_dataset",
+          "id": "fine-contratto"
+        }
+      ]
+    },
+    {
       "slug": "anac_partecipanti",
       "status": "incubating",
       "upstream": [
         {
           "kind": "ckan_dataset",
           "id": "partecipanti"
+        }
+      ]
+    },
+    {
+      "slug": "anac_sospensioni",
+      "status": "incubating",
+      "upstream": [
+        {
+          "kind": "ckan_dataset",
+          "id": "sospensioni"
         }
       ]
     },
@@ -185,6 +215,16 @@
         {
           "kind": "ckan_dataset",
           "id": "subappalti"
+        }
+      ]
+    },
+    {
+      "slug": "anac_varianti",
+      "status": "incubating",
+      "upstream": [
+        {
+          "kind": "ckan_dataset",
+          "id": "varianti"
         }
       ]
     }
