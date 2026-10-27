@@ -34,6 +34,13 @@ La scheda SA1 di ANAC (campo `impSal`) definisce `importo_sal` come **importo de
 | `tipo_serie` | VARCHAR | Qualita' della serie SAL: singola / monotona / anomala |
 | `importo_quota` | DOUBLE | Contributo del SAL: MAX della serie sulla riga di picco, 0 sulle altre |
 
+## Mart
+
+`mart_sal`: per anno x `flag_ritardo`, con `importo_totale` = somma di
+`importo_quota` (MAX per serie) e `n_serie_anomale` (serie con delta negativi).
+Nota: `n_serie_anomale` e' per (anno, `flag_ritardo`); una stessa serie puo'
+comparire in piu' anni, quindi non va sommata tra gruppi come conteggio distinto.
+
 ## Copertura
 
 | Metrica | Valore |

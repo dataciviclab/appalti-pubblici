@@ -2,6 +2,9 @@
 -- Filtra date corrotte dalla fonte ANAC (pre-2008, post-2026)
 -- importo_sal e' cumulativo (scheda SA1 ANAC): importo_quota (calcolato in
 -- clean.sql) usa il MAX della serie e evita di sommare piu' volte (#15).
+-- Nota: n_serie_anomale e' per (anno, flag_ritardo); una stessa serie puo'
+-- comparire in piu' anni, quindi non va sommata tra gruppi come conteggio
+-- distinto.
 SELECT
     EXTRACT(YEAR FROM data_emissione_sal) AS anno,
     flag_ritardo,

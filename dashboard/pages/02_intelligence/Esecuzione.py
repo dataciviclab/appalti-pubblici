@@ -35,15 +35,31 @@ if bandi_p and sal_p:
             FROM read_parquet('{bandi_p}')
             WHERE stato = 'ATTIVO'
         ),
-        sal AS (
+        sal_rows AS (
             SELECT
-                COUNT(*) AS n_sal,
-                ROUND(SUM(importo_quota)/1e9, 1) AS importo_sal_mld,
-                SUM(CASE WHEN flag_ritardo = 'IN RITARDO' THEN 1 ELSE 0 END) AS n_ritardi,
-                ROUND(SUM(CASE WHEN flag_ritardo = 'IN RITARDO' THEN importo_quota ELSE 0 END)/1e9, 1) AS importo_ritardi_mld
+                flag_ritardo,
+                importo_quota,
+                COALESCE(CAST(id_aggiudicazione AS VARCHAR), 'cig:' || cig) AS serie_key
             FROM read_parquet('{sal_p}')
             WHERE data_emissione_sal IS NOT NULL
               AND EXTRACT(YEAR FROM data_emissione_sal) = {bandi_year}
+        ),
+        serie AS (
+            SELECT
+                serie_key,
+                SUM(importo_quota) AS importo_serie,
+                MAX(CASE WHEN flag_ritardo = 'IN RITARDO' THEN 1 ELSE 0 END) AS in_ritardo
+            FROM sal_rows
+            GROUP BY serie_key
+        ),
+        sal AS (
+            SELECT
+                (SELECT COUNT(*) FROM sal_rows) AS n_sal,
+                (SELECT ROUND(SUM(importo_quota)/1e9, 1) FROM sal_rows) AS importo_sal_mld,
+                (SELECT SUM(CASE WHEN flag_ritardo = 'IN RITARDO' THEN 1 ELSE 0 END)
+                 FROM sal_rows) AS n_ritardi,
+                (SELECT ROUND(SUM(CASE WHEN in_ritardo = 1 THEN importo_serie ELSE 0 END)/1e9, 1)
+                 FROM serie) AS importo_ritardi_mld
         )
         SELECT * FROM bandi, sal
     """)
