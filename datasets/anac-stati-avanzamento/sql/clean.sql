@@ -1,15 +1,15 @@
 -- Macro toolkit: cast_int, cast_double, normalize_string
--- Classificazione delle serie SAL per aggiudicazione (#15).
--- importo_sal nella fonte puo' essere cumulativo (valore progressivo) o incrementale
--- (importo del singolo SAL): sommare tutte le righe gonfia i totali.
---   singola      -> un solo SAL
---   incrementale -> valori costanti (rate/installmenti), oscillanti senza trend
---                   o con forti variazioni (somma dei delta positivi > 2x MAX): si somma
---   cumulativa   -> serie in crescita: il totale e' il MAX della serie
---   ambigua      -> trend misto: trattata come cumulativa (stima conservativa)
--- Le righe duplicate (stessa data e stesso importo) contano una sola volta per l'importo.
--- importo_quota e' il contributo attribuito al singolo SAL: il MAX per le serie
--- cumulative/ambigue (sulla riga del picco), l'importo per le incrementali.
+-- Semantica ufficiale ANAC (scheda SA1, campo impSal): importo_sal e' l'importo
+-- dello stato di avanzamento PROGRESSIVO (cumulato). Il totale della serie e'
+-- quindi il MAX (ultimo valore cumulato), non la somma.
+--   singola  -> un solo SAL
+--   monotona -> serie non decrescente (nessun delta negativo)
+--   anomala  -> serie con delta negativi (errore di compilazione): si usa
+--               comunque il MAX come stima del cumulato, ma va segnalata.
+-- importo_quota e' il contributo attribuito al singolo SAL: il MAX sulla riga
+-- del picco, 0 sulle altre. Sommare importo_quota da' il totale corretto.
+-- Le righe duplicate (stessa data e stesso importo) non contribuiscono
+-- all'importo, ma restano in output e sono contate da n_sal.
 WITH base AS (
     SELECT
         normalize_string(cig) AS cig,
@@ -69,17 +69,9 @@ metriche AS (
     SELECT
         *,
         COUNT(*) OVER (PARTITION BY serie_key) AS n_serie,
-        MIN(importo_sal) OVER (PARTITION BY serie_key) AS importo_min,
         MAX(importo_sal) OVER (PARTITION BY serie_key) AS importo_max,
-        SUM(CASE WHEN importo_delta > 0 THEN 1 ELSE 0 END)
-            OVER (PARTITION BY serie_key) AS n_delta_pos,
-        SUM(CASE WHEN importo_delta > 0 THEN importo_delta ELSE 0 END)
-            OVER (PARTITION BY serie_key) AS somma_delta_pos,
-        SUM(CASE WHEN importo_delta <> 0 THEN 1 ELSE 0 END)
-            OVER (PARTITION BY serie_key) AS n_delta_nonzero,
-        SUM(CASE WHEN importo_delta IS NOT NULL AND ABS(importo_delta) <= 0.25 * importo_sal
-                 THEN 1 ELSE 0 END)
-            OVER (PARTITION BY serie_key) AS n_delta_piccoli
+        SUM(CASE WHEN importo_delta < 0 THEN 1 ELSE 0 END)
+            OVER (PARTITION BY serie_key) AS n_delta_neg
     FROM delta
 ),
 
@@ -95,15 +87,8 @@ classificata AS (
         *,
         CASE
             WHEN n_serie = 1 THEN 'singola'
-            WHEN importo_min = importo_max THEN 'incrementale'
-            WHEN n_delta_pos::DOUBLE / NULLIF(n_delta_nonzero, 0) >= 0.8
-              OR n_delta_piccoli::DOUBLE / NULLIF(n_serie - 1, 0) >= 0.7 THEN 'cumulativa'
-            -- Oscillazione forte (molti delta positivi che si annullano): tipica
-            -- delle serie incrementali, non delle cumulative.
-            WHEN somma_delta_pos > 2 * importo_max THEN 'incrementale'
-            WHEN n_delta_pos::DOUBLE / NULLIF(n_delta_nonzero, 0) <= 0.4
-              AND n_delta_piccoli::DOUBLE / NULLIF(n_serie - 1, 0) < 0.5 THEN 'incrementale'
-            ELSE 'ambigua'
+            WHEN n_delta_neg = 0 THEN 'monotona'
+            ELSE 'anomala'
         END AS tipo_serie
     FROM metriche_picco
 ),
@@ -111,11 +96,7 @@ classificata AS (
 quota AS (
     SELECT
         *,
-        CASE
-            WHEN tipo_serie = 'incrementale' THEN COALESCE(importo_sal, 0)
-            WHEN rn = rn_max THEN COALESCE(importo_max, 0)
-            ELSE 0
-        END AS importo_quota
+        CASE WHEN rn = rn_max THEN COALESCE(importo_max, 0) ELSE 0 END AS importo_quota
     FROM classificata
 )
 

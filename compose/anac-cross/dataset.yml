@@ -93,7 +93,7 @@ clean:
     - "n_sal"
     - "importo_totale_sal"
     - "n_serie_sal"
-    - "n_serie_ambigue"
+    - "n_serie_anomale"
     - "cup"
     - "n_cup"
     - "cups"

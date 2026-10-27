@@ -59,9 +59,9 @@ sal AS (
         SUM(CASE WHEN flag_ritardo = 'IN RITARDO' THEN 1 ELSE 0 END) AS sal_in_ritardo,
         COUNT(DISTINCT COALESCE(CAST(id_aggiudicazione AS VARCHAR), 'cig:' || cig)) AS n_serie_sal,
         COUNT(DISTINCT CASE
-            WHEN tipo_serie = 'ambigua'
+            WHEN tipo_serie = 'anomala'
             THEN COALESCE(CAST(id_aggiudicazione AS VARCHAR), 'cig:' || cig)
-        END) AS n_serie_ambigue
+        END) AS n_serie_anomale
     FROM read_parquet('{support.stati_avanzamento.clean}')
     WHERE data_emissione_sal IS NOT NULL
     GROUP BY cig
@@ -209,7 +209,7 @@ SELECT
     COALESCE(sa.importo_totale_sal, 0) AS importo_totale_sal,
     COALESCE(sa.sal_in_ritardo, 0) AS sal_in_ritardo,
     COALESCE(sa.n_serie_sal, 0) AS n_serie_sal,
-    COALESCE(sa.n_serie_ambigue, 0) AS n_serie_ambigue,
+    COALESCE(sa.n_serie_anomale, 0) AS n_serie_anomale,
     -- collaudo
     c.esito_collaudo,
     c.data_cert_collaudo,

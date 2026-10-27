@@ -1,9 +1,9 @@
 """Classificazione delle serie SAL e quote di avanzamento (#15).
 
-``importo_sal`` puo' essere cumulativo (valore progressivo) o incrementale
-(importo del singolo SAL): sommare tutte le righe gonfia i totali. ``clean.sql``
-classifica ogni serie per ``id_aggiudicazione`` e calcola ``importo_quota``, il
-contributo attribuito al singolo SAL.
+La scheda SA1 di ANAC definisce ``impSal`` come importo dello stato di
+avanzamento **progressivo (cumulato)**: il totale della serie e' il MAX, non la
+somma. ``clean.sql`` calcola ``importo_quota`` (MAX sulla riga di picco) e
+segnala le serie con delta negativi come ``anomala``.
 """
 
 from __future__ import annotations
@@ -76,14 +76,14 @@ def test_classificazione_serie_sal() -> None:
     ).fetchall()
 
     assert righe == [
-        ("CIG1", "cumulativa", 400.0),
-        ("CIG2", "incrementale", 150.0),
-        ("CIG3", "ambigua", 200.0),
-        ("CIG4", "incrementale", 600.0),
+        ("CIG1", "monotona", 400.0),
+        ("CIG2", "monotona", 50.0),
+        ("CIG3", "anomala", 200.0),
+        ("CIG4", "anomala", 300.0),
         ("CIG5", "singola", 75.0),
-        ("CIG6", "cumulativa", 30.0),
+        ("CIG6", "monotona", 30.0),
         ("CIG7", "singola", 500.0),
-        ("CIG8", "incrementale", 330.0),
+        ("CIG8", "anomala", 100.0),
     ]
 
 
@@ -124,10 +124,10 @@ def test_mart_sal_non_gonfia_i_cumulativi() -> None:
     con.execute(f"CREATE VIEW mart_sal AS {sql}")
 
     totali = con.execute(
-        "SELECT anno, SUM(importo_totale), SUM(n_serie_ambigue) FROM mart_sal GROUP BY anno ORDER BY anno"
+        "SELECT anno, SUM(importo_totale), SUM(n_serie_anomale) FROM mart_sal GROUP BY anno ORDER BY anno"
     ).fetchall()
 
-    assert totali == [(2024, 1735.0, 1), (2025, 550.0, 1)]
+    assert totali == [(2024, 1255.0, 3), (2025, 400.0, 2)]
 
     grezzo = con.execute(
         """

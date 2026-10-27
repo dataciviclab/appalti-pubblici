@@ -46,13 +46,13 @@ def _stati_avanzamento(con: duckdb.DuckDBPyConnection, percorso: Path) -> Path:
         percorso,
         """
         SELECT * FROM (VALUES
-            ('CIG1', 1, 1, DATE '2025-01-10', 100.0, 'IN LINEA',   'cumulativa',   100.0),
-            ('CIG1', 1, 2, DATE '2025-02-10', 250.0, 'IN RITARDO', 'cumulativa',   150.0),
-            ('CIG2', 2, 1, DATE '2025-03-10',  50.0, 'IN RITARDO', 'singola',       50.0),
-            ('CIG3', 3, 1, DATE '2025-03-15',  10.0, 'S',          'singola',       10.0),
-            ('CIG4', 4, 1, CAST(NULL AS DATE), 75.0, 'IN RITARDO', 'singola',       75.0),
-            ('CIG5', 5, 1, DATE '2025-04-10',  60.0, 'IN LINEA',   'incrementale',  60.0),
-            ('CIG5', 5, 2, DATE '2025-05-10',  90.0, 'IN LINEA',   'incrementale',  90.0)
+            ('CIG1', 1, 1, DATE '2025-01-10', 100.0, 'IN LINEA',   'monotona',   100.0),
+            ('CIG1', 1, 2, DATE '2025-02-10', 250.0, 'IN RITARDO', 'monotona',   150.0),
+            ('CIG2', 2, 1, DATE '2025-03-10',  50.0, 'IN RITARDO', 'singola',     50.0),
+            ('CIG3', 3, 1, DATE '2025-03-15',  10.0, 'S',          'singola',     10.0),
+            ('CIG4', 4, 1, CAST(NULL AS DATE), 75.0, 'IN RITARDO', 'singola',     75.0),
+            ('CIG5', 5, 1, DATE '2025-04-10',  60.0, 'IN LINEA',   'anomala',     60.0),
+            ('CIG5', 5, 2, DATE '2025-05-10',  90.0, 'IN LINEA',   'anomala',     90.0)
         ) AS t(cig, id_aggiudicazione, progressivo_sal, data_emissione_sal, importo_sal, flag_ritardo,
                tipo_serie, importo_quota)
         """,
@@ -119,13 +119,13 @@ def _per_cig(con: duckdb.DuckDBPyConnection, colonne: str) -> dict[str, tuple]:
 @pytest.mark.regression
 def test_sal_in_ritardo_usa_il_flag_della_fonte(tmp_path: Path) -> None:
     con = _esegui_clean(tmp_path)
-    esiti = _per_cig(con, "n_sal, sal_in_ritardo, importo_totale_sal, n_serie_sal, n_serie_ambigue")
+    esiti = _per_cig(con, "n_sal, sal_in_ritardo, importo_totale_sal, n_serie_sal, n_serie_anomale")
 
-    assert esiti["CIG1"] == (2, 1, 250.0, 1, 0), "serie cumulativa: totale = MAX, non SUM"
+    assert esiti["CIG1"] == (2, 1, 250.0, 1, 0), "serie monotona: totale = MAX, non SUM"
     assert esiti["CIG2"] == (1, 1, 50.0, 1, 0)
     assert esiti["CIG3"] == (1, 0, 10.0, 1, 0), "il flag legacy 'S' non deve essere conteggiato"
     assert esiti["CIG4"] == (0, 0, 0.0, 0, 0), "SAL senza data di emissione escluso dal conteggio"
-    assert esiti["CIG5"] == (2, 0, 150.0, 1, 0), "serie incrementale: totale = SUM"
+    assert esiti["CIG5"] == (2, 0, 150.0, 1, 1), "serie anomala segnalata"
 
 
 @pytest.mark.regression
@@ -154,8 +154,8 @@ def test_mart_ritardi_conta_anche_sal_senza_giorni(tmp_path: Path) -> None:
         clean / "anac_stati_avanzamento_2026_clean.parquet",
         """
         SELECT * FROM (VALUES
-            ('CIG1', 1, 1, DATE '2025-01-10', 100.0, 'IN RITARDO', 10, 'cumulativa', 100.0),
-            ('CIG1', 1, 2, DATE '2025-02-10', 250.0, 'IN RITARDO', CAST(NULL AS INTEGER), 'cumulativa', 150.0),
+            ('CIG1', 1, 1, DATE '2025-01-10', 100.0, 'IN RITARDO', 10, 'monotona', 100.0),
+            ('CIG1', 1, 2, DATE '2025-02-10', 250.0, 'IN RITARDO', CAST(NULL AS INTEGER), 'monotona', 150.0),
             ('CIG2', 2, 1, DATE '2025-03-10',  50.0, 'IN RITARDO', 20, 'singola', 50.0)
         ) AS t(cig, id_aggiudicazione, progressivo_sal, data_emissione_sal, importo_sal,
                flag_ritardo, n_giorni_scostamento, tipo_serie, importo_quota)
