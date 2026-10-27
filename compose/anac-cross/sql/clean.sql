@@ -55,26 +55,50 @@ sal AS (
     SELECT
         cig,
         COUNT(*) AS n_sal,
-        SUM(importo_sal) AS importo_totale_sal,
-        SUM(CASE WHEN flag_ritardo = 'IN RITARDO' THEN 1 ELSE 0 END) AS sal_in_ritardo
+        SUM(importo_quota) AS importo_totale_sal,
+        SUM(CASE WHEN flag_ritardo = 'IN RITARDO' THEN 1 ELSE 0 END) AS sal_in_ritardo,
+        COUNT(DISTINCT COALESCE(CAST(id_aggiudicazione AS VARCHAR), 'cig:' || cig)) AS n_serie_sal,
+        COUNT(DISTINCT CASE
+            WHEN tipo_serie = 'anomala'
+            THEN COALESCE(CAST(id_aggiudicazione AS VARCHAR), 'cig:' || cig)
+        END) AS n_serie_anomale
     FROM read_parquet('{support.stati_avanzamento.clean}')
     WHERE data_emissione_sal IS NOT NULL
     GROUP BY cig
 ),
 
 collaudo AS (
+    -- Un CIG puo' avere piu' collaudi: tieni il piu' recente (grain 1 riga per CIG).
     SELECT
         cig,
         esito_collaudo,
         data_cert_collaudo,
         riserve_avanzate,
         importo_contenz_risolto
-    FROM read_parquet('{support.collaudo.clean}')
+    FROM (
+        SELECT
+            *,
+            ROW_NUMBER() OVER (
+                PARTITION BY cig
+                ORDER BY data_cert_collaudo DESC NULLS LAST, esito_collaudo NULLS LAST
+            ) AS rn
+        FROM read_parquet('{support.collaudo.clean}')
+    )
+    WHERE rn = 1
 ),
 
 cup AS (
-    SELECT cig, cup
+    -- Un CIG puo' avere piu' CUP: mantieni `cup` scalare per retrocompatibilita'
+    -- (i consumer CUP-level joinano su una stringa singola) ed esponi `n_cup`
+    -- e `cups` per il dettaglio.
+    SELECT
+        cig,
+        MIN(cup) AS cup,
+        COUNT(DISTINCT cup) AS n_cup,
+        STRING_AGG(DISTINCT cup, ' | ' ORDER BY cup) AS cups
     FROM read_parquet('{support.cup.clean}')
+    WHERE cup IS NOT NULL AND TRIM(cup) != ''
+    GROUP BY cig
 ),
 
 avvio AS (
@@ -184,6 +208,8 @@ SELECT
     COALESCE(sa.n_sal, 0) AS n_sal,
     COALESCE(sa.importo_totale_sal, 0) AS importo_totale_sal,
     COALESCE(sa.sal_in_ritardo, 0) AS sal_in_ritardo,
+    COALESCE(sa.n_serie_sal, 0) AS n_serie_sal,
+    COALESCE(sa.n_serie_anomale, 0) AS n_serie_anomale,
     -- collaudo
     c.esito_collaudo,
     c.data_cert_collaudo,
@@ -191,6 +217,8 @@ SELECT
     c.importo_contenz_risolto,
     -- CUP
     cu.cup,
+    COALESCE(cu.n_cup, 0) AS n_cup,
+    cu.cups,
     -- avvio contratto
     av.data_stipula_contratto,
     av.data_inizio_effettiva,
