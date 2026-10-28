@@ -1,6 +1,6 @@
 {
   "source_id": "anac",
-  "generated_at": "2026-10-26T11:00:52+00:00",
+  "generated_at": "2026-10-28T16:02:57+00:00",
   "report_version": 1,
   "timing": {},
   "identity": {
@@ -11,19 +11,19 @@
     "observation_mode": "catalog-watch",
     "verdict": "go",
     "note": "CKAN diretto ANAC (dati.anticorruzione.it, 70 package) — diverso dall'aggregato dati.gov.it monitorato in SO centrale. WAF richiede User-Agent browser. toolkit.extends dichiara 'appalti-pubblici', i dataset.yml usano 'anac'.",
-    "last_probed": "2026-10-26"
+    "last_probed": "2026-10-28"
   },
   "health": {
     "radar_status": "GREEN",
     "http_code": "200",
     "note": null,
     "ssl_fallback": false,
-    "streak": 3
+    "streak": 4
   },
   "inventory": {
     "total_items": 70,
     "method": null,
-    "captured_at": "2026-10-26T11:00:25+00:00",
+    "captured_at": "2026-10-28T16:02:28+00:00",
     "baseline_value": null,
     "baseline_date": null,
     "freshness_hours": 0.0,
@@ -40,7 +40,7 @@
     }
   },
   "source_check": {
-    "last_run": "2026-10-26T11:00:52Z",
+    "last_run": "2026-10-28T16:02:57Z",
     "total_scored": 48,
     "reachable": 47,
     "csv_count": 47,
@@ -245,5 +245,11 @@
     "next_action": null
   },
   "repo": "appalti-pubblici",
-  "catalog_schema_version": 1
+  "catalog_schema_version": 1,
+  "referenced_items": {
+    "checked": 12,
+    "matched": 12,
+    "missing": [],
+    "unknown": []
+  }
 }
