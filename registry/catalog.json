@@ -1,6 +1,6 @@
 {
   "source_id": "anac",
-  "generated_at": "2026-11-02T13:25:48+00:00",
+  "generated_at": "2026-11-09T13:50:22+00:00",
   "report_version": 1,
   "timing": {},
   "identity": {
@@ -11,19 +11,21 @@
     "observation_mode": "catalog-watch",
     "verdict": "go",
     "note": "CKAN diretto ANAC (dati.anticorruzione.it, 70 package) — diverso dall'aggregato dati.gov.it monitorato in SO centrale. WAF richiede User-Agent browser. toolkit.extends dichiara 'appalti-pubblici', i dataset.yml usano 'anac'.",
-    "last_probed": "2026-11-02"
+    "last_probed": "2026-11-09"
   },
   "health": {
     "radar_status": "GREEN",
     "http_code": "200",
     "note": null,
     "ssl_fallback": false,
-    "streak": 5
+    "streak": 6
   },
   "inventory": {
     "total_items": 70,
+    "active_items": 70,
+    "stale_items": 0,
     "method": null,
-    "captured_at": "2026-11-02T13:25:24+00:00",
+    "captured_at": "2026-11-09T13:49:52+00:00",
     "baseline_value": null,
     "baseline_date": null,
     "freshness_hours": 0.0,
@@ -35,17 +37,17 @@
       "CSV,TTL,JSON": 3,
       "JSON,CSV,TTL": 2,
       "JSON,CSV": 2,
-      "TTL,CSV,JSON": 1,
-      "CSV": 1
+      "CSV": 1,
+      "TTL,CSV,JSON": 1
     }
   },
   "source_check": {
-    "last_run": "2026-11-02T13:25:48Z",
+    "last_run": "2026-11-09T13:50:22Z",
     "total_scored": 48,
     "reachable": 47,
     "csv_count": 47,
-    "with_csv_schema": 22,
-    "avg_readiness": 4.6,
+    "with_csv_schema": 47,
+    "avg_readiness": 8.3,
     "top_items": [
       {
         "name": "anac/010d0429-7112-4b66-9c76-f43c7b26a1db",
@@ -98,10 +100,16 @@
         "reachable": true
       }
     ],
-    "coverage_pct": 68.6,
+    "not_checked_non_csv": 1,
+    "blocked_items": 0,
+    "validation_skipped": 0,
+    "catalog_only": false,
+    "probeable_items": 47,
+    "reachability_pct": 100.0,
+    "coverage_pct": 100.0,
     "formato_aperto": {
-      "score": 5.0,
-      "perc_aperto": 0.0,
+      "score": 90.0,
+      "perc_aperto": 100.0,
       "perc_reachable": 97.9,
       "total": 48,
       "fonte": "source_check"
