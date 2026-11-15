@@ -26,7 +26,8 @@ avvio AS (
             data_termine_contrattuale,
             ROW_NUMBER() OVER (
                 PARTITION BY cig
-                ORDER BY data_stipula_contratto DESC NULLS LAST
+                ORDER BY data_stipula_contratto DESC NULLS LAST,
+                         id_aggiudicazione DESC NULLS LAST
             ) AS rn
         FROM read_parquet('{support.avvio_contratto.clean}')
     ) ranked

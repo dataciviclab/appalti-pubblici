@@ -37,7 +37,8 @@ avvio AS (
             data_termine_contrattuale,
             ROW_NUMBER() OVER (
                 PARTITION BY cig
-                ORDER BY data_stipula_contratto DESC NULLS LAST
+                ORDER BY data_stipula_contratto DESC NULLS LAST,
+                         id_aggiudicazione DESC NULLS LAST
             ) AS rn
         FROM read_parquet('{support.avvio_contratto.clean}')
     ) ranked
@@ -95,10 +96,15 @@ esec AS (
             AS giorni_scostamento_termine,
         COALESCE(s.giorni_sospensione, 0) AS giorni_sospensione,
         COALESCE(v.n_varianti, 0) AS n_varianti
+    -- Il vecchio clean teneva solo i CIG con una stipula o un'ultimazione
+    -- (`WHERE stipula IS NOT NULL OR ultimazione IS NOT NULL`). Senza questo
+    -- filtro la union di `avvio` porta dentro anche i CIG che hanno una riga di
+    -- avvio con stipula NULL: 445.332 in piu' contati come "contratti", +22,5%
+    -- su n_contratti, senza toccare n_con_stipula / n_con_ultimazione.
     FROM (
-        SELECT cig FROM avvio
+        SELECT cig FROM avvio WHERE data_stipula_contratto IS NOT NULL
         UNION
-        SELECT cig FROM fine
+        SELECT cig FROM fine WHERE data_effettiva_ultimazione IS NOT NULL
     ) t
     LEFT JOIN avvio av ON t.cig = av.cig
     LEFT JOIN agg a ON t.cig = a.cig
