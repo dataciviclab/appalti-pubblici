@@ -57,7 +57,10 @@ SELECT * FROM (VALUES
     -- CIG_D: separatori appiattiti sotto il miliardo (16.236,51 -> 1623651):
     -- il lotto "supera" la gara di 100 volte
     ('CIG_D', '999', 'GARA D', '16236.51', '1', 'LOTTO D', '1623651', '2024', '7',
-     '2024-07-10', '2024-07-01', 'AGGIUDICATA', 'CF4', 'SERVIZI', '0')
+     '2024-07-10', '2024-07-01', 'AGGIUDICATA', 'CF4', 'SERVIZI', '0'),
+    -- CIG_E: pubblicato nel 2023, non deve entrare nella partizione 2024
+    ('CIG_E', '888', 'GARA E', '500000', '1', 'LOTTO E', '500000', '2023', '11',
+     '2023-11-10', '2023-11-01', 'AGGIUDICATA', 'CF5', 'LAVORI', '0')
 ) AS t({RAW_COLUMNS})
 """
 
@@ -84,7 +87,9 @@ def _conn() -> duckdb.DuckDBPyConnection:
     con.execute(f"CREATE TABLE raw_input AS {RAW_SQL}")
     for colonna in EXTRA_COLUMNS.split(","):
         con.execute(f"ALTER TABLE raw_input ADD COLUMN {colonna.strip()} VARCHAR")
-    con.execute(f"CREATE VIEW clean_input AS {CLEAN_SQL.read_text(encoding='utf-8')}")
+    con.execute(
+        "CREATE VIEW clean_input AS " + CLEAN_SQL.read_text(encoding="utf-8").replace("{year}", "2024")
+    )
     return con
 
 

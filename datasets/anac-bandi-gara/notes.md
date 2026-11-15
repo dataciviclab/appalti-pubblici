@@ -23,8 +23,37 @@
 | 2023 | CSV in ZIP | `;` | UTF-8 | 655.125 | |
 | 2024 | CSV in ZIP | `;` | UTF-8 | 1.213.524 | raw 1.228.909: 15.385 duplicati rimossi |
 | 2025 | CSV in ZIP | `;` | UTF-8 | 1.453.920 | raw 1.475.581: 21.661 duplicati rimossi |
+| 2026 | CSV in ZIP (delta `cig`) | `;` | UTF-8 | 1.071.679 | solo `anno_pubblicazione=2026`; 8 delta apr-nov |
 
-Espansione 2007-2025 (19 anni), pattern CKAN `cig-{year}` stabile. Gli header
+Espansione 2007-2026 (20 anni), pattern CKAN `cig-{year}` stabile.
+
+### Il 2026 arriva dai delta `cig`
+
+I pacchetti annuali si fermano al 2025: `cig-2026` non esiste. Dal 2023 ANAC
+pubblica un dataset separato `cig` con delta mensili che coprono **tutti** gli
+anni, non solo quello corrente. Nel delta di novembre 2026: 69.161 righe 2026,
+26.511 nel 2025, 13.639 nel 2024, e una coda fino al 2007.
+
+Misura su cosa cambia nei CIG già noti (delta di novembre 2026):
+
+| anno | CIG toccati | importo cambiato | oggetto cambiato |
+|---|---|---|---|
+| 2025 | 26.338 | 72 (0,27%) | 36 |
+| 2024 | 13.323 | 30 (0,2%) | 58 |
+| ≤2023 | ~12.000 | ~40 | ~20 |
+
+Scelta: **si importa solo `anno_pubblicazione = 2026`**, le correzioni storiche
+non vengono applicate. Costo misurato: 0,2% degli importi, 0,1% degli oggetti.
+Il filtro `anno_pubblicazione = {year}` nel clean rende la partizione coerente
+per costruzione.
+
+Dettagli tecnici:
+
+- la sorgente annuale è `optional: true`: per il 2026 il pacchetto non esiste e
+  il run prosegue (il toolkit salta la sorgente con un warning);
+- la sorgente `cig_delta` ha `year: 2026`, quindi viene scaricata una volta sola;
+- i delta hanno virgolette escapate male (`\"SCALA 4\"`): serve
+  `clean.read.strict_mode: false`, altrimenti DuckDB scarta ~16mila righe per file. Gli header
 dei CSV sono identici (61 colonne) su tutti gli anni: nessun adattamento di
 schema, solo la lista `years` in `dataset.yml`. Il 2007 è il primo anno
 pubblicato da ANAC (`cig-2006` non esiste).
@@ -105,8 +134,8 @@ Dal 2026-11 gli importi `>= 1 mld` su un singolo lotto sono marcati
 conserva il valore pubblicato (non lo riscrive), `mart_annuale` dichiara il
 peso escluso in `n_importi_sospetti` / `importo_sospetti`.
 
-Misura 2007-2025: **1.793 righe su 11,0 milioni (0,016%) valgono €890 mld, il
-18,4% del totale**; nel 2024 sono 726 righe per €243 mld (35,7%). Includerle
+Misura 2007-2026: **1.828 righe su 12,1 milioni (0,015%) valgono €1.021 mld, il
+19,2% del totale**; nel 2024 sono 726 righe per €243 mld (35,7%). Includerle
 rendeva inutilizzabili i totali e le classifiche per stazione appaltante.
 Il flag non distingue reale da corrotto: è una lista di verifica, non una
 correzione. Le due firme sono complementari: la soglia sul miliardo prende gli

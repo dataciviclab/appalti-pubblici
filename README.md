@@ -12,7 +12,7 @@ li trasforma in mart analitici e li rende interrogabili via dashboard Streamlit.
 
 ## Cosa risponde
 
-1. **Quanto si spende negli appalti e come varia nel tempo?** → trend bandi e importi 2007-2025
+1. **Quanto si spende negli appalti e come varia nel tempo?** → trend bandi e importi 2007-2026
 2. **Dove si concentra la spesa?** → top regioni, SA, settori per importo
 3. **Quanti affidamenti sono diretti vs gara?** → distribuzione tipo scelta contraente
 4. **Dove ci sono ritardi nell'esecuzione?** → scostamento dal termine contrattuale, sospensioni e varianti per SA e settore
@@ -28,7 +28,7 @@ li trasforma in mart analitici e li rende interrogabili via dashboard Streamlit.
 > **Nota bandi**: gli importi `>= 1 mld` su un singolo lotto sono esclusi dalle
 > aggregazioni (`flag_importo_sospetto`) e il loro peso è dichiarato in
 > `n_importi_sospetti` / `importo_sospetti` di `mart_annuale`. Senza il filtro il
-> totale 2007-2025 è gonfiato del 18% (35,7% nel solo 2024). Difetti della fonte
+> totale 2007-2026 è gonfiato del 19% (35,7% nel solo 2024). Difetti della fonte
 > e dettagli: `datasets/anac-bandi-gara/notes.md`.
 
 > **Nota copertura**: la serie parte dal 2007, ma il perimetro cambia due volte.
@@ -40,7 +40,7 @@ li trasforma in mart analitici e li rende interrogabili via dashboard Streamlit.
 
 | Dataset | Cosa contiene | Anni | Mart |
 |---|---|---|---|
-| `anac-bandi-gara` | Bandi di gara e lotti (CIG) | 2007-2025 | 6 |
+| `anac-bandi-gara` | Bandi di gara e lotti (CIG) | 2007-2026 | 6 |
 | `anac-aggiudicazioni` | Esiti e importi delle aggiudicazioni | 2005-2026 | 2 |
 | `anac-aggiudicatari` | Imprese aggiudicatarie | 2005-2026 | 1 |
 | `anac-partecipanti` | Imprese partecipanti alle gare | 2005-2026 | 1 |
@@ -74,7 +74,7 @@ Dashboard Streamlit con 3 livelli:
 
 | Livello | Pagina | Contenuto |
 |---|---|---|
-| **Monitoraggio** | Panoramica | KPI principali, trend 2007-2025, affidamenti diretti vs gara |
+| **Monitoraggio** | Panoramica | KPI principali, trend 2007-2026, affidamenti diretti vs gara |
 | | Trend Territorio | Heatmap regioni x anni, top 5 trend |
 | **Intelligence** | Trasparenza | Concentrazione mercato, top imprese, tipo scelta contraente |
 | | Esecuzione | Funnel bando→SAL, ritardi per SA e settore |

@@ -77,6 +77,11 @@ SELECT
     tipo_appalto_riservato,
     TRY_CAST(data_ultimo_perfezionamento AS DATE) AS data_ultimo_perfezionamento
 FROM raw_input
+-- Ogni partizione anno contiene solo le righe di quell'anno. Per il 2026 la
+-- fonte e' il dataset `cig` dei delta, che mescola tutti gli anni: qui restano
+-- solo le pubblicazioni 2026 (le correzioni storiche non vengono applicate,
+-- misurato: 0,2% degli importi).
+WHERE TRY_CAST(anno_pubblicazione AS INTEGER) = {year}
 -- La fonte ripete righe identiche nello stesso export (fino a 10 volte nello
 -- stesso mese). Il grano e' 1 CIG = 1 lotto: tiene la comunicazione piu' recente.
 QUALIFY ROW_NUMBER() OVER (
