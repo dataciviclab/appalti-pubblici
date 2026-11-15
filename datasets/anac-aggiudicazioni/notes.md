@@ -106,6 +106,10 @@ versione del delta (regola ANAC), non quella del full.
 
 **Anomalie note:**
 - date con anno impossibile (5, 7436, 9202): scartate dal filtro 2005-2026
+- **571** aggiudicazioni con `data_aggiudicazione_definitiva` successiva a oggi,
+  di cui **158** datate esattamente `2026-12-31` (placeholder ricorrente). Non
+  filtrate: l'audit controlla le date a livello di anno, e queste sono
+  formalmente nel 2026: le contiamo qui, il report dell'audit non le distingue
 - importi ≥ 1 mld: 336 righe per €1.503,8 Mld — stessa corruzione dei bandi
   (separatori appiattiti). Da flaggare anche qui (follow-up).
 - `importo_aggiudicazione` coincide con l'importo a base di gara nel 95% dei
