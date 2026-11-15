@@ -17,6 +17,7 @@ SELECT
         AS quota_pct_settore
 FROM clean_input
 WHERE stato = 'ATTIVO'
+  AND NOT flag_importo_sospetto
   AND sezione_regionale IS NOT NULL
 GROUP BY anno_pubblicazione, sezione_regionale, oggetto_principale_contratto, flag_pnrr
 ORDER BY anno_pubblicazione DESC, sezione_regionale, oggetto_principale_contratto, flag_pnrr

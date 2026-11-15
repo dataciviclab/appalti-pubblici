@@ -22,6 +22,7 @@ WITH base AS (
         importo_lotto
     FROM clean_input
     WHERE stato = 'ATTIVO'
+      AND NOT flag_importo_sospetto
       AND tipo_scelta_contraente IS NOT NULL
       AND sezione_regionale IS NOT NULL
 )

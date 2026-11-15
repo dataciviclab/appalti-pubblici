@@ -5,12 +5,21 @@ SELECT
     cig_accordo_quadro,
     cig_collegamento,
     cui_programma,
-    numero_gara,
+    -- Identificativo, non misura: dal 2024 la fonte pubblica valori alfanumerici
+    -- (es. CONSIP_RDO_4955828) mentre negli anni precedenti il campo e' numerico.
+    -- Senza il cast il parquet cambia tipo per anno e le query cross-anno falliscono.
+    TRY_CAST(numero_gara AS VARCHAR) AS numero_gara,
     oggetto_gara,
     cast_double(importo_complessivo_gara) AS importo_complessivo_gara,
     cast_int(n_lotti_componenti) AS n_lotti_componenti,
     oggetto_lotto,
     cast_double(importo_lotto) AS importo_lotto,
+    -- Importo da verificare: >= 1 mld per un singolo lotto. Alcuni sono reali
+    -- (es. B77825C53E, 17,4 mld per 20 anni di servizio idrico), altri sono
+    -- l'export ANAC che appiattisce i separatori (9.400.334,903 -> 9400334903).
+    -- Il clean conserva il valore pubblicato; i mart lo escludono dalle
+    -- aggregazioni e ne dichiarano numero e importo.
+    COALESCE(TRY_CAST(importo_lotto AS DOUBLE) >= 1000000000, FALSE) AS flag_importo_sospetto,
     oggetto_principale_contratto,
     stato,
     settore,
@@ -59,3 +68,10 @@ SELECT
     tipo_appalto_riservato,
     TRY_CAST(data_ultimo_perfezionamento AS DATE) AS data_ultimo_perfezionamento
 FROM raw_input
+-- La fonte ripete righe identiche nello stesso export (fino a 10 volte nello
+-- stesso mese). Il grano e' 1 CIG = 1 lotto: tiene la comunicazione piu' recente.
+QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY cig
+    ORDER BY data_ultimo_perfezionamento DESC NULLS LAST,
+             data_pubblicazione DESC NULLS LAST
+) = 1

@@ -14,6 +14,7 @@ SELECT
     ROW_NUMBER() OVER (PARTITION BY anno_pubblicazione ORDER BY SUM(importo_lotto) DESC) AS rank_per_anno
 FROM clean_input
 WHERE stato = 'ATTIVO'
+  AND NOT flag_importo_sospetto
   AND cf_amministrazione_appaltante IS NOT NULL
   AND cf_amministrazione_appaltante != ''
 GROUP BY anno, cf_amministrazione_appaltante, denominazione_amministrazione_appaltante, regione

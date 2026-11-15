@@ -10,6 +10,7 @@ WITH bandi AS (
         MAX(oggetto_principale_contratto) AS settore
     FROM read_parquet('{support.bandi_gara.clean}')
     WHERE cf_amministrazione_appaltante IS NOT NULL
+      AND NOT flag_importo_sospetto
     GROUP BY cig
 ),
 

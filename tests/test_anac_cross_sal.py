@@ -156,7 +156,8 @@ def test_mart_ritardi_conta_anche_sal_senza_giorni(tmp_path: Path) -> None:
         SELECT * FROM (VALUES
             ('CIG1', 1, 1, DATE '2025-01-10', 100.0, 'IN RITARDO', 10, 'monotona', 100.0),
             ('CIG1', 1, 2, DATE '2025-02-10', 250.0, 'IN RITARDO', CAST(NULL AS INTEGER), 'monotona', 150.0),
-            ('CIG2', 2, 1, DATE '2025-03-10',  50.0, 'IN RITARDO', 20, 'singola', 50.0)
+            ('CIG2', 2, 1, DATE '2025-03-10',  50.0, 'IN RITARDO', 20, 'singola', 50.0),
+            ('CIG3', 3, 1, DATE '2025-04-10', 500.0, 'IN RITARDO', 5, 'singola', 500.0)
         ) AS t(cig, id_aggiudicazione, progressivo_sal, data_emissione_sal, importo_sal,
                flag_ritardo, n_giorni_scostamento, tipo_serie, importo_quota)
         """,
@@ -166,10 +167,11 @@ def test_mart_ritardi_conta_anche_sal_senza_giorni(tmp_path: Path) -> None:
         bandi / "anac_bandi_gara_2026_clean.parquet",
         """
         SELECT * FROM (VALUES
-            ('CIG1', 'Comune X', 'Lavori', 'Lazio', 'CFX'),
-            ('CIG2', 'Comune X', 'Lavori', 'Lazio', 'CFX')
+            ('CIG1', 'Comune X', 'Lavori', 'Lazio', 'CFX', FALSE),
+            ('CIG2', 'Comune X', 'Lavori', 'Lazio', 'CFX', FALSE),
+            ('CIG3', 'Comune X', 'Lavori', 'Lazio', 'CFX', TRUE)
         ) AS t(cig, denominazione_amministrazione_appaltante, oggetto_principale_contratto,
-               sezione_regionale, cf_amministrazione_appaltante)
+               sezione_regionale, cf_amministrazione_appaltante, flag_importo_sospetto)
         """,
     )
 
@@ -188,7 +190,7 @@ def test_mart_ritardi_conta_anche_sal_senza_giorni(tmp_path: Path) -> None:
     sa, settore, regione, n_ritardi, n_cig, max_gg, media_gg, importo = righe[0]
     assert (sa, settore, regione) == ("Comune X", "Lavori", "Lazio")
     assert n_ritardi == 3, "il SAL in ritardo senza n_giorni_scostamento va contato"
-    assert n_cig == 2
+    assert n_cig == 2, "i CIG con importo sospetto restano fuori dal mart"
     assert max_gg == 20.0
     assert media_gg == 15.0, "la media ignora i NULL"
     assert importo == 300.0, "le quote evitano di sommare due volte la serie cumulativa"

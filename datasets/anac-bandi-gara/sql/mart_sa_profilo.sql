@@ -17,6 +17,7 @@ SELECT
     ROUND(SUM(CASE WHEN flag_pnrr = TRUE THEN importo_lotto ELSE 0 END), 0) AS importo_pnrr
 FROM clean_input
 WHERE stato = 'ATTIVO'
+  AND NOT flag_importo_sospetto
   AND cf_amministrazione_appaltante IS NOT NULL
   AND cf_amministrazione_appaltante != ''
 GROUP BY cf_amministrazione_appaltante

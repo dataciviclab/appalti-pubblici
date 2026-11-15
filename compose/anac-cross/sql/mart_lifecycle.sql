@@ -24,6 +24,7 @@ bandi AS (
         descrizione_cpv,
         data_pubblicazione
     FROM read_parquet('{support.bandi_gara.clean}')
+    WHERE NOT flag_importo_sospetto
 )
 
 SELECT
