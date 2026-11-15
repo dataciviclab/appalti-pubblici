@@ -83,6 +83,11 @@ def test_each_dataset_declares_minimum_contract(dataset_configs: list[Path]) -> 
         if mart_only:
             # Compose mart-only (modello pil-intelligence / legal-graph):
             # niente raw/clean, i mart leggono i support direttamente.
+            # Solo i compose: un dataset vero che perde raw/clean per sbaglio
+            # non deve passare il contratto.
+            assert rel.startswith("compose/"), (
+                f"{rel}: solo i compose possono essere mart-only (manca raw/clean)"
+            )
             assert dataset.get("support"), f"{rel}: mart-only senza support"
         else:
             assert "raw" in dataset and dataset["raw"].get("sources"), f"{rel}: manca raw.sources"
