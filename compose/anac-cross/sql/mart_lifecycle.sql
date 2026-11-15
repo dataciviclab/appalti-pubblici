@@ -1,6 +1,6 @@
--- mart_lifecycle.sql — Bandi 2016-2025 LEFT JOIN CIG snapshot 2026 (clean)
+-- mart_lifecycle.sql — Bandi 2007-2025 LEFT JOIN CIG snapshot 2026 (clean)
 -- La snapshot 2026 e' il clean stesso: 1 riga per CIG con tutti gli attributi.
--- I bandi 2016-2025 arrivano dal support bandi_gara.
+-- I bandi 2007-2025 arrivano dal support bandi_gara.
 
 WITH
 snapshot AS (

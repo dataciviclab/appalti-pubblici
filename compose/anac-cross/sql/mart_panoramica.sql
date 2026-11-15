@@ -1,5 +1,5 @@
 -- mart_panoramica.sql — KPI aggregati per anno/settore/regione per dashboard overview
--- Grana: anno × settore × regione. Derivato da bandi_gara (2016-2025).
+-- Grana: anno × settore × regione. Derivato da bandi_gara (2007-2025).
 
 SELECT
     anno_pubblicazione AS anno,
