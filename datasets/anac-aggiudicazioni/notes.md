@@ -7,8 +7,52 @@ CKAN dataset `aggiudicazioni` su dati.anticorruzione.it:
 - Delta mensili: risorse `YYYYMMDD-aggiudicazioni_csv` (XXX MB)
 - Senza DataStore — download diretto CSV via filesystem API
 
-Config scelta: solo full dump via `resource_name: "aggiudicazioni_csv"` + extractor `unzip_first_csv`.
-Delta mensili esclusi: il full dump è cumulativo, scaricando anche i delta si avrebbero duplicati.
+Config scelta: **full + delta** via `download_all: true` + `split_resources: true`,
+con sostituzione per CIG nel clean.
+
+> **Correzione 2026-11-15.** La config precedente leggeva solo il full
+> (`resource_name: "aggiudicazioni_csv"`), sul presupposto che fosse cumulativo.
+> Non lo è: il full ha `last_modified = 2026-01-15` e da aprile 2026 gli
+> aggiornamenti arrivano solo nei delta `YYYYMMDD-aggiudicazioni_csv`.
+> Effetto misurato: dataset fermo a metà gennaio 2026, ~300mila aggiudicazioni
+> mancanti solo nel primo trimestre (il delta di aprile contiene 98.421 record
+> di febbraio e 103.491 di marzo).
+
+**Regola di merge (Manuale open data ANAC v1.4 §5.1):** «tutte le informazioni
+contenute nel delta vanno acquisite nella loro totalità, sostituendo quanto
+acquisito in precedenza dalla risorsa full **per lo specifico CIG**».
+
+Implementazione:
+
+- `split_resources: true` → un file raw per risorsa, nominato `00-...` (full) e
+  `01-...`, `02-...` (delta in ordine di `last_modified`);
+- `clean.read.source_file: true` → `__source_file` in `raw_input`;
+- nel clean: `WHERE __source_file = max(__source_file) OVER (PARTITION BY cig)`;
+- dentro la risorsa vince la chiave primaria ufficiale (`cig` + `id_aggiudicazione`,
+  Manuale §4) ordinata per `data_comunicazione_esito` discendente.
+
+Il full contiene già righe identiche ripetute (6.760 coppie `(cig, id_aggiudicazione)`
+su 4,8M) e i delta ripubblicano interi CIG con id sintetici negativi: entrambi i
+casi sono coperti da queste due regole.
+
+`raw.output_policy: overwrite` è obbligatorio con `split_resources`: il default
+`versioned` accumulerebbe `00-..._1`, `00-..._2` a ogni run.
+
+**Tre limiti noti della regola per CIG** (misurati, non corretti):
+
+1. **Il filtro sulla data gira prima della finestra di sostituzione.** Nel clean
+   `WHERE safe_date(data_aggiudicazione_definitiva) IS NOT NULL …` sta dentro la
+   subquery che sceglie la risorsa vincente: una riga di delta con data NULL
+   non partecipa mai, quindi per quel CIG resta la riga vecchia del full invece
+   dell'aggiornamento. Non corrompe, ma «il delta vince» non vale per gli
+   aggiornamenti senza data.
+2. **La sostituzione può perdere qualche riga.** Per 490 CIG di `partecipanti`
+   (su 767.526 condivisi, 0,06%) e 1.816 di `aggiudicatari` (0,25%) il delta ha
+   meno righe del full: la regola del Manuale sostituisce, quindi quelle righe
+   spariscono. È il verso giusto (l'alternativa `(cig, id)` produrrebbe ~507mila
+   duplicati dai soli id sintetici), ma è una perdita silenziosa.
+3. **Coerente con la scelta di non applicare le correzioni storiche**: i delta
+   riemettono anche record di anni passati, e per quei CIG vince il delta.
 
 ## Schema osservato
 
@@ -38,24 +82,36 @@ aggiudicazioni senza corrispondenza in anagrafica aggiudicatari.
 Il portale dati.anticorruzione.it blocca richieste senza User-Agent browser.
 Già risolto in anac-bandi-gara con `client.user_agent` config.
 
-## Qualità dati (run 2026-07-18)
+## Qualità dati (run 2026-11-15, full + delta)
 
-| Metrica | Valore |
-|---|---|
-| Righe totali | 4.862.077 |
-| CIG distinti | 4.849.388 |
-| Con importo | 4.838.224 (99,5%) |
-| Con data valida | 4.819.598 (99,1%) |
-| Importo totale (aggiudicato) | €3.934 Mld |
-| Importo mediano | €50.000 |
-| CIG / id_aggiudicazione nulli | 0 ✅ |
+| Metrica | Solo full (fino al 2026-11-15) | Full + delta (dopo la correzione) |
+|---|---|---|
+| Righe totali | 4.817.672 | **5.786.635** |
+| Importo totale | €3.882,9 Mld | **€4.198,7 Mld** |
+| Aggiudicazioni 2024 | 1.146.584 / €448,2 Mld | 1.174.960 / €433,2 Mld |
+| Aggiudicazioni 2025 | 1.219.225 / €405,9 Mld | 1.283.816 / €473,9 Mld |
+| Aggiudicazioni 2026 | 16.666 | **877.419** (gen-set) |
 
-**Anomalie note (non bloccanti):**
-- 2.221 date fuori range (anno < 2000 o > 2026) — date malformate nel sorgente
-- 369 importi negativi — probabili storni/rettifiche
-- 34.314 importi zero con esito "AGGIUDICATA" — aggiudicazioni senza importo comunicato
-- 12.689 CIG con più righe (0,3%) — uno stesso CIG può avere più lotti/aggiudicazioni
+Sui **SAL** il confronto va fatto a parità di filtro: le 149.666 righe sono
+`data_emissione_sal >= 2026-01-01` (e includono 284 date future, fino al 2062);
+per anno di emissione = 2026 sono **149.382**, contro le 929 di prima. Le 284
+future sono refusi plausibili che `safe_date` non intercetta: l'audit le elenca
+come avviso.
+
+Il 2026 passa da 16mila a 877mila righe: è la parte che i delta coprono. Il
+mese **parziale è gennaio** (il full si ferma al 15/1): febbraio e marzo sono
+pieni, perché il primo delta utile li contiene. Non c'è nessun buco feb-mar.
+Il 2024 scende leggermente perché per i CIG ripubblicati dai delta vale la
+versione del delta (regola ANAC), non quella del full.
+
+**Anomalie note:**
+- date con anno impossibile (5, 7436, 9202): scartate dal filtro 2005-2026
+- **571** aggiudicazioni con `data_aggiudicazione_definitiva` successiva a oggi,
+  di cui **158** datate esattamente `2026-12-31` (placeholder ricorrente). Non
+  filtrate: l'audit controlla le date a livello di anno, e queste sono
+  formalmente nel 2026: le contiamo qui, il report dell'audit non le distingue
+- importi ≥ 1 mld: 336 righe per €1.503,8 Mld — stessa corruzione dei bandi
+  (separatori appiattiti). Da flaggare anche qui (follow-up).
+- `importo_aggiudicazione` coincide con l'importo a base di gara nel 95% dei
+  casi 2024-25: non è il prezzo di aggiudicazione (vedi nota di quadratura)
 - 69% dei record senza criterio di aggiudicazione (NULL)
-- Discontinuità 2024+: esplosione volumi (382K → 1,2M), crollo subappalti dichiarati — probabile cambio normativo (D.Lgs 36/2023) o metodologia ANAC
-
-**Schema verificato**: full dump conforme al delta osservato. Separatore decimale "." (già processabile da DuckDB). Flag booleani in formato stringa "true"/"false".

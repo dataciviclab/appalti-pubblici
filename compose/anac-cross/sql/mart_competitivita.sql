@@ -12,6 +12,7 @@ WITH bandi AS (
         esito
     FROM read_parquet('{support.bandi_gara.clean}')
     WHERE stato = 'ATTIVO'
+      AND NOT flag_importo_sospetto
       AND sezione_regionale IS NOT NULL
       AND sezione_regionale != ''
 ),

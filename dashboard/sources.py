@@ -89,7 +89,7 @@ def _latest_year(slug: str, fallback: int = 2025) -> int:
 
 # Anni globali (per bandi multi-anno)
 _bandi_years = _years_for("anac_bandi_gara")
-YEARS_BANDI = _bandi_years if _bandi_years else list(range(2016, 2026))
+YEARS_BANDI = _bandi_years if _bandi_years else list(range(2007, 2026))
 
 # ── Dataset registry (per SQL page) ───────────────────────────────────────────
 
@@ -257,11 +257,6 @@ def load_compose_panoramica_annuale() -> pd.DataFrame:
         .reset_index()
         .sort_values("anno")
     )
-
-
-@st.cache_data(ttl=3600, show_spinner=False)
-def load_compose_lifecycle() -> pd.DataFrame:
-    return load_mart("mart_lifecycle", slug="anac_cross")
 
 
 # ── Ricerca CIG (cross-dataset) ─────────────────────────────────────────────

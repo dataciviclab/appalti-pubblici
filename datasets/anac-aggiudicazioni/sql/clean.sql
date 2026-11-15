@@ -2,10 +2,10 @@
 -- Macro toolkit: normalize_string, cast_bigint, cast_double, cast_int, decode_flag
 SELECT
     normalize_string(cig) AS cig,
-    TRY_CAST(data_aggiudicazione_definitiva AS DATE) AS data_aggiudicazione_definitiva,
+    safe_date(data_aggiudicazione_definitiva) AS data_aggiudicazione_definitiva,
     esito,
     criterio_aggiudicazione,
-    TRY_CAST(data_comunicazione_esito AS DATE) AS data_comunicazione_esito,
+    safe_date(data_comunicazione_esito) AS data_comunicazione_esito,
     cast_int(numero_offerte_ammesse) AS numero_offerte_ammesse,
     cast_int(numero_offerte_escluse) AS numero_offerte_escluse,
     cast_double(importo_aggiudicazione) AS importo_aggiudicazione,
@@ -24,12 +24,28 @@ SELECT
     cast_double(COD_PRESTAZIONI_COMPRESE) AS COD_PRESTAZIONI_COMPRESE,
     PRESTAZIONI_COMPRESE,
     CIG_PROG_ESTERNA,
-    TRY_CAST(DATA_INCARICO_PROG AS DATE) AS DATA_INCARICO_PROG,
-    TRY_CAST(DATA_CONS_PROG AS DATE) AS DATA_CONS_PROG,
+    safe_date(DATA_INCARICO_PROG) AS DATA_INCARICO_PROG,
+    safe_date(DATA_CONS_PROG) AS DATA_CONS_PROG,
     cast_double(COD_MODO_RIAGGIUDICAZIONE) AS COD_MODO_RIAGGIUDICAZIONE,
     MODO_RIAGGIUDICAZIONE,
     decode_flag(FLAG_PROC_ACCELERATA, 'S') AS FLAG_PROC_ACCELERATA,
     cast_int(N_MANIF_INTERESSE) AS N_MANIF_INTERESSE
-FROM raw_input
-WHERE TRY_CAST(data_aggiudicazione_definitiva AS DATE) IS NOT NULL
-  AND EXTRACT(YEAR FROM TRY_CAST(data_aggiudicazione_definitiva AS DATE)) BETWEEN 2005 AND 2026
+FROM (
+    -- Provenienza per riga: `00-...` e' il full, `01-...`/`02-...` i delta
+    -- mensili in ordine cronologico (split_resources nel raw). La regola ANAC
+    -- (Manuale open data §5.1) e' per CIG: il delta sostituisce integralmente
+    -- quanto il full diceva di quel CIG.
+    SELECT *, max(__source_file) OVER (PARTITION BY cig) AS __fonte_cig
+    FROM raw_input
+    WHERE safe_date(data_aggiudicazione_definitiva) IS NOT NULL
+      AND EXTRACT(YEAR FROM safe_date(data_aggiudicazione_definitiva)) BETWEEN 2005 AND 2026
+) AS r
+WHERE __source_file = __fonte_cig
+-- Dentro la stessa risorsa la fonte puo' ripetere la riga: chiave primaria
+-- ufficiale (Manuale §4) = (cig, id_aggiudicazione), vince la comunicazione
+-- piu' recente.
+QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY cig, id_aggiudicazione
+    ORDER BY safe_date(data_comunicazione_esito) DESC NULLS LAST,
+             safe_date(data_aggiudicazione_definitiva) DESC NULLS LAST
+) = 1

@@ -6,13 +6,13 @@ Sistema di intelligence sugli appalti pubblici: raccoglie i dati ufficiali ANAC 
 li trasforma in mart analitici e li rende interrogabili via dashboard Streamlit.
 
 - **Fonte**: [ANAC Open Data](https://dati.anticorruzione.it/opendata)
-- **Copertura**: 2016-2026, Italia (tutte le regioni)
+- **Copertura**: 2007-2026, Italia (tutte le regioni)
 - **Unità di analisi**: CIG (Codice Identificativo Gara)
 - **Output pubblico**: Dashboard Streamlit + Discussion
 
 ## Cosa risponde
 
-1. **Quanto si spende negli appalti e come varia nel tempo?** → trend bandi e importi 2016-2025
+1. **Quanto si spende negli appalti e come varia nel tempo?** → trend bandi e importi 2007-2026
 2. **Dove si concentra la spesa?** → top regioni, SA, settori per importo
 3. **Quanti affidamenti sono diretti vs gara?** → distribuzione tipo scelta contraente
 4. **Dove ci sono ritardi nell'esecuzione?** → scostamento dal termine contrattuale, sospensioni e varianti per SA e settore
@@ -25,11 +25,25 @@ li trasforma in mart analitici e li rende interrogabili via dashboard Streamlit.
 > non ancora conclusi), quindi il trend recente non è confrontabile con il
 > 2016-2022.
 
+> **Nota bandi**: `flag_importo_sospetto` raccoglie **due** firme di errore, non
+> una: importo del lotto `>= 1 mld` (290 righe) **e** importo del lotto `>= 10×`
+> l'importo della gara (1.538 righe, l'84% del totale). Le righe flaggate restano
+> nel clean col valore pubblicato ed escono dalle aggregazioni; il peso escluso è
+> in `n_importi_sospetti` / `importo_sospetti` di `mart_annuale`. Insieme valgono
+> 1.828 righe su 12,1 milioni = **19,2%** del valore 2007-2026 (35,7% nel 2024) e
+> **58,5% del 2007**: nella serie lunga ci sono anni in cui il totale è dominato
+> dalle esclusioni. Difetti della fonte e dettagli: `datasets/anac-bandi-gara/notes.md`.
+
+> **Nota copertura**: la serie parte dal 2007, ma il perimetro cambia due volte.
+> **2010-2014** e **2024-2025** includono molti affidamenti sotto soglia (mediana
+> per lotto €1,5k-16,8k contro €37k-74k del 2015-2023). La finestra confrontabile
+> è **2015-2023**.
+
 ## Dataset
 
 | Dataset | Cosa contiene | Anni | Mart |
 |---|---|---|---|
-| `anac-bandi-gara` | Bandi di gara e lotti (CIG) | 2016-2025 | 6 |
+| `anac-bandi-gara` | Bandi di gara e lotti (CIG) | 2007-2026 | 6 |
 | `anac-aggiudicazioni` | Esiti e importi delle aggiudicazioni | 2005-2026 | 2 |
 | `anac-aggiudicatari` | Imprese aggiudicatarie | 2005-2026 | 1 |
 | `anac-partecipanti` | Imprese partecipanti alle gare | 2005-2026 | 1 |
@@ -53,7 +67,7 @@ li trasforma in mart analitici e li rende interrogabili via dashboard Streamlit.
 
 **Esecuzione** (5): mart_avvio_contratto, mart_fine_contratto, mart_motivi_fine, mart_sospensioni, mart_varianti
 
-**Compose** (7): mart_panoramica, mart_lifecycle, mart_imprese, mart_ritardi_per_sa, mart_competitivita, mart_esecuzione, mart_ritardi_contratto
+**Compose** (7): mart_panoramica, mart_imprese, mart_ritardi_per_sa, mart_competitivita, mart_esecuzione, mart_ritardi_contratto, mart_collaudo_ritardo
 
 **Altri** (2): mart_collaudo, mart_cup
 
@@ -63,7 +77,7 @@ Dashboard Streamlit con 3 livelli:
 
 | Livello | Pagina | Contenuto |
 |---|---|---|
-| **Monitoraggio** | Panoramica | KPI principali, trend 2016-2025, affidamenti diretti vs gara |
+| **Monitoraggio** | Panoramica | KPI principali, trend 2007-2026, affidamenti diretti vs gara |
 | | Trend Territorio | Heatmap regioni x anni, top 5 trend |
 | **Intelligence** | Trasparenza | Concentrazione mercato, top imprese, tipo scelta contraente |
 | | Esecuzione | Funnel bando→SAL, ritardi per SA e settore |
@@ -92,6 +106,12 @@ cd dashboard && streamlit run app.py
 
 # Test
 python -m pytest tests/
+
+# Quadratura: chiavi (entro e fra le partizioni), date, schema per anno, freschezza
+python scripts/audit_datasets.py
+# oggi esce 1 su anac_bandi_gara: deriva di schema nota tra partizioni anno
+# (CF_SA_DELEGANTE, COD_MOTIVO_CANCELLAZIONE, codici del 2026) — dettaglio e
+# fix previsto in datasets/anac-bandi-gara/notes.md
 ```
 
 ## Struttura

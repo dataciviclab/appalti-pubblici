@@ -12,6 +12,10 @@ dataset:
     end_year: 2026
 
 raw:
+  # overwrite: il default 'versioned' scrive <file>_1.csv e il clean con
+  # mode: all legge anche quello (lettura doppia, e righe doppie dove il clean
+  # non deduplica).
+  output_policy: overwrite
   sources:
     - name: "cup"
       type: "ckan"

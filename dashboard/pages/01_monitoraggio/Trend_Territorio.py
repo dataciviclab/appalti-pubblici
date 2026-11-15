@@ -74,7 +74,7 @@ comp_top = comp[comp["regione_short"].isin(regioni_top)]
 
 fig2 = px.line(
     comp_top, x="anno", y="importo_totale", color="regione_short",
-    title="Top 5 regioni: trend importi 2016-2025",
+    title=f"Top 5 regioni: trend importi {int(comp['anno'].min())}-{int(comp['anno'].max())}",
     labels={"importo_totale": "Importo (EUR)", "anno": "Anno", "regione_short": "Regione"},
     markers=True,
 )

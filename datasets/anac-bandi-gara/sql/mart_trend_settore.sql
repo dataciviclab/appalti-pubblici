@@ -10,6 +10,7 @@ WITH settori_anno AS (
         ROUND(SUM(importo_lotto), 0) AS importo_totale
     FROM clean_input
     WHERE stato = 'ATTIVO'
+      AND NOT flag_importo_sospetto
       AND sezione_regionale IS NOT NULL
     GROUP BY anno_pubblicazione, sezione_regionale, oggetto_principale_contratto
 )

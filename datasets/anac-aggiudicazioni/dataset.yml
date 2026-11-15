@@ -12,17 +12,28 @@ dataset:
     end_year: 2026
 
 raw:
+  # overwrite: con split_resources il default "versioned" accumulerebbe
+  # 00-..., 00-..._1, 00-..._2 a ogni run e il clean li leggerebbe tutti.
+  output_policy: overwrite
   sources:
     - name: "aggiudicazioni"
       type: "ckan"
       extractor:
-        type: "unzip_first_csv"
+        type: "unzip_all"
+        args:
+          only_ext: [".csv"]
       client:
         user_agent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
       args:
         portal_url: "https://dati.anticorruzione.it/opendata"
         dataset_id: "aggiudicazioni"
-        resource_name: "aggiudicazioni_csv"
+        # Il full (`aggiudicazioni_csv`) non e' cumulativo: fermo al 2026-01-15.
+        # Gli aggiornamenti arrivano solo nei delta mensili `YYYYMMDD-aggiudicazioni_csv`.
+        # split_resources: un file per risorsa, ordinato per last_modified
+        # (`00-...`, `01-...`), cosi' il clean puo' applicare la regola ANAC:
+        # il delta sostituisce il full per lo specifico CIG.
+        download_all: true
+        split_resources: true
       primary: true
 
 clean:
@@ -41,7 +52,12 @@ clean:
     null_padding: true
     trim_whitespace: true
     sample_size: -1
+    # Provenienza per riga (`__source_file`): serve per la regola ANAC dei delta.
+    source_file: true
   validate:
+    primary_key:
+      - "cig"
+      - "id_aggiudicazione"
     not_null:
       - "cig"
       - "id_aggiudicazione"

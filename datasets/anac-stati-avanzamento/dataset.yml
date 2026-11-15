@@ -12,17 +12,26 @@ dataset:
     end_year: 2026
 
 raw:
+  # overwrite: con split_resources il default "versioned" accumulerebbe
+  # 00-..., 00-..._1, ... a ogni run.
+  output_policy: overwrite
   sources:
     - name: "stati-avanzamento"
       type: "ckan"
       extractor:
-        type: "unzip_first_csv"
+        type: "unzip_all"
+        args:
+          only_ext: [".csv"]
       client:
         user_agent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
       args:
         portal_url: "https://dati.anticorruzione.it/opendata"
         dataset_id: "stati-avanzamento"
-        resource_name: "stati-avanzamento_csv"
+        # Il full non e' cumulativo: fermo al 2026-01-15, gli aggiornamenti
+        # arrivano solo nei delta mensili `YYYYMMDD-<dataset>_csv`.
+        # split_resources: un file per risorsa, ordinato per last_modified.
+        download_all: true
+        split_resources: true
       primary: true
 
 clean:
@@ -42,8 +51,13 @@ clean:
     escape: '"'
     null_padding: true
     trim_whitespace: true
+    source_file: true
     sample_size: -1
   validate:
+    primary_key:
+      - "cig"
+      - "id_aggiudicazione"
+      - "progressivo_sal"
     not_null:
       - "cig"
       - "id_aggiudicazione"

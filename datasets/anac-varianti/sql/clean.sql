@@ -6,12 +6,18 @@ WITH src AS (
         cast_bigint(id_variante) AS id_variante,
         normalize_string(cod_motivo_variante) AS cod_motivo_variante,
         normalize_string(motivo_variante) AS motivo_variante,
-        TRY_CAST(NULLIF(data_approvazione_variante, '0001-01-01') AS DATE) AS d_approvazione,
+        safe_date(NULLIF(data_approvazione_variante, '0001-01-01')) AS d_approvazione,
         normalize_string(cig) AS cig,
         cast_bigint(id_aggiudicazione) AS id_aggiudicazione,
         normalize_string(CIG_PROROGA) AS cig_proroga,
-        TRY_CAST(NULLIF(DATA_ATTO_AGGIUNTIVO, '0001-01-01') AS DATE) AS d_atto
-    FROM raw_input
+        safe_date(NULLIF(DATA_ATTO_AGGIUNTIVO, '0001-01-01')) AS d_atto
+    FROM (
+        -- Sostituzione per CIG (Manuale ANAC §5.1): il delta sostituisce il
+        -- full per lo specifico CIG; `__source_file` porta l'ordine risorse.
+        SELECT *, max(__source_file) OVER (PARTITION BY cig) AS __fonte_cig
+        FROM raw_input
+    ) __delta
+    WHERE __source_file = __fonte_cig
 )
 
 SELECT

@@ -1,5 +1,5 @@
 -- mart_panoramica.sql — KPI aggregati per anno/settore/regione per dashboard overview
--- Grana: anno × settore × regione. Derivato da bandi_gara (2016-2025).
+-- Grana: anno × settore × regione. Derivato da bandi_gara (2007-2026).
 
 SELECT
     anno_pubblicazione AS anno,
@@ -20,6 +20,7 @@ SELECT
         / NULLIF(SUM(importo_lotto), 0), 1) AS quota_pnrr_pct
 FROM read_parquet('{support.bandi_gara.clean}')
 WHERE stato = 'ATTIVO'
+  AND NOT flag_importo_sospetto
   AND oggetto_principale_contratto IS NOT NULL
   AND sezione_regionale IS NOT NULL
 GROUP BY anno_pubblicazione, oggetto_principale_contratto, sezione_regionale

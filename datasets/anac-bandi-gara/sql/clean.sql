@@ -5,19 +5,37 @@ SELECT
     cig_accordo_quadro,
     cig_collegamento,
     cui_programma,
-    numero_gara,
+    -- Identificativo, non misura: dal 2024 la fonte pubblica valori alfanumerici
+    -- (es. CONSIP_RDO_4955828) mentre negli anni precedenti il campo e' numerico.
+    -- Senza il cast il parquet cambia tipo per anno e le query cross-anno falliscono.
+    TRY_CAST(numero_gara AS VARCHAR) AS numero_gara,
     oggetto_gara,
     cast_double(importo_complessivo_gara) AS importo_complessivo_gara,
     cast_int(n_lotti_componenti) AS n_lotti_componenti,
     oggetto_lotto,
     cast_double(importo_lotto) AS importo_lotto,
+    -- Importo da verificare. Due firme note della fonte:
+    --  1. importo >= 1 mld su un singolo lotto (alcuni reali: B77825C53E, 17,4
+    --     mld per 20 anni di servizio idrico; altri con i separatori appiattiti:
+    --     9.400.334,903 -> 9400334903);
+    --  2. importo del lotto >= 10x l'importo della gara, logicamente impossibile:
+    --     intercetta le righe appiattite sotto il miliardo (es. 16.236,51 ->
+    --     1623651, dove il lotto "supera" la gara di 100 volte).
+    -- Il clean conserva il valore pubblicato; i mart lo escludono dalle
+    -- aggregazioni e ne dichiarano numero e importo.
+    COALESCE(
+        TRY_CAST(importo_lotto AS DOUBLE) >= 1000000000
+        OR (TRY_CAST(importo_complessivo_gara AS DOUBLE) > 0
+            AND TRY_CAST(importo_lotto AS DOUBLE) > TRY_CAST(importo_complessivo_gara AS DOUBLE) * 10),
+        FALSE
+    ) AS flag_importo_sospetto,
     oggetto_principale_contratto,
     stato,
     settore,
     luogo_istat AS codice_istat_luogo,
     provincia,
-    TRY_CAST(data_pubblicazione AS DATE) AS data_pubblicazione,
-    TRY_CAST(data_scadenza_offerta AS DATE) AS data_scadenza_offerta,
+    safe_date(data_pubblicazione) AS data_pubblicazione,
+    safe_date(data_scadenza_offerta) AS data_scadenza_offerta,
     cod_tipo_scelta_contraente,
     tipo_scelta_contraente,
     cod_modalita_realizzazione,
@@ -52,10 +70,22 @@ SELECT
     cast_double(importo_sicurezza) AS importo_sicurezza,
     cod_esito,
     esito,
-    TRY_CAST(data_comunicazione_esito AS DATE) AS data_comunicazione_esito,
-    TRY_CAST(data_cancellazione AS DATE) AS data_cancellazione,
+    safe_date(data_comunicazione_esito) AS data_comunicazione_esito,
+    safe_date(data_cancellazione) AS data_cancellazione,
     cod_motivo_cancellazione,
     motivo_cancellazione,
     tipo_appalto_riservato,
-    TRY_CAST(data_ultimo_perfezionamento AS DATE) AS data_ultimo_perfezionamento
+    safe_date(data_ultimo_perfezionamento) AS data_ultimo_perfezionamento
 FROM raw_input
+-- Ogni partizione anno contiene solo le righe di quell'anno. Per il 2026 la
+-- fonte e' il dataset `cig` dei delta, che mescola tutti gli anni: qui restano
+-- solo le pubblicazioni 2026 (le correzioni storiche non vengono applicate,
+-- misurato: 0,2% degli importi).
+WHERE TRY_CAST(anno_pubblicazione AS INTEGER) = {year}
+-- La fonte ripete righe identiche nello stesso export (fino a 10 volte nello
+-- stesso mese). Il grano e' 1 CIG = 1 lotto: tiene la comunicazione piu' recente.
+QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY cig
+    ORDER BY data_ultimo_perfezionamento DESC NULLS LAST,
+             data_pubblicazione DESC NULLS LAST
+) = 1
