@@ -33,19 +33,20 @@ CREATE OR REPLACE MACRO safe_date(val) AS
 
 RAW_SQL = """
 SELECT * FROM (VALUES
-    -- CIG_A: base + variante + consuntivo, come nella fonte (date NULL su
-    -- base e consuntivo, data solo sulla variante)
-    ('CIG_A', 1, NULL,           'BASE_ASTA',   100.0, 0.0, 0.0, 10.0, '000-full.csv'),
-    ('CIG_A', 1, DATE '2025-03-01', 'VARIANTE', 120.0, 0.0, 0.0, 12.0, '000-full.csv'),
-    ('CIG_A', 1, NULL,           'CONSUNTIVO',  130.0, 0.0, 0.0, 13.0, '001-delta.csv'),
-    -- CIG_B: nel full, poi ripubblicato dal delta: vince il delta
-    ('CIG_B', 2, NULL,           'BASE_ASTA',    50.0, 0.0, 0.0,  5.0, '000-full.csv'),
-    ('CIG_B', 2, DATE '2025-06-01', 'VARIANTE',  60.0, 0.0, 0.0,  6.0, '000-full.csv'),
-    ('CIG_B', 2, DATE '2025-07-01', 'VARIANTE',  70.0, 0.0, 0.0,  7.0, '001-delta.csv'),
-    -- CIG_C: solo consuntivo su servizi, nessuna base d'asta
-    ('CIG_C', 3, NULL,           'CONSUNTIVO',   0.0, 40.0, 0.0,  4.0, '000-full.csv')
-) AS t(cig, id_aggiudicazione, data, descrizione_evento, importo_lavori,
-       importo_servizi, importo_forniture, somme_a_disposizione, __source_file)
+    -- CIG_A: base + variante + consuntivo. Base e consuntivo hanno data NULL.
+    ('CIG_A', 1, NULL,           'BASE_ASTA',   'B1', 100.0, 0.0, 0.0, 10.0, '000-full.csv'),
+    ('CIG_A', 1, DATE '2025-03-01', 'VARIANTE', 'V1', 120.0, 0.0, 0.0, 12.0, '000-full.csv'),
+    ('CIG_A', 1, NULL,           'CONSUNTIVO', 'C1', 130.0, 0.0, 0.0, 13.0, '000-full.csv'),
+    -- CIG_B: la stessa variante (stesso dettaglio) ripubblicata dal delta con
+    -- importo diverso: vince la risorsa piu' recente, e' la regola del §5.1
+    -- applicata alla chiave del dataset.
+    ('CIG_B', 2, NULL,           'BASE_ASTA',  'B2',  50.0, 0.0, 0.0,  5.0, '000-full.csv'),
+    ('CIG_B', 2, DATE '2025-06-01', 'VARIANTE', 'V2',  60.0, 0.0, 0.0,  6.0, '000-full.csv'),
+    ('CIG_B', 2, DATE '2025-06-01', 'VARIANTE', 'V2',  70.0, 0.0, 0.0,  7.0, '001-delta.csv'),
+    -- CIG_C: solo consuntivo, nessuna base d'asta
+    ('CIG_C', 3, NULL,           'CONSUNTIVO', 'C3',   0.0, 40.0, 0.0,  4.0, '000-full.csv')
+) AS t(cig, id_aggiudicazione, data, descrizione_evento, dettaglio_evento,
+       importo_lavori, importo_servizi, importo_forniture, somme_a_disposizione, __source_file)
 """
 
 
@@ -53,7 +54,7 @@ def _conn() -> duckdb.DuckDBPyConnection:
     con = duckdb.connect()
     con.execute(MACRO_SQL)
     con.execute(f"CREATE TABLE raw_input AS {RAW_SQL}")
-    for colonna in ("dettaglio_evento", "importo_progettazione", "importo_sicurezza",
+    for colonna in ("importo_progettazione", "importo_sicurezza",
                     "ulteriori_oneri_non_soggetti_ribasso"):
         con.execute(f"ALTER TABLE raw_input ADD COLUMN {colonna} VARCHAR")
     con.execute("CREATE VIEW clean_input AS " + CLEAN_SQL.read_text(encoding="utf-8"))
@@ -61,20 +62,22 @@ def _conn() -> duckdb.DuckDBPyConnection:
 
 
 @pytest.mark.regression
-def test_clean_tiene_le_righe_senza_data_e_sostituisce_per_cig() -> None:
+def test_clean_tiene_le_righe_senza_data_e_sostituisce_per_chiave() -> None:
     con = _conn()
     righe = con.execute(
-        "SELECT cig, descrizione_evento, data FROM clean_input ORDER BY cig, descrizione_evento"
+        "SELECT cig, descrizione_evento, dettaglio_evento, importo_lavori "
+        "FROM clean_input ORDER BY cig, descrizione_evento"
     ).fetchall()
 
     # Le righe senza data restano: sarebbero il 94% del dataset reale.
-    assert ("CIG_A", "BASE_ASTA", None) in righe
-    assert ("CIG_A", "CONSUNTIVO", None) in righe
-    # CIG_B: il delta ripubblica una sola variante, la base resta dal full.
-    # Con la sostituzione per CIG la base sarebbe sparita (e' il caso reale dei
-    # 1.555 CIG che nei delta non hanno BASE_ASTA).
-    righe_b = sorted(r[1] for r in righe if r[0] == "CIG_B")
-    assert righe_b == ["BASE_ASTA", "VARIANTE", "VARIANTE"]
+    assert ("CIG_A", "BASE_ASTA", "B1", 100.0) in righe
+    assert ("CIG_A", "CONSUNTIVO", "C1", 130.0) in righe
+
+    # Stessa chiave su due risorse: vince la piu' recente (70, non 60).
+    varianti_b = [r for r in righe if r[0] == "CIG_B" and r[1] == "VARIANTE"]
+    assert len(varianti_b) == 1, f"una riga per chiave: {varianti_b}"
+    assert varianti_b[0][3] == 70.0, "vince la risorsa piu' recente, come dice il §5.1"
+    assert ("CIG_B", "BASE_ASTA", "B2", 50.0) in righe, "il delta non spegne la base"
 
 
 @pytest.mark.regression
@@ -95,7 +98,7 @@ def test_mart_cig_confronta_base_e_consuntivo() -> None:
     b = righe["CIG_B"]
     assert b["importo_base"] == 50.0, "la base sopravvive al delta che non la ripubblica"
     assert b["importo_finale"] == 70.0, "senza consuntivo vale il massimo osservato"
-    assert b["n_varianti"] == 2
+    assert b["n_varianti"] == 1
 
     assert "CIG_C" not in righe, "senza base d'asta non c'e' scostamento da misurare"
 
