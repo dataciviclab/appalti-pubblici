@@ -30,6 +30,22 @@ SELECT
     MODO_RIAGGIUDICAZIONE,
     decode_flag(FLAG_PROC_ACCELERATA, 'S') AS FLAG_PROC_ACCELERATA,
     cast_int(N_MANIF_INTERESSE) AS N_MANIF_INTERESSE
-FROM raw_input
-WHERE TRY_CAST(data_aggiudicazione_definitiva AS DATE) IS NOT NULL
-  AND EXTRACT(YEAR FROM TRY_CAST(data_aggiudicazione_definitiva AS DATE)) BETWEEN 2005 AND 2026
+FROM (
+    -- Provenienza per riga: `00-...` e' il full, `01-...`/`02-...` i delta
+    -- mensili in ordine cronologico (split_resources nel raw). La regola ANAC
+    -- (Manuale open data §5.1) e' per CIG: il delta sostituisce integralmente
+    -- quanto il full diceva di quel CIG.
+    SELECT *, max(__source_file) OVER (PARTITION BY cig) AS __fonte_cig
+    FROM raw_input
+    WHERE TRY_CAST(data_aggiudicazione_definitiva AS DATE) IS NOT NULL
+      AND EXTRACT(YEAR FROM TRY_CAST(data_aggiudicazione_definitiva AS DATE)) BETWEEN 2005 AND 2026
+) AS r
+WHERE __source_file = __fonte_cig
+-- Dentro la stessa risorsa la fonte puo' ripetere la riga: chiave primaria
+-- ufficiale (Manuale §4) = (cig, id_aggiudicazione), vince la comunicazione
+-- piu' recente.
+QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY cig, id_aggiudicazione
+    ORDER BY TRY_CAST(data_comunicazione_esito AS DATE) DESC NULLS LAST,
+             TRY_CAST(data_aggiudicazione_definitiva AS DATE) DESC NULLS LAST
+) = 1
