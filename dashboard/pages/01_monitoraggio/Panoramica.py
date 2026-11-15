@@ -39,8 +39,9 @@ k7.metric("Settori", fmt_num(int(latest['n_settori'])))
 tasso = latest['n_aggiudicati'] * 100 / latest['n_lotti'] if latest['n_lotti'] > 0 else 0
 k8.metric("Tasso aggiudicazione", f"{tasso:.1f}%")
 
-# -- Trend bandi 2016-2025 -----------------------------------------------------
-st.subheader("Trend bandi pubblicati (2016-2025)")
+# -- Trend bandi (anni disponibili) -------------------------------------------
+_anni = f"{int(ann_compose['anno'].min())}-{int(ann_compose['anno'].max())}"
+st.subheader(f"Trend bandi pubblicati ({_anni})")
 col_a, col_b = st.columns(2)
 with col_a:
     fig = go.Figure()

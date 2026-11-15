@@ -6,13 +6,13 @@ Sistema di intelligence sugli appalti pubblici: raccoglie i dati ufficiali ANAC 
 li trasforma in mart analitici e li rende interrogabili via dashboard Streamlit.
 
 - **Fonte**: [ANAC Open Data](https://dati.anticorruzione.it/opendata)
-- **Copertura**: 2016-2026, Italia (tutte le regioni)
+- **Copertura**: 2007-2026, Italia (tutte le regioni)
 - **Unità di analisi**: CIG (Codice Identificativo Gara)
 - **Output pubblico**: Dashboard Streamlit + Discussion
 
 ## Cosa risponde
 
-1. **Quanto si spende negli appalti e come varia nel tempo?** → trend bandi e importi 2016-2025
+1. **Quanto si spende negli appalti e come varia nel tempo?** → trend bandi e importi 2007-2025
 2. **Dove si concentra la spesa?** → top regioni, SA, settori per importo
 3. **Quanti affidamenti sono diretti vs gara?** → distribuzione tipo scelta contraente
 4. **Dove ci sono ritardi nell'esecuzione?** → scostamento dal termine contrattuale, sospensioni e varianti per SA e settore
@@ -25,11 +25,22 @@ li trasforma in mart analitici e li rende interrogabili via dashboard Streamlit.
 > non ancora conclusi), quindi il trend recente non è confrontabile con il
 > 2016-2022.
 
+> **Nota bandi**: gli importi `>= 1 mld` su un singolo lotto sono esclusi dalle
+> aggregazioni (`flag_importo_sospetto`) e il loro peso è dichiarato in
+> `n_importi_sospetti` / `importo_sospetti` di `mart_annuale`. Senza il filtro il
+> totale 2016-2025 è gonfiato del 18% (34,9% nel solo 2024). Difetti della fonte
+> e dettagli: `datasets/anac-bandi-gara/notes.md`.
+
+> **Nota copertura**: la serie parte dal 2007, ma il perimetro cambia due volte.
+> **2010-2014** e **2024-2025** includono molti affidamenti sotto soglia (mediana
+> per lotto €1,5k-16,8k contro €37k-74k del 2015-2023). La finestra confrontabile
+> è **2015-2023**.
+
 ## Dataset
 
 | Dataset | Cosa contiene | Anni | Mart |
 |---|---|---|---|
-| `anac-bandi-gara` | Bandi di gara e lotti (CIG) | 2016-2025 | 6 |
+| `anac-bandi-gara` | Bandi di gara e lotti (CIG) | 2007-2025 | 6 |
 | `anac-aggiudicazioni` | Esiti e importi delle aggiudicazioni | 2005-2026 | 2 |
 | `anac-aggiudicatari` | Imprese aggiudicatarie | 2005-2026 | 1 |
 | `anac-partecipanti` | Imprese partecipanti alle gare | 2005-2026 | 1 |
@@ -63,7 +74,7 @@ Dashboard Streamlit con 3 livelli:
 
 | Livello | Pagina | Contenuto |
 |---|---|---|
-| **Monitoraggio** | Panoramica | KPI principali, trend 2016-2025, affidamenti diretti vs gara |
+| **Monitoraggio** | Panoramica | KPI principali, trend 2007-2025, affidamenti diretti vs gara |
 | | Trend Territorio | Heatmap regioni x anni, top 5 trend |
 | **Intelligence** | Trasparenza | Concentrazione mercato, top imprese, tipo scelta contraente |
 | | Esecuzione | Funnel bando→SAL, ritardi per SA e settore |

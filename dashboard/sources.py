@@ -89,7 +89,7 @@ def _latest_year(slug: str, fallback: int = 2025) -> int:
 
 # Anni globali (per bandi multi-anno)
 _bandi_years = _years_for("anac_bandi_gara")
-YEARS_BANDI = _bandi_years if _bandi_years else list(range(2016, 2026))
+YEARS_BANDI = _bandi_years if _bandi_years else list(range(2007, 2026))
 
 # ── Dataset registry (per SQL page) ───────────────────────────────────────────
 
