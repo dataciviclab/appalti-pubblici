@@ -46,7 +46,6 @@ SELECT
     s.importo_totale_agg,
     s.data_ultima_agg,
     s.n_aggiudicatari,
-    s.aggiudicatari,
     s.n_partecipanti,
     s.n_subappalti,
     s.n_sal,

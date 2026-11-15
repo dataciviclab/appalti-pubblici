@@ -113,6 +113,8 @@ mart:
       sql: "sql/mart_panoramica.sql"
     - name: "mart_lifecycle"
       sql: "sql/mart_lifecycle.sql"
+    - name: "mart_cig_imprese"
+      sql: "sql/mart_cig_imprese.sql"
     - name: "mart_imprese"
       sql: "sql/mart_imprese.sql"
     - name: "mart_ritardi_per_sa"
@@ -126,6 +128,7 @@ mart:
   required_tables:
     - mart_panoramica
     - mart_lifecycle
+    - mart_cig_imprese
     - mart_imprese
     - mart_ritardi_per_sa
     - mart_competitivita
@@ -136,6 +139,8 @@ mart:
       mart_panoramica:
         min_rows: 10
       mart_lifecycle:
+        min_rows: 100000
+      mart_cig_imprese:
         min_rows: 100000
       mart_imprese:
         min_rows: 100000

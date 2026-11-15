@@ -22,8 +22,7 @@ aggiudicazioni AS (
 aggiudicatari AS (
     SELECT
         cig,
-        COUNT(DISTINCT codice_fiscale) AS n_aggiudicatari,
-        STRING_AGG(DISTINCT denominazione, ' | ' ORDER BY denominazione) AS aggiudicatari
+        COUNT(DISTINCT codice_fiscale) AS n_aggiudicatari
     FROM read_parquet('{support.aggiudicatari.clean}')
     WHERE codice_fiscale IS NOT NULL
       AND TRIM(codice_fiscale) != ''
@@ -94,8 +93,7 @@ cup AS (
     SELECT
         cig,
         MIN(cup) AS cup,
-        COUNT(DISTINCT cup) AS n_cup,
-        STRING_AGG(DISTINCT cup, ' | ' ORDER BY cup) AS cups
+        COUNT(DISTINCT cup) AS n_cup
     FROM read_parquet('{support.cup.clean}')
     WHERE cup IS NOT NULL AND TRIM(cup) != ''
     GROUP BY cig
@@ -198,7 +196,6 @@ SELECT
     COALESCE(a.totale_offerte_ammesse, 0) AS totale_offerte_ammesse,
     -- aggiudicatari
     COALESCE(ag.n_aggiudicatari, 0) AS n_aggiudicatari,
-    ag.aggiudicatari,
     -- partecipanti
     COALESCE(p.n_partecipanti, 0) AS n_partecipanti,
     -- subappalti
@@ -218,7 +215,6 @@ SELECT
     -- CUP
     cu.cup,
     COALESCE(cu.n_cup, 0) AS n_cup,
-    cu.cups,
     -- avvio contratto
     av.data_stipula_contratto,
     av.data_inizio_effettiva,
