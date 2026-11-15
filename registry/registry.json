@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repo": "appalti-pubblici",
   "source_repo": "dataciviclab/appalti-pubblici",
-  "updated_at": "2026-11-01",
+  "updated_at": "2026-11-15",
   "datasets": [
     {
       "slug": "anac_aggiudicatari",
@@ -448,6 +448,12 @@
           "description": ""
         },
         {
+          "name": "flag_importo_sospetto",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
           "name": "oggetto_principale_contratto",
           "type": "VARCHAR",
           "role": "dimension",
@@ -494,8 +500,8 @@
         },
         {
           "name": "cod_tipo_scelta_contraente",
-          "type": "BIGINT",
-          "role": "metric",
+          "type": "VARCHAR",
+          "role": "dimension",
           "description": ""
         },
         {
@@ -506,8 +512,8 @@
         },
         {
           "name": "cod_modalita_realizzazione",
-          "type": "BIGINT",
-          "role": "metric",
+          "type": "VARCHAR",
+          "role": "dimension",
           "description": ""
         },
         {
@@ -599,8 +605,8 @@
         },
         {
           "name": "COD_MODALITA_INDIZIONE_SPECIALI",
-          "type": "DOUBLE",
-          "role": "metric",
+          "type": "VARCHAR",
+          "role": "dimension",
           "description": ""
         },
         {
@@ -611,8 +617,8 @@
         },
         {
           "name": "COD_MODALITA_INDIZIONE_SERVIZI",
-          "type": "DOUBLE",
-          "role": "metric",
+          "type": "VARCHAR",
+          "role": "dimension",
           "description": ""
         },
         {
@@ -629,8 +635,8 @@
         },
         {
           "name": "COD_STRUMENTO_SVOLGIMENTO",
-          "type": "DOUBLE",
-          "role": "metric",
+          "type": "VARCHAR",
+          "role": "dimension",
           "description": ""
         },
         {
@@ -641,8 +647,8 @@
         },
         {
           "name": "COD_MOTIVO_URGENZA",
-          "type": "DOUBLE",
-          "role": "metric",
+          "type": "VARCHAR",
+          "role": "dimension",
           "description": ""
         },
         {
@@ -691,8 +697,8 @@
         },
         {
           "name": "COD_ESITO",
-          "type": "DOUBLE",
-          "role": "metric",
+          "type": "VARCHAR",
+          "role": "dimension",
           "description": ""
         },
         {
@@ -871,258 +877,15 @@
         "cross"
       ],
       "category": "appalti",
-      "columns": [
-        {
-          "name": "cig",
-          "type": "VARCHAR",
-          "role": "dimension",
-          "description": "",
-          "semantic_type": "cig_code"
-        },
-        {
-          "name": "n_aggiudicazioni",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "importo_totale_agg",
-          "type": "DOUBLE",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "data_ultima_agg",
-          "type": "DATE",
-          "role": "dimension",
-          "description": ""
-        },
-        {
-          "name": "ha_subappalto_flag",
-          "type": "INTEGER",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "totale_offerenti",
-          "type": "DOUBLE",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "totale_offerte_ammesse",
-          "type": "DOUBLE",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "n_aggiudicatari",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "aggiudicatari",
-          "type": "VARCHAR",
-          "role": "dimension",
-          "description": ""
-        },
-        {
-          "name": "n_partecipanti",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "n_subappalti",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "n_subappaltatori",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "n_sal",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "importo_totale_sal",
-          "type": "DOUBLE",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "sal_in_ritardo",
-          "type": "DOUBLE",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "n_serie_sal",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "n_serie_anomale",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "esito_collaudo",
-          "type": "VARCHAR",
-          "role": "dimension",
-          "description": ""
-        },
-        {
-          "name": "data_cert_collaudo",
-          "type": "DATE",
-          "role": "dimension",
-          "description": ""
-        },
-        {
-          "name": "riserve_avanzate",
-          "type": "DOUBLE",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "importo_contenz_risolto",
-          "type": "DOUBLE",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "cup",
-          "type": "VARCHAR",
-          "role": "dimension",
-          "description": "",
-          "semantic_type": "cup_code"
-        },
-        {
-          "name": "n_cup",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "cups",
-          "type": "VARCHAR",
-          "role": "dimension",
-          "description": ""
-        },
-        {
-          "name": "data_stipula_contratto",
-          "type": "DATE",
-          "role": "dimension",
-          "description": ""
-        },
-        {
-          "name": "data_inizio_effettiva",
-          "type": "DATE",
-          "role": "dimension",
-          "description": ""
-        },
-        {
-          "name": "data_termine_contrattuale",
-          "type": "DATE",
-          "role": "dimension",
-          "description": ""
-        },
-        {
-          "name": "giorni_aggiudicazione_stipula",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "giorni_stipula_inizio",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "data_effettiva_ultimazione",
-          "type": "DATE",
-          "role": "dimension",
-          "description": ""
-        },
-        {
-          "name": "motivo_risoluzione",
-          "type": "VARCHAR",
-          "role": "dimension",
-          "description": ""
-        },
-        {
-          "name": "motivo_interruzione_anticipata",
-          "type": "VARCHAR",
-          "role": "dimension",
-          "description": ""
-        },
-        {
-          "name": "giorni_scostamento_termine",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "n_sospensioni",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "giorni_sospensione",
-          "type": "DOUBLE",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "n_sospensioni_senza_ripresa",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "n_varianti",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "n_varianti_distinte",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "n_varianti_con_proroga",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        }
-      ],
-      "location": {
-        "type": "gcs",
-        "path": "gs://dataciviclab-clean/appalti_pubblici/anac_cross/2026/anac_cross_2026_clean.parquet",
-        "multi_file": false
-      },
       "stage": "incubating",
       "mart_refs": [
         "anac_cross__mart_panoramica",
-        "anac_cross__mart_lifecycle",
         "anac_cross__mart_imprese",
         "anac_cross__mart_ritardi_per_sa",
         "anac_cross__mart_competitivita",
         "anac_cross__mart_esecuzione",
-        "anac_cross__mart_ritardi_contratto"
+        "anac_cross__mart_ritardi_contratto",
+        "anac_cross__mart_collaudo_ritardo"
       ]
     },
     {
@@ -1796,6 +1559,16 @@
       }
     },
     {
+      "slug": "anac_cross__mart_collaudo_ritardo",
+      "dataset": "anac_cross",
+      "table": "mart_collaudo_ritardo",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_cross/2026/mart_collaudo_ritardo.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "anac_cross__mart_competitivita",
       "dataset": "anac_cross",
       "table": "mart_competitivita",
@@ -1822,16 +1595,6 @@
       "location": {
         "type": "gcs",
         "path": "gs://dataciviclab-mart/appalti_pubblici/anac_cross/2026/mart_imprese.parquet",
-        "multi_file": false
-      }
-    },
-    {
-      "slug": "anac_cross__mart_lifecycle",
-      "dataset": "anac_cross",
-      "table": "mart_lifecycle",
-      "location": {
-        "type": "gcs",
-        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_cross/2026/mart_lifecycle.parquet",
         "multi_file": false
       }
     },
@@ -1955,26 +1718,21 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261101T122912Z_c0b42c1d",
+        "run_id": "20261115T221411Z_73137c4b",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
-          "raw": 100,
-          "clean": 100,
           "mart": 100
         },
         "output_rows": {
-          "clean": 10842992,
-          "mart": 6710756
+          "mart": 661580
         },
         "output_bytes": {
-          "raw": 109267407,
-          "clean": 237208606,
-          "mart": 414338975
+          "mart": 14139931
         },
-        "started_at": "2026-11-01T12:29:12.048589+00:00",
-        "finished_at": "2026-11-01T12:30:22.828482+00:00",
-        "duration_seconds": 70.78
+        "started_at": "2026-11-15T22:14:11.848879+00:00",
+        "finished_at": "2026-11-15T22:14:50.068159+00:00",
+        "duration_seconds": 38.219
       }
     },
     {
@@ -1985,7 +1743,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261101T121714Z_3fc50843",
+        "run_id": "20261115T214400Z_94e25c65",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -1995,17 +1753,17 @@
         },
         "output_rows": {
           "raw": 5437334,
-          "clean": 5437334,
-          "mart": 790456
+          "clean": 6455228,
+          "mart": 918173
         },
         "output_bytes": {
-          "raw": 800016719,
-          "clean": 106622003,
-          "mart": 15399933
+          "raw": 1080709845,
+          "clean": 141321833,
+          "mart": 17812780
         },
-        "started_at": "2026-11-01T12:17:14.909736+00:00",
-        "finished_at": "2026-11-01T12:18:08.436588+00:00",
-        "duration_seconds": 53.527
+        "started_at": "2026-11-15T21:44:00.379823+00:00",
+        "finished_at": "2026-11-15T21:45:53.315340+00:00",
+        "duration_seconds": 112.936
       }
     },
     {
@@ -2016,7 +1774,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261101T121809Z_ade1cc04",
+        "run_id": "20261115T214554Z_d1fbe299",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -2026,17 +1784,17 @@
         },
         "output_rows": {
           "raw": 4862077,
-          "clean": 4817672,
-          "mart": 4819681
+          "clean": 5786635,
+          "mart": 5788807
         },
         "output_bytes": {
-          "raw": 758859815,
-          "clean": 109267407,
-          "mart": 96865433
+          "raw": 1010953816,
+          "clean": 111572168,
+          "mart": 100300530
         },
-        "started_at": "2026-11-01T12:18:09.560703+00:00",
-        "finished_at": "2026-11-01T12:19:03.298823+00:00",
-        "duration_seconds": 53.738
+        "started_at": "2026-11-15T21:45:54.913342+00:00",
+        "finished_at": "2026-11-15T21:47:55.204356+00:00",
+        "duration_seconds": 120.291
       }
     },
     {
@@ -2047,7 +1805,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261101T121904Z_b4ce5545",
+        "run_id": "20261115T214756Z_6751f7d6",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -2057,17 +1815,17 @@
         },
         "output_rows": {
           "raw": 1925829,
-          "clean": 1925829,
+          "clean": 2406857,
           "mart": 27
         },
         "output_bytes": {
-          "raw": 148803587,
-          "clean": 33387787,
-          "mart": 2506
+          "raw": 207257691,
+          "clean": 40535770,
+          "mart": 2507
         },
-        "started_at": "2026-11-01T12:19:04.838745+00:00",
-        "finished_at": "2026-11-01T12:19:20.325481+00:00",
-        "duration_seconds": 15.487
+        "started_at": "2026-11-15T21:47:56.811663+00:00",
+        "finished_at": "2026-11-15T21:48:46.689176+00:00",
+        "duration_seconds": 49.878
       }
     },
     {
@@ -2075,11 +1833,11 @@
       "source_id": "anac",
       "status": "ok",
       "label": "anac_bandi_gara",
-      "detail": "anni 2016-2025 — mart: si",
+      "detail": "anni 2007-2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261101T122522Z_619b298e",
-        "year": 2025,
+        "run_id": "20261115T220414Z_a41b9420",
+        "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
           "raw": 100,
@@ -2087,18 +1845,17 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 1475581,
-          "clean": 1475581,
-          "mart": 17449
+          "clean": 1071679,
+          "mart": 15466
         },
         "output_bytes": {
-          "raw": 1230464640,
-          "clean": 190730892,
-          "mart": 474947
+          "raw": 3217207258,
+          "clean": 148653367,
+          "mart": 420001
         },
-        "started_at": "2026-11-01T12:25:22.661915+00:00",
-        "finished_at": "2026-11-01T12:26:53.521588+00:00",
-        "duration_seconds": 90.86
+        "started_at": "2026-11-15T22:04:14.715170+00:00",
+        "finished_at": "2026-11-15T22:08:25.046504+00:00",
+        "duration_seconds": 250.331
       }
     },
     {
@@ -2109,7 +1866,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261101T122655Z_ec5d775a",
+        "run_id": "20261115T220826Z_aa1e730a",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -2119,17 +1876,17 @@
         },
         "output_rows": {
           "raw": 648862,
-          "clean": 648862,
-          "mart": 36
+          "clean": 730502,
+          "mart": 37
         },
         "output_bytes": {
-          "raw": 47391770,
-          "clean": 8789974,
-          "mart": 1552
+          "raw": 53519474,
+          "clean": 9186996,
+          "mart": 1594
         },
-        "started_at": "2026-11-01T12:26:55.853688+00:00",
-        "finished_at": "2026-11-01T12:27:02.588979+00:00",
-        "duration_seconds": 6.735
+        "started_at": "2026-11-15T22:08:26.880667+00:00",
+        "finished_at": "2026-11-15T22:08:49.229811+00:00",
+        "duration_seconds": 22.349
       }
     },
     {
@@ -2140,7 +1897,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261101T122703Z_8c6b365e",
+        "run_id": "20261115T220850Z_bc513bc9",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -2149,18 +1906,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 7228216,
-          "clean": 7228216,
-          "mart": 1569918
+          "raw": 7237211,
+          "clean": 7237211,
+          "mart": 1572651
         },
         "output_bytes": {
-          "raw": 198701008,
-          "clean": 76432020,
-          "mart": 9128646
+          "raw": 198989490,
+          "clean": 76538705,
+          "mart": 9145847
         },
-        "started_at": "2026-11-01T12:27:03.633169+00:00",
-        "finished_at": "2026-11-01T12:27:28.288889+00:00",
-        "duration_seconds": 24.656
+        "started_at": "2026-11-15T22:08:50.503664+00:00",
+        "finished_at": "2026-11-15T22:09:15.274152+00:00",
+        "duration_seconds": 24.77
       }
     },
     {
@@ -2171,7 +1928,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261101T122729Z_dc9c1783",
+        "run_id": "20261115T220916Z_05cdb2be",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -2181,17 +1938,17 @@
         },
         "output_rows": {
           "raw": 1070254,
-          "clean": 1070254,
-          "mart": 46
+          "clean": 1293773,
+          "mart": 47
         },
         "output_bytes": {
-          "raw": 48005446,
-          "clean": 12604328,
-          "mart": 3385
+          "raw": 60757741,
+          "clean": 15176821,
+          "mart": 3410
         },
-        "started_at": "2026-11-01T12:27:29.720029+00:00",
-        "finished_at": "2026-11-01T12:27:37.601360+00:00",
-        "duration_seconds": 7.881
+        "started_at": "2026-11-15T22:09:16.549076+00:00",
+        "finished_at": "2026-11-15T22:09:43.442324+00:00",
+        "duration_seconds": 26.893
       }
     },
     {
@@ -2202,7 +1959,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261101T122739Z_40f87d4a",
+        "run_id": "20261115T220944Z_b2d36a8a",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -2212,17 +1969,17 @@
         },
         "output_rows": {
           "raw": 8044052,
-          "clean": 8044052,
-          "mart": 1008742
+          "clean": 9561800,
+          "mart": 1152378
         },
         "output_bytes": {
-          "raw": 1015712571,
-          "clean": 122767216,
-          "mart": 19679387
+          "raw": 1592914303,
+          "clean": 181792898,
+          "mart": 22367565
         },
-        "started_at": "2026-11-01T12:27:39.099197+00:00",
-        "finished_at": "2026-11-01T12:28:31.778897+00:00",
-        "duration_seconds": 52.68
+        "started_at": "2026-11-15T22:09:44.741440+00:00",
+        "finished_at": "2026-11-15T22:12:09.725186+00:00",
+        "duration_seconds": 144.984
       }
     },
     {
@@ -2233,7 +1990,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261101T122833Z_9e79bee2",
+        "run_id": "20261115T221211Z_a5c3f7c5",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -2243,17 +2000,17 @@
         },
         "output_rows": {
           "raw": 227747,
-          "clean": 227747,
-          "mart": 145
+          "clean": 249385,
+          "mart": 157
         },
         "output_bytes": {
-          "raw": 18686262,
-          "clean": 2976769,
-          "mart": 4371
+          "raw": 22132883,
+          "clean": 3199292,
+          "mart": 4520
         },
-        "started_at": "2026-11-01T12:28:33.196112+00:00",
-        "finished_at": "2026-11-01T12:28:37.835916+00:00",
-        "duration_seconds": 4.64
+        "started_at": "2026-11-15T22:12:11.502864+00:00",
+        "finished_at": "2026-11-15T22:12:28.674382+00:00",
+        "duration_seconds": 17.172
       }
     },
     {
@@ -2264,7 +2021,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261101T122838Z_d54228d0",
+        "run_id": "20261115T221229Z_6c7d87d0",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -2274,17 +2031,17 @@
         },
         "output_rows": {
           "raw": 1274801,
-          "clean": 1274801,
-          "mart": 56
+          "clean": 1543585,
+          "mart": 57
         },
         "output_bytes": {
-          "raw": 135853895,
-          "clean": 33347260,
-          "mart": 2412
+          "raw": 230789984,
+          "clean": 40860766,
+          "mart": 2351
         },
-        "started_at": "2026-11-01T12:28:38.842843+00:00",
-        "finished_at": "2026-11-01T12:28:50.913206+00:00",
-        "duration_seconds": 12.07
+        "started_at": "2026-11-15T22:12:29.931954+00:00",
+        "finished_at": "2026-11-15T22:13:11.012318+00:00",
+        "duration_seconds": 41.08
       }
     },
     {
@@ -2295,7 +2052,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261101T122852Z_edc41129",
+        "run_id": "20261115T221312Z_56f2b9ed",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -2305,17 +2062,17 @@
         },
         "output_rows": {
           "raw": 334301,
-          "clean": 334301,
-          "mart": 252204
+          "clean": 373296,
+          "mart": 279864
         },
         "output_bytes": {
-          "raw": 122508885,
-          "clean": 16901551,
-          "mart": 3915133
+          "raw": 189544365,
+          "clean": 18809965,
+          "mart": 4383511
         },
-        "started_at": "2026-11-01T12:28:52.308771+00:00",
-        "finished_at": "2026-11-01T12:29:03.467312+00:00",
-        "duration_seconds": 11.159
+        "started_at": "2026-11-15T22:13:12.280219+00:00",
+        "finished_at": "2026-11-15T22:13:45.173996+00:00",
+        "duration_seconds": 32.894
       }
     },
     {
@@ -2326,7 +2083,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261101T122904Z_01a8aa59",
+        "run_id": "20261115T221346Z_2a72fa9b",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -2336,17 +2093,17 @@
         },
         "output_rows": {
           "raw": 321294,
-          "clean": 321294,
-          "mart": 102873
+          "clean": 365945,
+          "mart": 110540
         },
         "output_bytes": {
-          "raw": 40592281,
-          "clean": 9450952,
-          "mart": 2863709
+          "raw": 54701453,
+          "clean": 9034602,
+          "mart": 3128807
         },
-        "started_at": "2026-11-01T12:29:04.879161+00:00",
-        "finished_at": "2026-11-01T12:29:11.715564+00:00",
-        "duration_seconds": 6.836
+        "started_at": "2026-11-15T22:13:46.433851+00:00",
+        "finished_at": "2026-11-15T22:14:11.384105+00:00",
+        "duration_seconds": 24.95
       }
     }
   ],
@@ -2493,12 +2250,6 @@
             "semantic_type": "cig_code"
           },
           {
-            "slug": "anac_cross",
-            "name": "Anac Cross",
-            "column": "cig",
-            "semantic_type": "cig_code"
-          },
-          {
             "slug": "anac_cup",
             "name": "Anac Cup",
             "column": "cig",
@@ -2542,7 +2293,7 @@
           }
         ],
         "types": {
-          "cig_code": 16
+          "cig_code": 15
         }
       },
       "Nazione": {
@@ -2565,12 +2316,6 @@
         "label": "Progetto",
         "datasets": [
           {
-            "slug": "anac_cross",
-            "name": "Anac Cross",
-            "column": "cup",
-            "semantic_type": "cup_code"
-          },
-          {
             "slug": "anac_cup",
             "name": "Anac Cup",
             "column": "cup",
@@ -2578,7 +2323,7 @@
           }
         ],
         "types": {
-          "cup_code": 2
+          "cup_code": 1
         }
       },
       "Provincia": {
@@ -2688,32 +2433,6 @@
           "entity": "Comune",
           "bridge": "anac_bandi_gara",
           "on": "cig",
-          "semantic_type": "municipality_code"
-        }
-      },
-      {
-        "from": {
-          "entity": "Gara",
-          "dataset": "anac_cross",
-          "via": "cig_code"
-        },
-        "to": {
-          "entity": "Comune",
-          "bridge": "anac_bandi_gara",
-          "on": "cig",
-          "semantic_type": "municipality_code"
-        }
-      },
-      {
-        "from": {
-          "entity": "Progetto",
-          "dataset": "anac_cross",
-          "via": "cup_code"
-        },
-        "to": {
-          "entity": "Comune",
-          "bridge": "anac_cup",
-          "on": "cup",
           "semantic_type": "municipality_code"
         }
       },
