@@ -1,9 +1,12 @@
 -- Riepilogo annuale leggero: 1 riga per anno per la dashboard overview.
 -- Le tabelle esistenti (mart_top_stazioni, mart_trend_pnrr, ecc.) restano per drill-down.
 --
--- Gli importi con flag_importo_sospetto (>= 1 mld su un singolo lotto) restano
--- fuori dalle aggregazioni: includerli gonfia il totale del 18% sulla serie
--- 2016-2025. Il loro peso e' dichiarato in n_importi_sospetti / importo_sospetti.
+-- Le righe con flag_importo_sospetto restano fuori dalle aggregazioni. Il flag
+-- ha due firme: importo del lotto >= 1 mld (290 righe) e importo del lotto
+-- >= 10x l'importo della gara (1.538 righe: e' questa che fa l'84% del lavoro).
+-- Includerle gonfia il totale del 19,2% sulla serie 2007-2026 (35,7% nel 2024,
+-- 58,5% nel 2007). Il loro peso e' dichiarato in n_importi_sospetti /
+-- importo_sospetti.
 SELECT
     anno_pubblicazione AS anno,
     COUNT(*) AS n_lotti,

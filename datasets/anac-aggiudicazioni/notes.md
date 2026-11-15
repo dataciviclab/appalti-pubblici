@@ -38,6 +38,22 @@ casi sono coperti da queste due regole.
 `raw.output_policy: overwrite` è obbligatorio con `split_resources`: il default
 `versioned` accumulerebbe `00-..._1`, `00-..._2` a ogni run.
 
+**Tre limiti noti della regola per CIG** (misurati, non corretti):
+
+1. **Il filtro sulla data gira prima della finestra di sostituzione.** Nel clean
+   `WHERE safe_date(data_aggiudicazione_definitiva) IS NOT NULL …` sta dentro la
+   subquery che sceglie la risorsa vincente: una riga di delta con data NULL
+   non partecipa mai, quindi per quel CIG resta la riga vecchia del full invece
+   dell'aggiornamento. Non corrompe, ma «il delta vince» non vale per gli
+   aggiornamenti senza data.
+2. **La sostituzione può perdere qualche riga.** Per 490 CIG di `partecipanti`
+   (su 767.526 condivisi, 0,06%) e 1.816 di `aggiudicatari` (0,25%) il delta ha
+   meno righe del full: la regola del Manuale sostituisce, quindi quelle righe
+   spariscono. È il verso giusto (l'alternativa `(cig, id)` produrrebbe ~507mila
+   duplicati dai soli id sintetici), ma è una perdita silenziosa.
+3. **Coerente con la scelta di non applicare le correzioni storiche**: i delta
+   riemettono anche record di anni passati, e per quei CIG vince il delta.
+
 ## Schema osservato
 
 Dal delta CSV `20260701-aggiudicazioni_csv.csv` (190.829 righe):
@@ -76,7 +92,15 @@ Già risolto in anac-bandi-gara con `client.user_agent` config.
 | Aggiudicazioni 2025 | 1.219.225 / €405,9 Mld | 1.283.816 / €473,9 Mld |
 | Aggiudicazioni 2026 | 16.666 | **877.419** (gen-set) |
 
-Il 2026 passa da 16mila a 877mila righe: è il buco che i delta coprono.
+Sui **SAL** il confronto va fatto a parità di filtro: le 149.666 righe sono
+`data_emissione_sal >= 2026-01-01` (e includono 284 date future, fino al 2062);
+per anno di emissione = 2026 sono **149.382**, contro le 929 di prima. Le 284
+future sono refusi plausibili che `safe_date` non intercetta: l'audit le elenca
+come avviso.
+
+Il 2026 passa da 16mila a 877mila righe: è la parte che i delta coprono. Il
+mese **parziale è gennaio** (il full si ferma al 15/1): febbraio e marzo sono
+pieni, perché il primo delta utile li contiene. Non c'è nessun buco feb-mar.
 Il 2024 scende leggermente perché per i CIG ripubblicati dai delta vale la
 versione del delta (regola ANAC), non quella del full.
 

@@ -1,13 +1,15 @@
 """Panoramica -- Visione d'insieme degli appalti pubblici ANAC."""
 
-import streamlit as st
+import datetime as dt
+
 import plotly.express as px
 import plotly.graph_objects as go
+import streamlit as st
 from lab_connectors.formatters import fmt_num
 from sources import (
+    fmt_eur_short,
     load_compose_panoramica_annuale,
     load_mart_sa_profilo,
-    fmt_eur_short,
 )
 
 st.title("Panoramica -- ANAC Appalti Pubblici")
@@ -24,8 +26,21 @@ if ann_compose.empty:
     st.stop()
 
 # -- KPI ultimo anno -----------------------------------------------------------
-st.subheader("KPI Principali (ultimo anno disponibile)")
+# L'anno in corso e' per costruzione parziale (i delta arrivano fino all'ultimo
+# mese pubblicato): va detto, altrimenti il calo rispetto all'anno precedente
+# sembra un crollo della domanda.
 latest = ann_compose.iloc[-1]
+_anno_corrente = dt.date.today().year
+_provvisorio = int(latest["anno"]) >= _anno_corrente
+st.subheader(
+    f"KPI Principali ({int(latest['anno'])}"
+    + (" — anno in corso, dati parziali)" if _provvisorio else ")")
+)
+if _provvisorio:
+    st.caption(
+        "L'anno in corso contiene solo i mesi gia' pubblicati da ANAC: i valori "
+        "non sono confrontabili con un anno chiuso."
+    )
 k1, k2, k3, k4 = st.columns(4)
 k1.metric("CIG pubblicati", fmt_num(int(latest["n_cig"])))
 k2.metric("Importo totale", fmt_eur_short(latest['importo_totale']))
@@ -42,6 +57,11 @@ k8.metric("Tasso aggiudicazione", f"{tasso:.1f}%")
 # -- Trend bandi (anni disponibili) -------------------------------------------
 _anni = f"{int(ann_compose['anno'].min())}-{int(ann_compose['anno'].max())}"
 st.subheader(f"Trend bandi pubblicati ({_anni})")
+st.caption(
+    "Attenzione al perimetro: 2010-2014 e 2024-2025 includono molti affidamenti "
+    "sotto soglia (mediana per lotto €1,5k-16,8k contro €37k-74k del 2015-2023). "
+    "La finestra confrontabile è **2015-2023**; l'ultimo anno è parziale."
+)
 col_a, col_b = st.columns(2)
 with col_a:
     fig = go.Figure()

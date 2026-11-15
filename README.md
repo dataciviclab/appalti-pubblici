@@ -25,11 +25,14 @@ li trasforma in mart analitici e li rende interrogabili via dashboard Streamlit.
 > non ancora conclusi), quindi il trend recente non è confrontabile con il
 > 2016-2022.
 
-> **Nota bandi**: gli importi `>= 1 mld` su un singolo lotto sono esclusi dalle
-> aggregazioni (`flag_importo_sospetto`) e il loro peso è dichiarato in
-> `n_importi_sospetti` / `importo_sospetti` di `mart_annuale`. Senza il filtro il
-> totale 2007-2026 è gonfiato del 19% (35,7% nel solo 2024). Difetti della fonte
-> e dettagli: `datasets/anac-bandi-gara/notes.md`.
+> **Nota bandi**: `flag_importo_sospetto` raccoglie **due** firme di errore, non
+> una: importo del lotto `>= 1 mld` (290 righe) **e** importo del lotto `>= 10×`
+> l'importo della gara (1.538 righe, l'84% del totale). Le righe flaggate restano
+> nel clean col valore pubblicato ed escono dalle aggregazioni; il peso escluso è
+> in `n_importi_sospetti` / `importo_sospetti` di `mart_annuale`. Insieme valgono
+> 1.828 righe su 12,1 milioni = **19,2%** del valore 2007-2026 (35,7% nel 2024) e
+> **58,5% del 2007**: nella serie lunga ci sono anni in cui il totale è dominato
+> dalle esclusioni. Difetti della fonte e dettagli: `datasets/anac-bandi-gara/notes.md`.
 
 > **Nota copertura**: la serie parte dal 2007, ma il perimetro cambia due volte.
 > **2010-2014** e **2024-2025** includono molti affidamenti sotto soglia (mediana
@@ -104,8 +107,11 @@ cd dashboard && streamlit run app.py
 # Test
 python -m pytest tests/
 
-# Quadratura (chiavi primarie, date impossibili, freschezza)
+# Quadratura: chiavi (entro e fra le partizioni), date, schema per anno, freschezza
 python scripts/audit_datasets.py
+# oggi esce 1 su anac_bandi_gara: deriva di schema nota tra partizioni anno
+# (CF_SA_DELEGANTE, COD_MOTIVO_CANCELLAZIONE, codici del 2026) — dettaglio e
+# fix previsto in datasets/anac-bandi-gara/notes.md
 ```
 
 ## Struttura

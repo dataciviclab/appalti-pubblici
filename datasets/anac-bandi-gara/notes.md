@@ -138,9 +138,24 @@ Misura 2007-2026: **1.828 righe su 12,1 milioni (0,015%) valgono €1.021 mld, i
 19,2% del totale**; nel 2024 sono 726 righe per €243 mld (35,7%). Includerle
 rendeva inutilizzabili i totali e le classifiche per stazione appaltante.
 Il flag non distingue reale da corrotto: è una lista di verifica, non una
-correzione. Le due firme sono complementari: la soglia sul miliardo prende gli
-importi grandi, il rapporto lotto/gara ≥ 10 prende gli appiattimenti piccoli
-(2024: 672 righe in più per €0,9 mld).
+correzione.
+
+**Composizione delle due firme** (conta chi legge: non basta dire «≥ 1 mld»):
+
+| firma | righe | quota |
+|---|---|---|
+| importo del lotto `>= 1 mld` | 290 | 16% |
+| importo del lotto `>= 10×` importo gara | 1.538 | **84%** |
+
+Sono complementari: la soglia sul miliardo prende gli importi grandi, il
+rapporto prende gli appiattimenti sotto il miliardo (2024: 672 righe in più per
+€0,9 mld). La seconda firma è quella che fa il lavoro.
+
+**La serie lunga ha anni dominati dalle esclusioni.** Nel **2007** le righe
+flaggate valgono €109,2 mld su €186,6 mld: il 58,5% dell'anno. Dopo il filtro
+`mart_annuale.importo_totale` del 2007 scende a €77,4 mld. Chi confronta il
+2007 con il 2015-2023 deve sapere che sta guardando un anno in cui la maggior
+parte del valore pubblicato è esclusa.
 
 ### Difetti noti della fonte (verificati 2026-11)
 
@@ -152,6 +167,39 @@ importi grandi, il rapporto lotto/gara ≥ 10 prende gli appiattimenti piccoli
 | `-1` come sentinella | `ImportoLottoType` ha `minInclusive = -1` nello schema SIMOG: il -1 di 2010-2012 (~10k righe) è ammesso dalla fonte | da escludere dalle somme, non dai conteggi (follow-up) |
 | `numero_gara` numerico fino al 2023, alfanumerico dal 2024 (`CONSIP_RDO_4955828`) | il parquet cambia tipo per anno e le query cross-anno falliscono | cast a VARCHAR in clean |
 | `data_scadenza_offerta` prima della pubblicazione | 1,5M righe, di cui 1,44M affidamenti diretti | ANAC conferma (risposta PEC 30/07/2026): la scadenza offerte "non ricorre negli affidamenti diretti". Non usare per calcoli di efficienza |
+| Date future plausibili (refusi) | **407** `data_scadenza_offerta` con anno > 2026 (max **2088**); altrove: 284 `data_emissione_sal` fino al 2062, 42 `data_cert_collaudo` al 2033, 8 subappalti al 2055 | **non filtrate**: `safe_date` scarta solo gli anni fuori 1800-2100, e il dominio non è deducibile dalla data. `scripts/audit_datasets.py` le elenca come avvisi con il conteggio: escluderle è una scelta di analisi, non di pulizia |
+
+### Deriva di schema tra partizioni (aperta)
+
+Le partizioni anno non hanno tutte lo stesso schema: lo sniffing dei tipi del
+CSV decide per anno, e il 2026 (che arriva dal delta `cig`, con valori
+alfanumerici) finisce diverso dagli altri.
+
+| colonna | partizioni | tipo |
+|---|---|---|
+| `CF_SA_DELEGANTE` / `CF_SA_DELEGATA` | 2011, 2014 | `BIGINT` invece di `VARCHAR` |
+| `COD_MOTIVO_CANCELLAZIONE` | 2012-2022, 2025 | `DOUBLE` invece di `VARCHAR` |
+| `COD_ESITO`, `COD_MODALITA_INDIZIONE_*`, `COD_MOTIVO_URGENZA`, `COD_STRUMENTO_SVOLGIMENTO`, `cod_modalita_realizzazione`, `cod_tipo_scelta_contraente` | 2026 | `VARCHAR` invece di `BIGINT`/`DOUBLE` |
+
+Due danni concreti. Il primo: nelle partizioni dove il codice fiscale è letto
+come `BIGINT` gli zeri iniziali sono **persi** (`01234567890` → `1234567890`),
+e non si recuperano castando a valle — servirebbe rileggere il raw come testo.
+Il secondo: chi legge le partizioni una per una (o `_data` su GCS) incontra tipi
+diversi per la stessa colonna.
+
+`scripts/audit_datasets.py` ha ora il controllo che mancava («schema identico in
+tutte le partizioni anno») e oggi **esce con codice 1 proprio su questo
+dataset**. Il fix previsto è `clean.read.all_varchar: true` — tutte le colonne
+testo, i tipi dichiarati esplicitamente nel clean dalle macro — che elimina lo
+sniffing per anno e rende superfluo `sample_size: -1`. Va fatto con un run
+completo delle 20 partizioni per verificarne gli effetti, quindi non in questa PR.
+
+**Il dedup è per partizione anno, non per dataset.** Sei CIG su 12,1 milioni
+compaiono in due `anno_pubblicazione` (es. `B456C65019`: €189.486,22 nel 2025 e
+€7.500 nel 2026), effetto diretto della scelta di non applicare le correzioni
+storiche dei delta. Il contratto «1 CIG = 1 riga» vale quindi **dentro** ogni
+anno, non globalmente: un'aggregazione cross-anno su quei 6 CIG conterebbe due
+volte. L'audit li segnala come avviso.
 
 Modello dati di riferimento: `anticorruzione/simog-docs` (XSD 3.04.16) e
 `anticorruzione/npa` (`docs/modello-dati/schede/*.yaml`).
