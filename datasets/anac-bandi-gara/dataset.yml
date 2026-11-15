@@ -53,11 +53,13 @@ clean:
     null_padding: true
     trim_whitespace: true
     sample_size: -1
-    # I delta `cig` hanno virgolette escapate male (\"SCALA 4\"): senza
-    # strict_mode=false DuckDB scarta ~16mila righe per file. E hanno campi
-    # con newline dentro le virgolette: null_padding + parallel non convivono.
-    strict_mode: false
-    parallel: false
+  # Solo il 2026 (delta `cig`) ha bisogno di una lettura diversa: virgolette
+  # escapate male e newline dentro i campi. Gli anni 2007-2025 sono CSV puliti
+  # e restano in lettura parallela (~3x piu' veloce).
+  read_by_year:
+    2026:
+      strict_mode: false
+      parallel: false
   required_columns:
     - "cig"
     - "anno_pubblicazione"
