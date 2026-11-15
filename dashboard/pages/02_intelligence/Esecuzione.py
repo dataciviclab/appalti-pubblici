@@ -27,10 +27,13 @@ if bandi_p and sal_p:
     funnel = query_duckdb(f"""
         WITH bandi AS (
             SELECT
+                -- Conteggi su tutte le righe, importi senza i sospetti: la
+                -- stessa regola di `mart_annuale`, altrimenti il funnel e i
+                -- mart danno due totali diversi per lo stesso anno.
                 COUNT(*) AS n_bandi,
-                ROUND(SUM(importo_lotto)/1e9, 1) AS importo_mld,
+                ROUND(SUM(importo_lotto) FILTER (WHERE NOT flag_importo_sospetto)/1e9, 1) AS importo_mld,
                 SUM(CASE WHEN esito = 'AGGIUDICATA' THEN 1 ELSE 0 END) AS n_aggiudicati,
-                ROUND(SUM(CASE WHEN esito = 'AGGIUDICATA' THEN importo_lotto ELSE 0 END)/1e9, 1) AS importo_agg_mld,
+                ROUND(SUM(importo_lotto) FILTER (WHERE esito = 'AGGIUDICATA' AND NOT flag_importo_sospetto)/1e9, 1) AS importo_agg_mld,
                 SUM(CASE WHEN esito IS NULL OR esito = '' THEN 1 ELSE 0 END) AS n_senza_esito
             FROM read_parquet('{bandi_p}')
             WHERE stato = 'ATTIVO'
