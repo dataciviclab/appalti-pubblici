@@ -41,6 +41,10 @@ DATASETS: dict[str, dict] = {
     "anac_varianti": {"key": ["cig", "id_aggiudicazione", "id_variante", "cod_motivo_variante", "data_approvazione_variante"], "dates": ["data_approvazione_variante"]},
 }
 
+# La macro `safe_date` del toolkit scarta solo cio' che e' fisicamente
+# impossibile (1800-2100). Qui la finestra e' piu' stretta perche' e' l'attesa
+# del dominio: un appalto anteriore al 1990 in un dataset che parte dal 2007 e'
+# un errore di compilazione della stazione appaltante, e va visto.
 MIN_YEAR = 1990
 MAX_YEAR = 2100
 
