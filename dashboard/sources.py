@@ -259,11 +259,6 @@ def load_compose_panoramica_annuale() -> pd.DataFrame:
     )
 
 
-@st.cache_data(ttl=3600, show_spinner=False)
-def load_compose_lifecycle() -> pd.DataFrame:
-    return load_mart("mart_lifecycle", slug="anac_cross")
-
-
 # ── Ricerca CIG (cross-dataset) ─────────────────────────────────────────────
 
 @st.cache_data(ttl=3600, show_spinner=False)

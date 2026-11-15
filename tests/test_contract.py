@@ -79,12 +79,18 @@ def test_each_dataset_declares_minimum_contract(dataset_configs: list[Path]) -> 
         assert dataset["dataset"].get("name"), f"{rel}: manca dataset.name"
         assert isinstance(dataset["dataset"].get("years"), list), f"{rel}: years deve essere una lista"
         assert dataset["dataset"]["years"], f"{rel}: years non deve essere vuota"
-        assert "raw" in dataset and dataset["raw"].get("sources"), f"{rel}: manca raw.sources"
-        assert dataset["raw"]["sources"][0].get("primary") is True, f"{rel}: la prima source deve essere primary"
-        assert dataset["clean"]["sql"], f"{rel}: manca clean.sql"
-        assert dataset["clean"].get("required_columns"), f"{rel}: manca clean.required_columns"
-        assert dataset["clean"]["validate"].get("not_null"), f"{rel}: manca clean.validate.not_null"
-        assert dataset["clean"]["validate"].get("min_rows") == 1, f"{rel}: min_rows deve essere 1"
+        mart_only = "raw" not in dataset and "clean" not in dataset
+        if mart_only:
+            # Compose mart-only (modello pil-intelligence / legal-graph):
+            # niente raw/clean, i mart leggono i support direttamente.
+            assert dataset.get("support"), f"{rel}: mart-only senza support"
+        else:
+            assert "raw" in dataset and dataset["raw"].get("sources"), f"{rel}: manca raw.sources"
+            assert dataset["raw"]["sources"][0].get("primary") is True, f"{rel}: la prima source deve essere primary"
+            assert dataset["clean"]["sql"], f"{rel}: manca clean.sql"
+            assert dataset["clean"].get("required_columns"), f"{rel}: manca clean.required_columns"
+            assert dataset["clean"]["validate"].get("not_null"), f"{rel}: manca clean.validate.not_null"
+            assert dataset["clean"]["validate"].get("min_rows") == 1, f"{rel}: min_rows deve essere 1"
         assert dataset["mart"]["tables"], f"{rel}: manca mart.tables"
         assert dataset["mart"].get("required_tables"), f"{rel}: manca mart.required_tables"
         assert dataset["mart"]["validate"].get("table_rules"), f"{rel}: manca mart.validate.table_rules"
@@ -125,8 +131,9 @@ def test_declared_sql_files_exist(dataset_configs: list[Path]) -> None:
         cfg_dir = cfg.parent
         rel = str(cfg.relative_to(REPO_ROOT))
 
-        clean_sql = (cfg_dir / dataset["clean"]["sql"]).resolve()
-        assert clean_sql.is_file(), f"{rel}: manca clean SQL dichiarato: {dataset['clean']['sql']}"
+        if "clean" in dataset:
+            clean_sql = (cfg_dir / dataset["clean"]["sql"]).resolve()
+            assert clean_sql.is_file(), f"{rel}: manca clean SQL dichiarato: {dataset['clean']['sql']}"
 
         for table in dataset["mart"]["tables"]:
             assert table.get("name"), f"{rel}: ogni mart table deve dichiarare un name"
