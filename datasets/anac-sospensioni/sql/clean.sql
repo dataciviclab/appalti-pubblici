@@ -4,8 +4,8 @@
 WITH src AS (
     SELECT
         normalize_string(cig) AS cig,
-        TRY_CAST(NULLIF(data_sospensione, '0001-01-01') AS DATE) AS d_sospensione,
-        TRY_CAST(NULLIF(data_ripresa, '0001-01-01') AS DATE) AS d_ripresa,
+        safe_date(NULLIF(data_sospensione, '0001-01-01')) AS d_sospensione,
+        safe_date(NULLIF(data_ripresa, '0001-01-01')) AS d_ripresa,
         normalize_string(descrizione_motivo) AS descrizione_motivo,
         cast_bigint(id_aggiudicazione) AS id_aggiudicazione
     FROM raw_input

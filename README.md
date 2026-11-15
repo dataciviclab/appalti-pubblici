@@ -103,6 +103,9 @@ cd dashboard && streamlit run app.py
 
 # Test
 python -m pytest tests/
+
+# Quadratura (chiavi primarie, date impossibili, freschezza)
+python scripts/audit_datasets.py
 ```
 
 ## Struttura

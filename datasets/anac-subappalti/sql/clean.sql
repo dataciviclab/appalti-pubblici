@@ -2,7 +2,7 @@ SELECT
     normalize_string(cig) AS cig,
     id_subappalto,
     cf_subappaltante,
-    TRY_CAST(data_autorizzazione AS DATE) AS data_autorizzazione,
+    safe_date(data_autorizzazione) AS data_autorizzazione,
     oggetto,
     cod_categoria,
     descrizione_categoria,

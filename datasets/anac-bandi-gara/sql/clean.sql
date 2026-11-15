@@ -34,8 +34,8 @@ SELECT
     settore,
     luogo_istat AS codice_istat_luogo,
     provincia,
-    TRY_CAST(data_pubblicazione AS DATE) AS data_pubblicazione,
-    TRY_CAST(data_scadenza_offerta AS DATE) AS data_scadenza_offerta,
+    safe_date(data_pubblicazione) AS data_pubblicazione,
+    safe_date(data_scadenza_offerta) AS data_scadenza_offerta,
     cod_tipo_scelta_contraente,
     tipo_scelta_contraente,
     cod_modalita_realizzazione,
@@ -70,12 +70,12 @@ SELECT
     cast_double(importo_sicurezza) AS importo_sicurezza,
     cod_esito,
     esito,
-    TRY_CAST(data_comunicazione_esito AS DATE) AS data_comunicazione_esito,
-    TRY_CAST(data_cancellazione AS DATE) AS data_cancellazione,
+    safe_date(data_comunicazione_esito) AS data_comunicazione_esito,
+    safe_date(data_cancellazione) AS data_cancellazione,
     cod_motivo_cancellazione,
     motivo_cancellazione,
     tipo_appalto_riservato,
-    TRY_CAST(data_ultimo_perfezionamento AS DATE) AS data_ultimo_perfezionamento
+    safe_date(data_ultimo_perfezionamento) AS data_ultimo_perfezionamento
 FROM raw_input
 -- Ogni partizione anno contiene solo le righe di quell'anno. Per il 2026 la
 -- fonte e' il dataset `cig` dei delta, che mescola tutti gli anni: qui restano

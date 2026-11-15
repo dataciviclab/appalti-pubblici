@@ -8,8 +8,8 @@ WITH src AS (
         normalize_string(motivo_risoluzione) AS motivo_risoluzione,
         normalize_string(cod_motivo_interruzione_anticipata) AS cod_motivo_interruzione_anticipata,
         normalize_string(motivo_interruzione_anticipata) AS motivo_interruzione_anticipata,
-        TRY_CAST(NULLIF(data_conclusione_anticipata, '0001-01-01') AS DATE) AS d_conclusione,
-        TRY_CAST(NULLIF(data_effettiva_ultimazione, '0001-01-01') AS DATE) AS d_ultimazione,
+        safe_date(NULLIF(data_conclusione_anticipata, '0001-01-01')) AS d_conclusione,
+        safe_date(NULLIF(data_effettiva_ultimazione, '0001-01-01')) AS d_ultimazione,
         cast_bigint(id_aggiudicazione) AS id_aggiudicazione,
         cast_int(giorni_proroga) AS giorni_proroga
     FROM raw_input

@@ -17,6 +17,10 @@ CLEAN_SQL = REPO_ROOT / "datasets" / "anac-stati-avanzamento" / "sql" / "clean.s
 MART_SQL = REPO_ROOT / "datasets" / "anac-stati-avanzamento" / "sql" / "mart.sql"
 
 MACRO_SQL = """
+CREATE OR REPLACE MACRO safe_date(val) AS
+    CASE WHEN TRY_CAST(val AS DATE) IS NULL THEN NULL
+         WHEN year(TRY_CAST(val AS DATE)) BETWEEN 1990 AND 2100 THEN TRY_CAST(val AS DATE)
+         ELSE NULL END;
 CREATE OR REPLACE MACRO normalize_string(val) AS NULLIF(TRIM(val::VARCHAR), '');
 CREATE OR REPLACE MACRO cast_int(val) AS TRY_CAST(val AS INTEGER);
 CREATE OR REPLACE MACRO cast_double(val) AS TRY_CAST(val AS DOUBLE);

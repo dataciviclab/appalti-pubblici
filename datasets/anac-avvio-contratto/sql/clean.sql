@@ -6,16 +6,16 @@
 WITH src AS (
     SELECT
         normalize_string(cig) AS cig,
-        TRY_CAST(NULLIF(data_stipula_contratto, '0001-01-01') AS DATE) AS d_stipula,
-        TRY_CAST(NULLIF(data_esecutivita_contratto, '0001-01-01') AS DATE) AS d_esecutivita,
-        TRY_CAST(NULLIF(data_termine_contrattuale, '0001-01-01') AS DATE) AS d_termine,
-        TRY_CAST(NULLIF(data_verbale_consegna_definitiva, '0001-01-01') AS DATE) AS d_consegna,
-        TRY_CAST(NULLIF(data_inizio_effettiva, '0001-01-01') AS DATE) AS d_inizio,
-        TRY_CAST(NULLIF(data_verbale_prima_consegna, '0001-01-01') AS DATE) AS d_prima_consegna,
+        safe_date(NULLIF(data_stipula_contratto, '0001-01-01')) AS d_stipula,
+        safe_date(NULLIF(data_esecutivita_contratto, '0001-01-01')) AS d_esecutivita,
+        safe_date(NULLIF(data_termine_contrattuale, '0001-01-01')) AS d_termine,
+        safe_date(NULLIF(data_verbale_consegna_definitiva, '0001-01-01')) AS d_consegna,
+        safe_date(NULLIF(data_inizio_effettiva, '0001-01-01')) AS d_inizio,
+        safe_date(NULLIF(data_verbale_prima_consegna, '0001-01-01')) AS d_prima_consegna,
         decode_flag(consegna_frazionata, '1') AS consegna_frazionata,
         decode_flag(consegna_sotto_riserva, '1') AS consegna_sotto_riserva,
         cast_bigint(id_aggiudicazione) AS id_aggiudicazione,
-        TRY_CAST(NULLIF(DATA_APPR_PROG_ESE, '0001-01-01') AS DATE) AS d_appr_prog_ese
+        safe_date(NULLIF(DATA_APPR_PROG_ESE, '0001-01-01')) AS d_appr_prog_ese
     FROM raw_input
 )
 
