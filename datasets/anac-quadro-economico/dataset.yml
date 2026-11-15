@@ -57,6 +57,13 @@ clean:
     # full per CIG).
     source_file: true
   validate:
+    # Chiave dal Manuale ANAC v1.4 §4: senza `dettaglio_evento` le varianti
+    # collassano (e' l'id della variante).
+    primary_key:
+      - "cig"
+      - "id_aggiudicazione"
+      - "descrizione_evento"
+      - "dettaglio_evento"
     not_null:
       - "cig"
       - "id_aggiudicazione"

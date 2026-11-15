@@ -30,20 +30,24 @@ il confronto si fa prendendo i valori.
 temporale: la sequenza si ricostruisce dagli importi. Per *quando* è successo
 serve `varianti` (che ha le date) o `pubblicazioni`.
 
-## Sostituzione: per riga, non per CIG
+## Chiave primaria e sostituzione
 
-Il Manuale (§5.1) dice «il delta sostituisce il full per CIG». Qui **non si può**:
-nei delta non tutti i CIG vengono ripubblicati con la base d'asta (nel delta di
-aprile 2026, **1.555 CIG su 373.687** non hanno `BASE_ASTA`) e la base è proprio
-ciò che serve al confronto — sostituire per CIG la cancellerebbe.
+Il Manuale ANAC v1.4 **§4 (pag. 16)** dichiara la chiave:
 
-Il clean deduplica quindi per **riga intera** (`SELECT DISTINCT`): due righe
-identiche sono lo stesso evento ripubblicato da due risorse. Una correzione con
-importo diverso resta come riga distinta, e il mart prende il consuntivo o, in
-mancanza, il valore massimo osservato.
+```
+quadro-economico = Cig + id_aggiudicazione + descrizione_evento + dettaglio_evento
+```
 
-6.500 CIG restano senza `BASE_ASTA` anche dopo full+delta: presenti solo nei
-delta, con varianti o consuntivo e senza il quadro iniziale.
+`dettaglio_evento` è l'id della variante (347.275 valori distinti su 355.051
+righe di `VARIANTE`): senza di lui le varianti collassano in una sola riga.
+Nella prima stesura avevo assunto `(cig, id, evento, data)` — sbagliato: le
+varianti hanno tutte la stessa data o data NULL.
+
+Sui dati reali la chiave ha **3.625 duplicati** (2.553 con importi diversi): la
+fonte le ripubblica corrette nei delta. Il clean tiene la riga della **risorsa
+più recente** (`__source_file`), che è la regola del §5.1 applicata alla chiave
+del dataset — non al CIG. Prima del fix la clean teneva entrambe le versioni
+(6.939.652 righe); dopo, 6.933.965.
 
 ## Cosa misura (e cosa no)
 
@@ -55,6 +59,23 @@ con `importo_finale` (il `CONSUNTIVO` se c'è, altrimenti il massimo osservato).
 |---|---:|---:|---:|---:|
 | con consuntivo | 397.674 | 61,4% | **27,3%** (p10 −23,8%) | 11,3% (p90 +1,4%) |
 | senza consuntivo | 1.805.069 | 99,1% | 0,0% | 0,9% |
+
+### Il triangolo per studiare gli outlier
+
+Confrontando i 5 casi peggiori con le altre due misure di denaro disponibili
+(importo di aggiudicazione e somma dei SAL) emerge che **l'outlier non è sempre
+il consuntivo**:
+
+| CIG | base | consuntivo | aggiudicazione | SAL |
+|---|---:|---:|---:|---:|
+| `06472320BE` | 1,55 | **521,86** | 1,44 | **521,86** |
+| `6626868877` | 0,88 | **1.062,21** | 0,82 | 1,08 |
+| `42315788A0` | 150,0 | **375,0** | 150,0 | — |
+
+Nel primo caso consuntivo e SAL **coincidono** (521,86 mln): il sospetto è la
+base d'asta (1,55 mln), non il consuntivo. Cioè il confronto mescola anche la
+**grana** (lotto vs opera). 216 CIG su 394.037 (0,05%) hanno consuntivo > 10×
+la base: la coda è piccola ma va trattata prima di pubblicare qualunque totale.
 
 **Attenzione al nome**: questo non è ancora lo «sforamento costi». Il 27,3% di
 scostamenti negativi dove c'è il consuntivo è in larga parte il **ribasso**
