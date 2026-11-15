@@ -14,12 +14,21 @@ SELECT
     cast_int(n_lotti_componenti) AS n_lotti_componenti,
     oggetto_lotto,
     cast_double(importo_lotto) AS importo_lotto,
-    -- Importo da verificare: >= 1 mld per un singolo lotto. Alcuni sono reali
-    -- (es. B77825C53E, 17,4 mld per 20 anni di servizio idrico), altri sono
-    -- l'export ANAC che appiattisce i separatori (9.400.334,903 -> 9400334903).
+    -- Importo da verificare. Due firme note della fonte:
+    --  1. importo >= 1 mld su un singolo lotto (alcuni reali: B77825C53E, 17,4
+    --     mld per 20 anni di servizio idrico; altri con i separatori appiattiti:
+    --     9.400.334,903 -> 9400334903);
+    --  2. importo del lotto >= 10x l'importo della gara, logicamente impossibile:
+    --     intercetta le righe appiattite sotto il miliardo (es. 16.236,51 ->
+    --     1623651, dove il lotto "supera" la gara di 100 volte).
     -- Il clean conserva il valore pubblicato; i mart lo escludono dalle
     -- aggregazioni e ne dichiarano numero e importo.
-    COALESCE(TRY_CAST(importo_lotto AS DOUBLE) >= 1000000000, FALSE) AS flag_importo_sospetto,
+    COALESCE(
+        TRY_CAST(importo_lotto AS DOUBLE) >= 1000000000
+        OR (TRY_CAST(importo_complessivo_gara AS DOUBLE) > 0
+            AND TRY_CAST(importo_lotto AS DOUBLE) > TRY_CAST(importo_complessivo_gara AS DOUBLE) * 10),
+        FALSE
+    ) AS flag_importo_sospetto,
     oggetto_principale_contratto,
     stato,
     settore,

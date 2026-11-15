@@ -105,19 +105,27 @@ Dal 2026-11 gli importi `>= 1 mld` su un singolo lotto sono marcati
 conserva il valore pubblicato (non lo riscrive), `mart_annuale` dichiara il
 peso escluso in `n_importi_sospetti` / `importo_sospetti`.
 
-Misura 2016-2025: **192 righe su 6,1 milioni (0,003%) valgono €649,8 mld, il
-18,2% del totale**; nel 2024 sono 54 righe per €242 mld (34,9%). Includerle
+Misura 2007-2025: **1.793 righe su 11,0 milioni (0,016%) valgono €890 mld, il
+18,4% del totale**; nel 2024 sono 726 righe per €243 mld (35,7%). Includerle
 rendeva inutilizzabili i totali e le classifiche per stazione appaltante.
 Il flag non distingue reale da corrotto: è una lista di verifica, non una
-correzione.
+correzione. Le due firme sono complementari: la soglia sul miliardo prende gli
+importi grandi, il rapporto lotto/gara ≥ 10 prende gli appiattimenti piccoli
+(2024: 672 righe in più per €0,9 mld).
 
 ### Difetti noti della fonte (verificati 2026-11)
 
 | Difetto | Evidenza | Trattamento |
 |---|---|---|
 | Righe identiche ripetute nello stesso export | dic-2024: 2.799 righe duplicate (1,89%), fino a 10 volte lo stesso CIG | dedup per CIG in clean (vince `data_ultimo_perfezionamento`) |
-| Separatori degli importi appiattiti | `9.400.334,903` → `9400334903` (raw ANAC); /1000 riporta 189/189 righe in un range credibile | flag + esclusione dalle somme, nessuna riscrittura |
+| Separatori degli importi appiattiti | `9.400.334,903` → `9400334903` (raw ANAC). Lo schema SIMOG ammette `fractionDigits = 3` su `ImportoType`: gli importi a 3 decimali sono legali, è l'export che perde il separatore | flag + esclusione dalle somme, nessuna riscrittura |
+| Importi del lotto ≥ 10x l'importo della gara | 1.535 righe appiattite sotto il miliardo (es. `16.236,51` → `1.623.651`) | seconda firma del flag |
+| `-1` come sentinella | `ImportoLottoType` ha `minInclusive = -1` nello schema SIMOG: il -1 di 2010-2012 (~10k righe) è ammesso dalla fonte | da escludere dalle somme, non dai conteggi (follow-up) |
 | `numero_gara` numerico fino al 2023, alfanumerico dal 2024 (`CONSIP_RDO_4955828`) | il parquet cambia tipo per anno e le query cross-anno falliscono | cast a VARCHAR in clean |
+| `data_scadenza_offerta` prima della pubblicazione | 1,5M righe, di cui 1,44M affidamenti diretti | ANAC conferma (risposta PEC 30/07/2026): la scadenza offerte "non ricorre negli affidamenti diretti". Non usare per calcoli di efficienza |
+
+Modello dati di riferimento: `anticorruzione/simog-docs` (XSD 3.04.16) e
+`anticorruzione/npa` (`docs/modello-dati/schede/*.yaml`).
 
 ### CIG verificati su ANAC 2025 (issue #512)
 

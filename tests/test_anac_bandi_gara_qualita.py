@@ -53,7 +53,11 @@ SELECT * FROM (VALUES
     ('CIG_C', '789', 'GARA C', '300000', '1', 'LOTTO C', '250000', '2024', '5',
      '2024-05-10', '2024-05-01', 'AGGIUDICATA', 'CF3', 'SERVIZI', '0'),
     ('CIG_C', '789', 'GARA C', '300000', '1', 'LOTTO C', '300000', '2024', '6',
-     '2024-06-10', '2024-06-01', 'AGGIUDICATA', 'CF3', 'SERVIZI', '0')
+     '2024-06-10', '2024-06-01', 'AGGIUDICATA', 'CF3', 'SERVIZI', '0'),
+    -- CIG_D: separatori appiattiti sotto il miliardo (16.236,51 -> 1623651):
+    -- il lotto "supera" la gara di 100 volte
+    ('CIG_D', '999', 'GARA D', '16236.51', '1', 'LOTTO D', '1623651', '2024', '7',
+     '2024-07-10', '2024-07-01', 'AGGIUDICATA', 'CF4', 'SERVIZI', '0')
 ) AS t({RAW_COLUMNS})
 """
 
@@ -91,7 +95,7 @@ def test_dedup_righe_identiche_della_fonte() -> None:
         "SELECT cig, count(*) FROM clean_input GROUP BY cig ORDER BY cig"
     ).fetchall()
 
-    assert righe == [("CIG_A", 1), ("CIG_B", 1), ("CIG_C", 1)]
+    assert righe == [("CIG_A", 1), ("CIG_B", 1), ("CIG_C", 1), ("CIG_D", 1)]
 
 
 @pytest.mark.regression
@@ -106,6 +110,20 @@ def test_importo_sospetto_tracciato_ma_non_riscritto() -> None:
 
     # Il valore pubblicato resta: la fonte non permette di ricostruirlo con certezza.
     assert riga == (9_400_334_903.0, True)
+
+
+@pytest.mark.regression
+def test_importo_appiattito_sotto_il_miliardo() -> None:
+    con = _conn()
+    riga = con.execute(
+        """
+        SELECT importo_lotto, flag_importo_sospetto
+        FROM clean_input WHERE cig = 'CIG_D'
+        """
+    ).fetchone()
+
+    # Il lotto non puo' valere 100 volte la gara: firma dei separatori appiattiti.
+    assert riga == (1_623_651.0, True)
 
 
 @pytest.mark.regression
@@ -143,4 +161,4 @@ def test_mart_esclude_e_dichiara_gli_importi_sospetti() -> None:
         """
     ).fetchone()
 
-    assert riga == (2024, 1_800_000.0, 1, 9_400_334_903.0)
+    assert riga == (2024, 1_800_000.0, 2, 9_400_334_903.0 + 1_623_651.0)

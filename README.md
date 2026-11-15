@@ -28,7 +28,7 @@ li trasforma in mart analitici e li rende interrogabili via dashboard Streamlit.
 > **Nota bandi**: gli importi `>= 1 mld` su un singolo lotto sono esclusi dalle
 > aggregazioni (`flag_importo_sospetto`) e il loro peso è dichiarato in
 > `n_importi_sospetti` / `importo_sospetti` di `mart_annuale`. Senza il filtro il
-> totale 2016-2025 è gonfiato del 18% (34,9% nel solo 2024). Difetti della fonte
+> totale 2007-2025 è gonfiato del 18% (35,7% nel solo 2024). Difetti della fonte
 > e dettagli: `datasets/anac-bandi-gara/notes.md`.
 
 > **Nota copertura**: la serie parte dal 2007, ma il perimetro cambia due volte.
