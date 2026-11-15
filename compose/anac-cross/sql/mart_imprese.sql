@@ -1,13 +1,8 @@
 -- mart_imprese.sql — 1 riga per CF: profilo impresa nelle gare ANAC
--- Aggrega il clean unificato (CIG snapshot) a livello codice_fiscale.
--- Legge da clean_input che contiene tutti i CIG con attributi cross-dataset.
+-- Mart-only: legge direttamente i support (aggiudicatari, partecipanti,
+-- subappalti) e aggrega a livello di codice fiscale.
 
 WITH
--- Estrai informazioni imprese dal clean unificato
--- Nota: il clean ha n_aggiudicatari, n_partecipanti, n_subappalti a livello CIG
--- ma non i singoli CF. Per il profilo impresa serve ancora leggere i support.
--- Usiamo il clean come base e aggiungiamo i dati impresa dai support.
-
 -- Lista ruoli che non sono nomi di impresa (da escludere da denominazione)
 ruoli_invalidi AS (
     SELECT UNNEST(ARRAY[

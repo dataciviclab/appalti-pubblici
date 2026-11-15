@@ -6,24 +6,15 @@ dataset:
   source_id: "dataciviclab_composite"
   tags: [appalti, anac, compose, cross]
   category: appalti
-  description: "Compose ANAC: CIG-level snapshot unificato (2026) da tutti i dataset ANAC + vista lifecycle (bandi 2007-2026 + snapshot)."
+  description: "Compose ANAC mart-only: 7 viste incrociate (bandi x aggiudicazioni x esecuzione) lette dai dataset ANAC pubblicati, senza layer clean intermedio."
   years: [2026]
   time_coverage:
     mode: snapshot
 
-# Compose: clean unifica tutti i dataset ANAC a livello CIG (2026).
-# I mart derivano viste aggregate dal clean unificato.
-# Eseguire prima: toolkit run per tutti i dataset singoli in datasets/.
-
-raw:
-  output_policy: overwrite
-  sources:
-    - name: "aggiudicazioni"
-      type: local_file
-      args:
-        path: "../../out/data/clean/anac_aggiudicazioni/2026/anac_aggiudicazioni_2026_clean.parquet"
-        filename: "aggiudicazioni.parquet"
-      primary: true
+# Compose **mart-only** (modello pil-intelligence / legal-graph): niente raw,
+# niente clean. Ogni mart legge i support di cui ha bisogno. Il vecchio clean
+# CIG-level (11 join, 11,6M righe) serviva solo a mart_lifecycle, che non aveva
+# consumatori ed e' stato rimosso.
 
 support:
   - type: dataset
@@ -47,10 +38,6 @@ support:
     config: ../../datasets/anac-collaudo/dataset.yml
     years: [2026]
   - type: dataset
-    name: cup
-    config: ../../datasets/anac-cup/dataset.yml
-    years: [2026]
-  - type: dataset
     name: avvio_contratto
     config: ../../datasets/anac-avvio-contratto/dataset.yml
     years: [2026]
@@ -70,49 +57,18 @@ support:
     name: bandi_gara
     config: ../../datasets/anac-bandi-gara/dataset.yml
     years: [2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
-  # aggiudicazioni è anche il raw source primario del compose: qui serve
-  # come support per i mart che leggono i campi originali (importo,
-  # offerte, ribassi).
+  # aggiudicazioni: support per i mart che leggono i campi originali
+  # (importo, offerte, ribassi).
   - type: dataset
     name: aggiudicazioni
     config: ../../datasets/anac-aggiudicazioni/dataset.yml
     years: [2026]
 
-clean:
-  sql: "sql/clean.sql"
-  read:
-    source: config_only
-    mode: latest
-  required_columns:
-    - "cig"
-    - "n_aggiudicazioni"
-    - "importo_totale_agg"
-    - "n_aggiudicatari"
-    - "n_partecipanti"
-    - "n_subappalti"
-    - "n_sal"
-    - "importo_totale_sal"
-    - "n_serie_sal"
-    - "n_serie_anomale"
-    - "cup"
-    - "n_cup"
-    - "cups"
-    - "data_stipula_contratto"
-    - "data_effettiva_ultimazione"
-    - "giorni_scostamento_termine"
-    - "n_sospensioni"
-    - "n_varianti"
-  validate:
-    not_null:
-      - "cig"
-    min_rows: 1
 
 mart:
   tables:
     - name: "mart_panoramica"
       sql: "sql/mart_panoramica.sql"
-    - name: "mart_lifecycle"
-      sql: "sql/mart_lifecycle.sql"
     - name: "mart_imprese"
       sql: "sql/mart_imprese.sql"
     - name: "mart_ritardi_per_sa"
@@ -123,20 +79,20 @@ mart:
       sql: "sql/mart_esecuzione.sql"
     - name: "mart_ritardi_contratto"
       sql: "sql/mart_ritardi_contratto.sql"
+    - name: "mart_collaudo_ritardo"
+      sql: "sql/mart_collaudo_ritardo.sql"
   required_tables:
     - mart_panoramica
-    - mart_lifecycle
     - mart_imprese
     - mart_ritardi_per_sa
     - mart_competitivita
     - mart_esecuzione
     - mart_ritardi_contratto
+    - mart_collaudo_ritardo
   validate:
     table_rules:
       mart_panoramica:
         min_rows: 10
-      mart_lifecycle:
-        min_rows: 100000
       mart_imprese:
         min_rows: 100000
       mart_ritardi_per_sa:
@@ -147,9 +103,12 @@ mart:
         min_rows: 10
       mart_ritardi_contratto:
         min_rows: 10
+      mart_collaudo_ritardo:
+        min_rows: 10
 
 duckdb:
-  memory_limit: "8GB"
+  # 8GB su una macchina da 7,9GB faceva andare il sistema in paging.
+  memory_limit: "5GB"
 
 validation:
   fail_on_error: true

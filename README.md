@@ -67,7 +67,7 @@ li trasforma in mart analitici e li rende interrogabili via dashboard Streamlit.
 
 **Esecuzione** (5): mart_avvio_contratto, mart_fine_contratto, mart_motivi_fine, mart_sospensioni, mart_varianti
 
-**Compose** (7): mart_panoramica, mart_lifecycle, mart_imprese, mart_ritardi_per_sa, mart_competitivita, mart_esecuzione, mart_ritardi_contratto
+**Compose** (7): mart_panoramica, mart_imprese, mart_ritardi_per_sa, mart_competitivita, mart_esecuzione, mart_ritardi_contratto, mart_collaudo_ritardo
 
 **Altri** (2): mart_collaudo, mart_cup
 
