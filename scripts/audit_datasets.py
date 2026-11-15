@@ -17,6 +17,7 @@ duplicate dove la chiave e' dichiarata ufficiale).
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import sys
 from pathlib import Path
@@ -102,6 +103,9 @@ def audit(slug: str, spec: dict, con: duckdb.DuckDBPyConnection, root: Path) -> 
         }
         if impossibili:
             result["errori"].append(f"{impossibili} date impossibili in {col}")
+        # Date future oltre 2 anni: quasi sempre refusi (es. 2062 al posto di 2026)
+        if max_data and max_data > dt.date.today() + dt.timedelta(days=730):
+            result["avvisi"].append(f"data futura in {col}: {max_data}")
 
     return result
 

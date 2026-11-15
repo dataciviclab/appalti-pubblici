@@ -11,7 +11,13 @@ WITH src AS (
         cast_bigint(id_aggiudicazione) AS id_aggiudicazione,
         normalize_string(CIG_PROROGA) AS cig_proroga,
         safe_date(NULLIF(DATA_ATTO_AGGIUNTIVO, '0001-01-01')) AS d_atto
-    FROM raw_input
+    FROM (
+        -- Sostituzione per CIG (Manuale ANAC §5.1): il delta sostituisce il
+        -- full per lo specifico CIG; `__source_file` porta l'ordine risorse.
+        SELECT *, max(__source_file) OVER (PARTITION BY cig) AS __fonte_cig
+        FROM raw_input
+    ) __delta
+    WHERE __source_file = __fonte_cig
 )
 
 SELECT

@@ -23,8 +23,20 @@ WITH base AS (
         safe_date(DATA_CERT_PAGAMENTO) AS data_cert_pagamento,
         cast_double(IMPORTO_CERT_PAGAMENTO) AS importo_cert_pagamento,
         cast_double(GIORNI_PROROGA) AS giorni_proroga
-    FROM raw_input
-    WHERE cig IS NOT NULL AND TRIM(cig) != ''
+    FROM (
+        -- Sostituzione per CIG (Manuale ANAC §5.1): il delta sostituisce il
+        -- full per lo specifico CIG; `__source_file` porta l'ordine risorse.
+        SELECT *, max(__source_file) OVER (PARTITION BY cig) AS __fonte_cig
+        FROM raw_input
+    ) __delta
+    WHERE __source_file = __fonte_cig
+      AND cig IS NOT NULL AND TRIM(cig) != ''
+    -- Dentro la risorsa la stessa chiave (cig + id_aggiudicazione + progressivo_sal)
+    -- puo' comparire piu' volte: vince la comunicazione piu' recente.
+    QUALIFY ROW_NUMBER() OVER (
+        PARTITION BY cig, id_aggiudicazione, progressivo_sal
+        ORDER BY data_emissione_sal DESC NULLS LAST
+    ) = 1
 ),
 
 serie AS (

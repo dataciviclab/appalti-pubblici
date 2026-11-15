@@ -64,6 +64,9 @@ def _conn() -> duckdb.DuckDBPyConnection:
     con.execute("ALTER TABLE raw_input ADD COLUMN DATA_CERT_PAGAMENTO VARCHAR")
     con.execute("ALTER TABLE raw_input ADD COLUMN IMPORTO_CERT_PAGAMENTO VARCHAR")
     con.execute("ALTER TABLE raw_input ADD COLUMN GIORNI_PROROGA VARCHAR")
+    # provenienza per riga (regola ANAC: il delta sostituisce il full per CIG)
+    con.execute("ALTER TABLE raw_input ADD COLUMN __source_file VARCHAR")
+    con.execute("UPDATE raw_input SET __source_file = '00-test.csv'")
     con.execute(f"CREATE VIEW clean_input AS {CLEAN_SQL.read_text(encoding='utf-8')}")
     return con
 

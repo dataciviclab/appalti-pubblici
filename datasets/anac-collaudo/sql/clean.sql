@@ -12,5 +12,17 @@ SELECT
     cast_double(RISERVE_AVANZATE) AS riserve_avanzate,
     cast_double(RISERVE_DEFINITE) AS riserve_definite,
     cast_double(IMPORTO_CONTENZ_RISOLTO) AS importo_contenz_risolto
-FROM raw_input
-WHERE cig IS NOT NULL AND TRIM(cig) != ''
+FROM (
+    -- Sostituzione per CIG (Manuale ANAC §5.1): il delta sostituisce il full
+    -- per lo specifico CIG. `__source_file` ordina le risorse per last_modified.
+    SELECT *, max(__source_file) OVER (PARTITION BY cig) AS __fonte_cig
+    FROM raw_input
+) __delta
+WHERE __source_file = __fonte_cig
+  AND cig IS NOT NULL AND TRIM(cig) != ''
+-- Dentro la risorsa la fonte puo' ripetere la chiave ufficiale
+-- (cig + id_aggiudicazione): vince il collaudo piu' recente.
+QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY cig, id_aggiudicazione
+    ORDER BY data_cert_collaudo DESC NULLS LAST, data_delibera DESC NULLS LAST
+) = 1
