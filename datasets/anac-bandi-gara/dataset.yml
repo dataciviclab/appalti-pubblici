@@ -66,6 +66,11 @@ clean:
     - "importo_lotto"
     - "stato"
   validate:
+    # Chiave del Manuale ANAC v1.4 §4 (pag. 16): per i pacchetti annuali `cig-AAAA`
+    # la chiave e' `Cig`. Il clean deduplica gia' per CIG sulla comunicazione piu'
+    # recente; qui la dichiariamo, cosi' una regressione del dedup si vede.
+    primary_key:
+      - "cig"
     not_null:
       - "cig"
     min_rows: 1
