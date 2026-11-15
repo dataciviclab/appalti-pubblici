@@ -1,0 +1,111 @@
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "anac_smartcig"
+  source_id: "anac"
+  tags: [appalti, anac, smartcig, affidamenti, sotto-soglia]
+  category: appalti
+  years: [2025]
+
+raw:
+  sources:
+    - name: "smartcig_{year}"
+      type: "ckan"
+      client:
+        user_agent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      args:
+        portal_url: "https://dati.anticorruzione.it/opendata"
+        dataset_id: "smartcig-{year}"
+        download_all: true
+      primary: true
+
+clean:
+  sql: "sql/clean.sql"
+  read:
+    source: config_only
+    mode: all
+    header: true
+    delim: ";"
+    encoding: "utf-8"
+    quote: '"'
+    escape: '"'
+    null_padding: true
+    trim_whitespace: true
+    sample_size: -1
+  required_columns:
+    - "cig"
+    - "numero_gara"
+    - "importo_lotto"
+    - "data_comunicazione"
+    - "anno_comunicazione"
+    - "mese_comunicazione"
+    - "cf_amministrazione_appaltante"
+    - "fascia_importo"
+  validate:
+    primary_key:
+      - "cig"
+    not_null:
+      - "cig"
+      - "numero_gara"
+      - "oggetto_gara"
+      - "oggetto_lotto"
+      - "oggetto_principale_contratto"
+      - "importo_complessivo_gara"
+      - "importo_lotto"
+      - "n_lotti_componenti"
+      - "stato"
+      - "data_comunicazione"
+      - "cod_tipo_scelta_contraente"
+      - "tipo_scelta_contraente"
+      - "anno_comunicazione"
+      - "mese_comunicazione"
+      - "fascia_importo"
+      - "flag_sopra_140k"
+    ranges:
+      n_lotti_componenti:
+        min: 1
+      anno_comunicazione:
+        min: 2011
+        max: 2030
+      mese_comunicazione:
+        min: 1
+        max: 12
+    max_null_pct:
+      codice_ausa: 0.01
+      cf_amministrazione_appaltante: 0.01
+      denominazione_amministrazione_appaltante: 0.01
+      sezione_regionale: 0.01
+      indirizzo: 0.05
+      istat_comune: 0.05
+      citta: 0.03
+      regione: 0.05
+      id_centro_costo: 0.01
+      denominazione_centro_costo: 0.01
+      id_tipo_fattispecie_contrattuale: 0.001
+      tipo_fattispecie_contrattuale: 0.001
+    min_rows: 1
+
+mart:
+  tables:
+    - name: "mart_annuale"
+      sql: "sql/mart_annuale.sql"
+    - name: "mart_fasce"
+      sql: "sql/mart_fasce.sql"
+    - name: "mart_top_sa"
+      sql: "sql/mart_top_sa.sql"
+  required_tables:
+    - "mart_annuale"
+    - "mart_fasce"
+  validate:
+    table_rules:
+      mart_annuale:
+        min_rows: 1
+      mart_fasce:
+        min_rows: 4
+
+validation:
+  fail_on_error: true
+
+output:
+  artifacts: "standard"
