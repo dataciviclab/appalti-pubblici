@@ -72,7 +72,6 @@ fonti AS (
         COALESCE(cast_double(entrate_con_dest_vincolata_pubblica_comunitaria), 0) AS entrate_vincolate_ue,
         COALESCE(cast_double(entrate_con_dest_vincolata_privati), 0) AS entrate_vincolate_privati
     FROM dedup
-    WHERE rn = 1
 ),
 
 con_totale AS (

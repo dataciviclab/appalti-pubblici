@@ -38,11 +38,11 @@ il mart è in **formato lungo** — una riga per fonte valorizzata.
 
 | | |
 |---|---:|
-| righe nel clean | **2.951.569** |
-| righe con almeno una fonte | 2.856.342 (96,8%) |
-| righe **senza** `id_aggiudicazione` | 517.857 (**17,5%**) |
+| righe nel clean | **2.960.932** |
+| righe con almeno una fonte | 2.865.705 (96,8%) |
+| righe **senza** `id_aggiudicazione` | 527.220 (**17,8%**) |
 | CIG/contratti con importi sospetti (≥ 1 mld) | 5.893 |
-| totale dichiarato (esclusi i sospetti) | **4.833,8 mld** |
+| totale dichiarato (esclusi i sospetti) | **4.849,7 mld** |
 | `n_fonti` mediano | 1 |
 
 **Il totale non è confrontabile col valore dei contratti**: 4.834 mld dichiarati
@@ -55,7 +55,7 @@ ripetuta, e l'importo può coprire l'intero progetto.
 | difetto | evidenza | trattamento |
 |---|---|---|
 | Chiavi ripubblicate nei delta | **1.650** chiavi duplicate su 228.207 righe (0,7%) | sostituzione per chiave, vince la risorsa più recente (§5.1) |
-| **`id_aggiudicazione` mancante** | 517.857 righe (17,5%): dichiarazioni a livello di CIG, senza aggiudicazione registrata | la chiave del Manuale non è applicabile a quelle righe: dedup **per chiave** dove c'è, **per riga intera** dove manca (partizionare per `(cig, NULL)` collasserebbe righe distinte). Per questo il dataset non dichiara `primary_key` |
+| **`id_aggiudicazione` mancante** | 527.220 righe (17,8%): dichiarazioni a livello di CIG, senza aggiudicazione registrata | la chiave del Manuale non è applicabile a quelle righe: dedup **per chiave** dove c'è, **per riga intera** dove manca (partizionare per `(cig, NULL)` collasserebbe righe distinte). Per questo il dataset non dichiara `primary_key` |
 | Righe senza alcuna fonte | **10.326 (4,5%)**: tutte le voci a zero o NULL | `totale_fonti` = 0 e `fonte_prevalente` NULL: «dato assente», non «finanziato da nessuno» |
 | Coda di importi assurdi | stessa classe dei bandi (separatori appiattiti) | `flag_fonti_sospette` (≥ 1 mld dichiarato): il valore resta, il mart lo esclude dalle somme |
 
