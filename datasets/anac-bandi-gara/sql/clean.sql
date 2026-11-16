@@ -1,5 +1,14 @@
 -- ANAC Bandi di Gara (CIG) — CLEAN
 -- Macro toolkit: cast_int, cast_double, decode_flag, normalize_string
+-- Date: `safe_date` e' generica (1800-2100); il dominio ANAC parte dal 2005, e
+-- i valori ante-1990 sono refusi (es. 1977-04-13 al posto di 2027) o sentinelle.
+-- Stessa stretta di dominio applicata in anac-quadro-economico.
+--
+-- I codici restano VARCHAR in tutte le partizioni. Lo sniffing del CSV li
+-- leggeva BIGINT/DOUBLE in alcuni anni (2011-2026) e VARCHAR in altri: schema
+-- diverso per la stessa colonna, che rompe i consumatori che leggono una
+-- partizione alla volta (non DuckDB, che coercizza). Sono codici, non misure:
+-- nessun mart li usa come numeri.
 SELECT
     cig,
     cig_accordo_quadro,
@@ -34,11 +43,13 @@ SELECT
     settore,
     luogo_istat AS codice_istat_luogo,
     provincia,
-    safe_date(data_pubblicazione) AS data_pubblicazione,
-    safe_date(data_scadenza_offerta) AS data_scadenza_offerta,
-    cod_tipo_scelta_contraente,
+    CASE WHEN year(safe_date(data_pubblicazione)) < 1990 THEN NULL
+         ELSE safe_date(data_pubblicazione) END AS data_pubblicazione,
+    CASE WHEN year(safe_date(data_scadenza_offerta)) < 1990 THEN NULL
+         ELSE safe_date(data_scadenza_offerta) END AS data_scadenza_offerta,
+    TRY_CAST(cod_tipo_scelta_contraente AS VARCHAR) AS cod_tipo_scelta_contraente,
     tipo_scelta_contraente,
-    cod_modalita_realizzazione,
+    TRY_CAST(cod_modalita_realizzazione AS VARCHAR) AS cod_modalita_realizzazione,
     modalita_realizzazione,
     codice_ausa,
     cf_amministrazione_appaltante,
@@ -53,29 +64,32 @@ SELECT
     decode_flag(FLAG_PNRR_PNC, '1') AS flag_pnrr,
     decode_flag(FLAG_URGENZA, '1') AS flag_urgenza,
     decode_flag(FLAG_DELEGA, '1') AS flag_delega,
-    cod_modalita_indizione_speciali,
+    TRY_CAST(cod_modalita_indizione_speciali AS VARCHAR) AS cod_modalita_indizione_speciali,
     modalita_indizione_speciali,
-    cod_modalita_indizione_servizi,
+    TRY_CAST(cod_modalita_indizione_servizi AS VARCHAR) AS cod_modalita_indizione_servizi,
     modalita_indizione_servizi,
     cast_double(durata_prevista) AS durata_prevista,
-    cod_strumento_svolgimento,
+    TRY_CAST(cod_strumento_svolgimento AS VARCHAR) AS cod_strumento_svolgimento,
     strumento_svolgimento,
-    cod_motivo_urgenza,
+    TRY_CAST(cod_motivo_urgenza AS VARCHAR) AS cod_motivo_urgenza,
     normalize_string(motivo_urgenza) AS motivo_urgenza,
     normalize_string(funzioni_delegate) AS funzioni_delegate,
-    cf_sa_delegante,
+    TRY_CAST(cf_sa_delegante AS VARCHAR) AS cf_sa_delegante,
     denominazione_sa_delegante,
-    cf_sa_delegata,
+    TRY_CAST(cf_sa_delegata AS VARCHAR) AS cf_sa_delegata,
     denominazione_sa_delegata,
     cast_double(importo_sicurezza) AS importo_sicurezza,
-    cod_esito,
+    TRY_CAST(cod_esito AS VARCHAR) AS cod_esito,
     esito,
-    safe_date(data_comunicazione_esito) AS data_comunicazione_esito,
-    safe_date(data_cancellazione) AS data_cancellazione,
-    cod_motivo_cancellazione,
+    CASE WHEN year(safe_date(data_comunicazione_esito)) < 1990 THEN NULL
+         ELSE safe_date(data_comunicazione_esito) END AS data_comunicazione_esito,
+    CASE WHEN year(safe_date(data_cancellazione)) < 1990 THEN NULL
+         ELSE safe_date(data_cancellazione) END AS data_cancellazione,
+    TRY_CAST(cod_motivo_cancellazione AS VARCHAR) AS cod_motivo_cancellazione,
     motivo_cancellazione,
     tipo_appalto_riservato,
-    safe_date(data_ultimo_perfezionamento) AS data_ultimo_perfezionamento
+    CASE WHEN year(safe_date(data_ultimo_perfezionamento)) < 1990 THEN NULL
+         ELSE safe_date(data_ultimo_perfezionamento) END AS data_ultimo_perfezionamento
 FROM raw_input
 -- Ogni partizione anno contiene solo le righe di quell'anno. Per il 2026 la
 -- fonte e' il dataset `cig` dei delta, che mescola tutti gli anni: qui restano
