@@ -35,9 +35,11 @@ def test_chi_paga_dichiara_la_copertura_e_raggruppa_le_fonti(tmp_path: Path) -> 
         tmp_path / "qe" / "mart_cig.parquet",
         """
         SELECT * FROM (VALUES
-            ('CIG_A', 1, 4e9),
-            ('CIG_B', 2, 6e9)
-        ) AS t(cig, id_aggiudicazione, importo_base)
+            ('CIG_A', 1,  4e9, FALSE),
+            ('CIG_B', 2,  6e9, FALSE),
+            -- coda della fonte: resta contato ma fuori dagli aggregati
+            ('CIG_S', 3, 12e9, TRUE)
+        ) AS t(cig, id_aggiudicazione, importo_base, flag_base_sospetta)
         """,
     )
     mart_fonti = _scrivi(
@@ -56,7 +58,8 @@ def test_chi_paga_dichiara_la_copertura_e_raggruppa_le_fonti(tmp_path: Path) -> 
         """
         SELECT * FROM (VALUES
             ('CIG_A', 2024, 'LOMBARDIA', 'LAVORI', 'CF1', FALSE),
-            ('CIG_B', 2024, 'LOMBARDIA', 'LAVORI', 'CF1', FALSE)
+            ('CIG_B', 2024, 'LOMBARDIA', 'LAVORI', 'CF1', FALSE),
+            ('CIG_S', 2024, 'LOMBARDIA', 'LAVORI', 'CF1', FALSE)
         ) AS t(cig, anno_pubblicazione, sezione_regionale, oggetto_principale_contratto,
                cf_amministrazione_appaltante, flag_importo_sospetto)
         """,
@@ -89,10 +92,13 @@ def test_chi_paga_dichiara_la_copertura_e_raggruppa_le_fonti(tmp_path: Path) -> 
     assert len(righe) == 1, "un solo gruppo (anno × regione × settore × natura)"
 
     r = righe[0]
-    assert r["n_contratti"] == 2
-    assert r["n_con_fonte"] == 1, "CIG_B non ha fonti: contato, ma non nella copertura"
-    assert float(r["quota_con_fonte_pct"]) == 50.0
-    assert float(r["importo_contrattuale_mld"]) == pytest.approx(10.0)
+    assert r["n_contratti"] == 3, "anche il contratto sospetto resta contato"
+    assert r["n_con_fonte"] == 1, "CIG_B e CIG_S non hanno fonti: contati, ma non nella copertura"
+    assert float(r["quota_con_fonte_pct"]) == pytest.approx(33.3, abs=0.1)
+    assert r["n_esclusi_importo_sospetto"] == 1, "12 mld: contato e fuori dagli aggregati"
+    assert float(r["importo_contrattuale_mld"]) == pytest.approx(10.0), (
+        "4 + 6 mld: il contratto sospetto da 12 non entra negli aggregati"
+    )
 
     # macro-categorie: 80 bilancio SA, 20 UE
     assert float(r["fin_bilancio_sa_mld"]) == pytest.approx(3.0)
@@ -101,5 +107,4 @@ def test_chi_paga_dichiara_la_copertura_e_raggruppa_le_fonti(tmp_path: Path) -> 
     assert float(r["rapporto_finanziato_contratto"]) == pytest.approx(0.4), (
         "4 finanziati su 10 di contratti: le fonti coprono l'intervento, non la gara"
     )
-    assert r["n_esclusi_importo_sospetto"] == 0, "nessun importo sopra i 10 mld nella fixture"
     assert r["natura_sa"] == "ENTI PUBBLICI NON ECONOMICI"

@@ -18,19 +18,21 @@
 -- solo CIG da 20 mld domina il gruppo anno × regione.
 --
 -- **I totali di questo mart non sono i totali dei due dataset.** Riconciliazione
--- misurata (novembre 2026):
---   contratti: 1.531,4 mld in `mart_cig` = 1.351,0 nella popolazione del mart
---     + 83,9 senza bando + 96,5 sospetti; il mart ne pubblica 1.322,2 perche'
---     `HAVING COUNT(*) >= 10` scarta i gruppi piccoli (-28,8 mld).
+-- misurata (novembre 2026, dopo il fix del `COALESCE` in `mart_cig` — issue #33;
+-- i valori precedenti erano calcolati sul 37,7% dei contratti e non valgono piu'):
+--   contratti: 3.125,9 mld in `mart_cig` (coda sospetta esclusa) = 2.957,2
+--     nella popolazione del mart + 168,7 senza metadati bandi; il mart ne
+--     pubblica 2.921,2 perche' `HAVING COUNT(*) >= 10` scarta i gruppi piccoli
+--     (-36,0 mld, 29.883 contratti).
 --   finanziamenti: 4.849,7 mld dichiarati = 3.032,2 con `id_aggiudicazione`
 --     + 1.817,5 senza id (non agganciabili a un contratto); dei 3.032,2 solo
---     1.158,0 si agganciano a un contratto della popolazione del mart, e il
---     mart ne pubblica 1.122,6 per la stessa soglia (-35,4 mld).
--- Chi legge 1.122,6 come "quanto e' finanziato in Italia" sbaglia di quattro
--- volte: e' la fetta agganciabile, non il totale dichiarato.
+--     2.943,3 si agganciano a un contratto della popolazione del mart, e il
+--     mart ne pubblica 2.909,4 per la stessa soglia (-33,9 mld).
+-- Chi legge 2.909,4 come "quanto e' finanziato in Italia" sbaglia: e' la fetta
+-- agganciabile, non il totale dichiarato (4.849,7).
 
 WITH contratti AS (
-    SELECT cig, id_aggiudicazione, importo_base
+    SELECT cig, id_aggiudicazione, importo_base, flag_base_sospetta
     FROM read_parquet('{support.quadro_economico.mart}')
     WHERE importo_base > 0
 ),
@@ -82,14 +84,14 @@ SELECT
     b.settore,
     COALESCE(sa.natura_giuridica, 'NON IN ANAGRAFICA') AS natura_sa,
     COUNT(*) AS n_contratti,
-    COUNT(*) FILTER (WHERE c.importo_base >= 10000000000) AS n_esclusi_importo_sospetto,
+    COUNT(*) FILTER (WHERE c.flag_base_sospetta) AS n_esclusi_importo_sospetto,
     COUNT(*) FILTER (WHERE f.importo_finanziato IS NOT NULL) AS n_con_fonte,
     ROUND(COUNT(*) FILTER (WHERE f.importo_finanziato IS NOT NULL) * 100.0 / COUNT(*), 1)
         AS quota_con_fonte_pct,
-    ROUND(SUM(c.importo_base) FILTER (WHERE c.importo_base < 10000000000) / 1e9, 3) AS importo_contrattuale_mld,
+    ROUND(SUM(c.importo_base) FILTER (WHERE NOT c.flag_base_sospetta) / 1e9, 3) AS importo_contrattuale_mld,
     ROUND(SUM(f.importo_finanziato) / 1e9, 3) AS importo_finanziato_mld,
-    ROUND(SUM(f.importo_finanziato) FILTER (WHERE c.importo_base < 10000000000)
-        / NULLIF(SUM(c.importo_base) FILTER (WHERE c.importo_base < 10000000000), 0), 2)
+    ROUND(SUM(f.importo_finanziato) FILTER (WHERE NOT c.flag_base_sospetta)
+        / NULLIF(SUM(c.importo_base) FILTER (WHERE NOT c.flag_base_sospetta), 0), 2)
         AS rapporto_finanziato_contratto,
     ROUND(SUM(f.fin_bilancio_sa) / 1e9, 3) AS fin_bilancio_sa_mld,
     ROUND(SUM(f.fin_bilancio_amministrazione) / 1e9, 3) AS fin_bilancio_amministrazione_mld,

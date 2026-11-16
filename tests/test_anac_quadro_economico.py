@@ -113,3 +113,64 @@ def test_mart_eventi_espone_le_date_mancanti() -> None:
     assert righe["BASE_ASTA"]["n_con_data"] == 0, "la fonte non data la base d'asta"
     assert righe["CONSUNTIVO"]["n_con_data"] == 0
     assert righe["VARIANTE"]["n_con_data"] >= 1
+
+
+# ── issue #33: la base si somma con COALESCE e la coda si segnala ───────────
+#
+# Il quadro economico compila la voce dell'appalto: lavori *o* servizi *o*
+# forniture. Sommare senza `COALESCE` annullava il totale per il 62,3% delle
+# righe BASE_ASTA e il CIG spariva dal mart senza che nulla lo dicesse.
+
+BASE_NULL_SQL = """
+SELECT * FROM (VALUES
+    -- solo servizi: la base deve valere 250, non NULL
+    ('CIG_S',  1, NULL, 'BASE_ASTA', 'B1', NULL,   250.0, NULL,  0.0, '000-full.csv'),
+    -- tutti e tre nulli: nessuna base, la riga non entra nel mart
+    ('CIG_N',  2, NULL, 'BASE_ASTA', 'B2', NULL,   NULL,  NULL,  0.0, '000-full.csv'),
+    -- coda: 15 mld non e' plausibile, 2 mld e' segnalato
+    ('CIG_X',  3, NULL, 'BASE_ASTA', 'B3', 15e9,   0.0,   0.0,   0.0, '000-full.csv'),
+    ('CIG_G',  4, NULL, 'BASE_ASTA', 'B4', 2e9,    0.0,   0.0,   0.0, '000-full.csv')
+) AS t(cig, id_aggiudicazione, data, descrizione_evento, dettaglio_evento,
+       importo_lavori, importo_servizi, importo_forniture, somme_a_disposizione, __source_file)
+"""
+
+
+def _conn_base_null() -> duckdb.DuckDBPyConnection:
+    con = duckdb.connect()
+    con.execute(MACRO_SQL)
+    con.execute(f"CREATE TABLE raw_input AS {BASE_NULL_SQL}")
+    for colonna in ("importo_progettazione", "importo_sicurezza",
+                    "ulteriori_oneri_non_soggetti_ribasso"):
+        con.execute(f"ALTER TABLE raw_input ADD COLUMN {colonna} VARCHAR")
+    con.execute("CREATE VIEW clean_input AS " + CLEAN_SQL.read_text(encoding="utf-8"))
+    return con
+
+
+@pytest.mark.regression
+def test_mart_cig_somma_i_componenti_con_coalesce() -> None:
+    con = _conn_base_null()
+    cur = con.execute(MART_CIG.read_text(encoding="utf-8"))
+    colonne = [c[0] for c in cur.description]
+    righe = {r[colonne.index("cig")]: dict(zip(colonne, r)) for r in cur.fetchall()}
+
+    assert righe["CIG_S"]["importo_base"] == 250.0, (
+        "un solo componente valorizzato e' la base: senza COALESCE diventa NULL "
+        "e il CIG sparisce dal mart (issue #33)"
+    )
+    assert "CIG_N" not in righe, "tutti i componenti nulli: nessuna base da confrontare"
+
+
+@pytest.mark.regression
+def test_mart_cig_segnala_la_coda_invece_di_somarla() -> None:
+    con = _conn_base_null()
+    cur = con.execute(MART_CIG.read_text(encoding="utf-8"))
+    colonne = [c[0] for c in cur.description]
+    righe = {r[colonne.index("cig")]: dict(zip(colonne, r)) for r in cur.fetchall()}
+
+    x = righe["CIG_X"]
+    assert x["flag_base_sospetta"] is True, "15 mld non e' plausibile"
+    assert x["flag_base_grande"] is True
+
+    g = righe["CIG_G"]
+    assert g["flag_base_grande"] is True, "2 mld e' fuori scala: segnalato"
+    assert g["flag_base_sospetta"] is False, "ma sotto la soglia sospetta resta nel dato"

@@ -2,22 +2,39 @@
 --
 -- Grana: 1 riga per (cig, id_aggiudicazione) con consuntivo registrato.
 --
--- **Il ribasso non entra nella formula.** Ci ho provato e i dati dicono che è
--- sbagliato: il consuntivo si comporta come un importo *pre-ribasso*. Il rapporto
--- cons/base ha mediana **1,000 in ogni fascia di ribasso** (61,9% dei CIG entro
--- lo 0,1%, 71,4% entro il 5%): non è "quasi sempre uguale", è che la mediana non
--- si muove col ribasso. Scontare la base del ribasso
--- trasforma un contratto senza varianti in uno «sforamento» pari al ribasso:
--- mediana 0% con ribasso 0, +15,3% con ribasso 10-20, +45,7% sopra il 30.
--- Quindi lo sforamento è `consuntivo - base`, che misura solo le varianti.
+-- **Il ribasso entra nel confronto, e va esposto.** La versione precedente di
+-- questo header diceva il contrario, «mediana cons/base = 1,000 in ogni fascia»:
+-- era misurata su un perimetro sbagliato. `importo_base` esisteva solo per il
+-- 37,7% dei CIG (somma senza COALESCE, issue #33) e quel sottoinsieme — i CIG
+-- con tutti e tre i componenti valorizzati — non e' rappresentativo. Con il
+-- perimetro corretto (95,5% delle righe BASE_ASTA) il segnale si inverte:
 --
--- Il ribasso resta esposto come colonna informativa, non come correzione.
+--   fascia di ribasso   mediana cons/base
+--   0                   1,000
+--   0-10                0,989
+--   10-20               0,905
+--   20-30               0,817
+--   >30                 0,715
+--
+-- Il consuntivo e' quindi in buona parte **post-ribasso**. Conseguenza: lo
+-- `sforamento` grezzo (consuntivo − base) misura soprattutto lo sconto, non le
+-- varianti — totale **−11,69 mld**, mediana −1,0%, e il 54,5% dei contratti
+-- "risparmia" invece di sforare.
+--
+-- Per questo il mart espone **due misure**, e non sceglie in silenzio:
+--   - `sforamento` (grezzo, invariato rispetto alle versioni precedenti);
+--   - `sforamento_scontato`: consuntivo − base scontata del ribasso
+--     (`base_scontata`). Totale **+7,83 mld**, mediana 0,0%, con mediana
+--     cons/base_scontata 1,056-1,117 nelle fasce alte: varianti che recuperano
+--     parte dello sconto.
+-- Quale sia la misura canonica e' una decisione aperta, non un dettaglio.
 --
 -- `plausibile` marca i CIG il cui confronto ha senso; le righe escluse restano
--- nel mart con il motivo, così l'esclusione è verificabile e non silenziosa.
+-- nel mart con il motivo, cosi' l'esclusione e' verificabile e non silenziosa.
 -- Criteri (misurati in notes.md):
---   - consuntivo tra 0,5x e 2x la base
---   - aggiudicazione non oltre 2x la base (fuori: 19.343 CIG, 0,9%)
+--   - base sotto i 10 mld (`flag_base_sospetta` di mart_cig): la coda della fonte
+--   - consuntivo tra 0,5x e 2x la base (fuori: 76.088 e 8.689 CIG)
+--   - aggiudicazione non oltre 2x la base (fuori: 2.838 CIG)
 -- Le righe senza metadati bandi non sono piu' scartate: restano con
 -- motivo 'senza metadati bandi', come le altre escluse.
 
@@ -83,6 +100,9 @@ base AS (
         -- variante lo 0,12%: 27 volte piu' raro, non e' distribuzione naturale.
         abs(q.importo_finale / q.importo_base - 2) < 0.005 AS doppio_esatto,
         CASE
+            -- Prima di tutto la coda: una base >= 10 mld (flag da mart_cig) rende
+            -- il rapporto senza senso, qualunque sia il consuntivo.
+            WHEN q.flag_base_sospetta THEN 'base oltre 10 mld'
             WHEN b.regione IS NULL OR b.settore IS NULL THEN 'senza metadati bandi'
             WHEN q.importo_finale < q.importo_base * 0.5 THEN 'consuntivo sotto 0,5x la base'
             WHEN q.importo_finale > q.importo_base * 2 THEN 'consuntivo oltre 2x la base'
@@ -106,6 +126,16 @@ SELECT
     ROUND(importo_consuntivo, 2) AS importo_consuntivo,
     ROUND(importo_consuntivo - importo_base, 2) AS sforamento,
     ROUND((importo_consuntivo - importo_base) * 100.0 / NULLIF(importo_base, 0), 2) AS sforamento_pct,
+    -- Base scontata del ribasso: NULL quando il ribasso non e' noto (5.632
+    -- righe, di cui 4.659 plausibili), non 0 — senza ribasso lo sconto non
+    -- esiste e fingere 0 direbbe "nessuno sconto" invece di "non lo so".
+    ROUND(importo_base * (1 - ribasso_pct / 100.0), 2) AS base_scontata,
+    ROUND(importo_consuntivo - importo_base * (1 - ribasso_pct / 100.0), 2)
+        AS sforamento_scontato,
+    ROUND(
+        (importo_consuntivo - importo_base * (1 - ribasso_pct / 100.0)) * 100.0
+        / NULLIF(importo_base * (1 - ribasso_pct / 100.0), 0), 2
+    ) AS sforamento_scontato_pct,
     ROUND(importo_aggiudicato, 2) AS importo_aggiudicato,
     ribasso_pct,
     n_varianti,

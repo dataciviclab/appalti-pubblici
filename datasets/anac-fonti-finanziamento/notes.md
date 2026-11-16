@@ -45,10 +45,12 @@ il mart è in **formato lungo** — una riga per fonte valorizzata.
 | totale dichiarato (esclusi i sospetti) | **4.849,7 mld** |
 | `n_fonti` mediano | 1 |
 
-**Il totale non è confrontabile col valore dei contratti**: 4.834 mld dichiarati
-contro ~1.531 mld di importi contrattuali (`mart_cig`). Le fonti sono dichiarate
-per **intervento**, non per contratto: un'opera con più CIG ha la stessa fonte
-ripetuta, e l'importo può coprire l'intero progetto.
+**Il totale non è confrontabile col valore dei contratti**: 4.849,7 mld dichiarati
+contro 3.125,9 mld di importi contrattuali (`mart_cig`, coda sospetta esclusa).
+Le fonti sono dichiarate per **intervento**, non per contratto: un'opera con più
+CIG ha la stessa fonte ripetuta, e l'importo può coprire l'intero progetto. Il
+valore contrattuale era 1.531 mld prima del fix del `COALESCE` (issue #33): il
+confronto va sempre fatto con la versione del `mart_cig` che si sta leggendo.
 
 ## Difetti della fonte (verificati sul delta di aprile 2026)
 
