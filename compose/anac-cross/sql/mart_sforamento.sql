@@ -74,6 +74,10 @@ base AS (
         r.ribasso_pct,
         COALESCE(v.n_varianti_totali, 0) AS n_varianti,
         v.motivi,
+        -- Doppio esatto: firma di compilazione (annualita' contro totale, o
+        -- duplicazione). Nei CIG senza variante vale il 3,2%, in quelli con
+        -- variante lo 0,12%: 27 volte piu' raro, non e' distribuzione naturale.
+        abs(q.importo_finale / q.importo_base - 2) < 0.005 AS doppio_esatto,
         CASE
             WHEN q.importo_finale < q.importo_base * 0.5 THEN 'consuntivo sotto 0,5x la base'
             WHEN q.importo_finale > q.importo_base * 2 THEN 'consuntivo oltre 2x la base'
@@ -102,7 +106,8 @@ SELECT
     n_varianti,
     motivi,
     motivo_esclusione IS NULL AS plausibile,
-    motivo_esclusione
+    motivo_esclusione,
+    doppio_esatto
 FROM base
 WHERE regione IS NOT NULL
   AND settore IS NOT NULL
