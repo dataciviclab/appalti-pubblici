@@ -1,11 +1,12 @@
 -- mart_sforamento.sql — di quanto è cresciuto un contratto rispetto al quadro iniziale
 --
--- Grana: 1 riga per CIG con consuntivo registrato.
+-- Grana: 1 riga per (cig, id_aggiudicazione) con consuntivo registrato.
 --
 -- **Il ribasso non entra nella formula.** Ci ho provato e i dati dicono che è
--- sbagliato: il consuntivo si comporta come un importo *pre-ribasso* — è uguale
--- alla base d'asta nel 95% dei CIG e il suo rapporto con la base ha mediana
--- esattamente 1,0 in ogni fascia di ribasso. Scontare la base del ribasso
+-- sbagliato: il consuntivo si comporta come un importo *pre-ribasso*. Il rapporto
+-- cons/base ha mediana **1,000 in ogni fascia di ribasso** (61,9% dei CIG entro
+-- lo 0,1%, 71,4% entro il 5%): non è "quasi sempre uguale", è che la mediana non
+-- si muove col ribasso. Scontare la base del ribasso
 -- trasforma un contratto senza varianti in uno «sforamento» pari al ribasso:
 -- mediana 0% con ribasso 0, +15,3% con ribasso 10-20, +45,7% sopra il 30.
 -- Quindi lo sforamento è `consuntivo - base`, che misura solo le varianti.
@@ -15,9 +16,10 @@
 -- `plausibile` marca i CIG il cui confronto ha senso; le righe escluse restano
 -- nel mart con il motivo, così l'esclusione è verificabile e non silenziosa.
 -- Criteri (misurati in notes.md):
---   - consuntivo tra 0,5x e 2x la base (fuori: 19.832 CIG, 0,9%)
+--   - consuntivo tra 0,5x e 2x la base
 --   - aggiudicazione non oltre 2x la base (fuori: 19.343 CIG, 0,9%)
--- Insieme escludono 39.175 CIG su 2.202.897 (1,8%).
+-- Le righe senza metadati bandi non sono piu' scartate: restano con
+-- motivo 'senza metadati bandi', come le altre escluse.
 
 WITH qe AS (
     SELECT * FROM read_parquet('{support.quadro_economico.mart}')
@@ -26,9 +28,11 @@ WITH qe AS (
 ),
 
 agg AS (
-    SELECT cig, sum(importo_aggiudicazione) AS importo_aggiudicato
+    -- Per (cig, id_aggiudicazione): sommare per CIG e attaccare il totale a
+    -- ogni riga sbaglia il confronto sui CIG con piu' aggiudicazioni.
+    SELECT cig, id_aggiudicazione, sum(importo_aggiudicazione) AS importo_aggiudicato
     FROM read_parquet('{support.aggiudicazioni.clean}')
-    GROUP BY cig
+    GROUP BY cig, id_aggiudicazione
 ),
 
 ribasso AS (
@@ -79,12 +83,13 @@ base AS (
         -- variante lo 0,12%: 27 volte piu' raro, non e' distribuzione naturale.
         abs(q.importo_finale / q.importo_base - 2) < 0.005 AS doppio_esatto,
         CASE
+            WHEN b.regione IS NULL OR b.settore IS NULL THEN 'senza metadati bandi'
             WHEN q.importo_finale < q.importo_base * 0.5 THEN 'consuntivo sotto 0,5x la base'
             WHEN q.importo_finale > q.importo_base * 2 THEN 'consuntivo oltre 2x la base'
             WHEN a.importo_aggiudicato > q.importo_base * 2 THEN 'aggiudicazione oltre 2x la base'
         END AS motivo_esclusione
     FROM qe q
-    LEFT JOIN agg a ON q.cig = a.cig
+    LEFT JOIN agg a ON q.cig = a.cig AND q.id_aggiudicazione = a.id_aggiudicazione
     LEFT JOIN ribasso r ON q.cig = r.cig
     LEFT JOIN bandi b ON q.cig = b.cig
     LEFT JOIN varianti v ON q.cig = v.cig
@@ -109,6 +114,4 @@ SELECT
     motivo_esclusione,
     doppio_esatto
 FROM base
-WHERE regione IS NOT NULL
-  AND settore IS NOT NULL
 ORDER BY sforamento DESC

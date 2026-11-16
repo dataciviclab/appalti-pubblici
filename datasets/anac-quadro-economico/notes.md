@@ -14,12 +14,13 @@ CKAN `quadro-economico`: FULL (446,9 MB, fermo al 2026-01-15) + 8 delta mensili
 
 | `descrizione_evento` | righe | CIG | importo contratto |
 |---|---:|---:|---:|
-| `BASE_ASTA` | 5.874.924 | 5.457.996 | 1.532,4 mld |
-| `CONSUNTIVO` | 706.522 | 701.799 | 182,9 mld |
-| `VARIANTE` | 355.051 | 251.081 | 389,0 mld |
-| `AGGIUDICAZIONE` | 1.175 | 1.153 | 1,0 mld |
+| `BASE_ASTA` | 5.873.183 | 5.457.996 | 1.532,4 mld |
+| `CONSUNTIVO` | 706.316 | 701.799 | 182,9 mld |
+| `VARIANTE` | 353.292 | 251.081 | 389,0 mld |
+| `AGGIUDICAZIONE` | 1.174 | 1.153 | 1,0 mld |
 
-Totale clean: **6.937.672 righe**.
+Totale clean: **6.933.965 righe** (le 3.707 righe in meno rispetto al primo run
+sono i duplicati di chiave risolti dal §5.1).
 
 Gli importi sono **istantanee cumulative**, non delta: ogni riga porta lo stato
 del quadro economico *dopo* quell'evento. Sommare le righe di un CIG è sbagliato;
@@ -58,6 +59,10 @@ con `importo_finale` (il `CONSUNTIVO` se c'è, altrimenti il massimo osservato).
 | gruppo | n CIG | invariati | negativi | positivi |
 |---|---:|---:|---:|---:|
 | con consuntivo | 397.674 | 61,4% | **27,3%** (p10 −23,8%) | 11,3% (p90 +1,4%) |
+
+Il rapporto cons/base ha **mediana 1,000** in ogni fascia di ribasso (61,9% dei
+CIG entro lo 0,1%). È la mediana, non «quasi sempre uguale», che sostiene la
+scelta di non scontare il ribasso.
 | senza consuntivo | 1.805.069 | 99,1% | 0,0% | 0,9% |
 
 ### Il triangolo per studiare gli outlier

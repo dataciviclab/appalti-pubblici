@@ -194,6 +194,12 @@ testo, i tipi dichiarati esplicitamente nel clean dalle macro — che elimina lo
 sniffing per anno e rende superfluo `sample_size: -1`. Va fatto con un run
 completo delle 20 partizioni per verificarne gli effetti, quindi non in questa PR.
 
+**La chiave primaria vale per anno, non per dataset.** `validate.primary_key:
+[cig]` è verde su ogni partizione (il toolkit valida per anno): 12.080.809
+righe con 6 CIG presenti in due `anno_pubblicazione` diversi. Chi legge
+«primary key» e poi conta i duplicati sul dataset intero trova quei 6 —
+l'audit li segnala come avviso.
+
 **Il dedup è per partizione anno, non per dataset.** Sei CIG su 12,1 milioni
 compaiono in due `anno_pubblicazione` (es. `B456C65019`: €189.486,22 nel 2025 e
 €7.500 nel 2026), effetto diretto della scelta di non applicare le correzioni
