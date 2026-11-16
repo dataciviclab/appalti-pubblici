@@ -49,6 +49,13 @@ support:
     name: sospensioni
     config: ../../datasets/anac-sospensioni/dataset.yml
     years: [2026]
+  # mart_cig di anac-quadro-economico e' la PRIMA tabella mart di quel dataset:
+  # il placeholder {support.quadro_economico.mart} risolve a quella. Se si
+  # riordina `mart.tables` la', questo mart legge la tabella sbagliata.
+  - type: dataset
+    name: quadro_economico
+    config: ../../datasets/anac-quadro-economico/dataset.yml
+    years: [2026]
   - type: dataset
     name: varianti
     config: ../../datasets/anac-varianti/dataset.yml
@@ -81,6 +88,8 @@ mart:
       sql: "sql/mart_ritardi_contratto.sql"
     - name: "mart_collaudo_ritardo"
       sql: "sql/mart_collaudo_ritardo.sql"
+    - name: "mart_sforamento"
+      sql: "sql/mart_sforamento.sql"
   required_tables:
     - mart_panoramica
     - mart_imprese
@@ -89,6 +98,7 @@ mart:
     - mart_esecuzione
     - mart_ritardi_contratto
     - mart_collaudo_ritardo
+    - mart_sforamento
   validate:
     table_rules:
       mart_panoramica:
@@ -104,6 +114,8 @@ mart:
       mart_ritardi_contratto:
         min_rows: 10
       mart_collaudo_ritardo:
+        min_rows: 10
+      mart_sforamento:
         min_rows: 10
 
 duckdb:

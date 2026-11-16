@@ -112,6 +112,20 @@ versione del delta (regola ANAC), non quella del full.
   formalmente nel 2026: le contiamo qui, il report dell'audit non le distingue
 - importi ≥ 1 mld: 336 righe per €1.503,8 Mld — stessa corruzione dei bandi
   (separatori appiattiti). Da flaggare anche qui (follow-up).
-- `importo_aggiudicazione` coincide con l'importo a base di gara nel 95% dei
-  casi 2024-25: non è il prezzo di aggiudicazione (vedi nota di quadratura)
+- **`importo_aggiudicazione` cambia comportamento nel 2024.** Fino al 2023 è
+  un prezzo: coincide col lotto nel 38-63% dei casi e nel 3-6% ha un ribasso
+  > 0. Dal 2024 è una copia della base: 96,5% identico nel 2024, 97,1% nel
+  2025, 98,3% nel 2026, con ribasso > 0 sceso a 0,2%. Su gare a lotto unico:
+
+  | anni | identico alla base (±1%) | con ribasso > 0 |
+  |---|---:|---:|
+  | 2007-2010 | 38-53% | 2-4% |
+  | 2011-2023 | 43-63% | 3-6% |
+  | 2024 | 96,5% | 0,2% |
+  | 2025-2026 | 97-98% | 0,1-0,2% |
+
+  Conseguenza: il prezzo di aggiudicazione non è ricostruibile dal 2024
+  (`base × (1−ribasso)` darebbe la base), e le analisi su prezzo e ribasso
+  sono confrontabili solo **fino al 2023**. Non è correggibile a valle: è la
+  fonte che ha smesso di pubblicare i due campi distinti.
 - 69% dei record senza criterio di aggiudicazione (NULL)
