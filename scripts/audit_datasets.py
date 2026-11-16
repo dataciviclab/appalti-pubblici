@@ -51,6 +51,9 @@ DATASETS: dict[str, dict] = {
     "anac_sospensioni": {"key": ["cig", "id_aggiudicazione", "data_sospensione", "descrizione_motivo"], "dates": ["data_sospensione", "data_ripresa"]},
     # Chiave dal Manuale v1.4 §4 (pag. 17): "stazioni-appaltanti -> codice_fiscale".
     "anac_stazioni_appaltanti": {"key": ["codice_fiscale"], "dates": ["data_inizio"]},
+    # Chiave dal Manuale v1.4 §4 (pag. 16): include `dettaglio_evento`, che e'
+    # l'id della variante. Senza, le varianti collassano.
+    "anac_quadro_economico": {"key": ["cig", "id_aggiudicazione", "descrizione_evento", "dettaglio_evento"], "dates": ["data"]},
     "anac_stati_avanzamento": {"key": ["cig", "id_aggiudicazione", "progressivo_sal"], "dates": ["data_emissione_sal", "data_cert_pagamento"]},
     "anac_subappalti": {"key": ["cig", "id_subappalto", "cod_categoria", "codice_fiscale"], "dates": ["data_autorizzazione"]},
     "anac_varianti": {"key": ["cig", "id_aggiudicazione", "id_variante", "cod_motivo_variante", "data_approvazione_variante"], "dates": ["data_approvazione_variante"]},
