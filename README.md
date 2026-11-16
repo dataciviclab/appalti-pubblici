@@ -57,9 +57,10 @@ li trasforma in mart analitici e li rende interrogabili via dashboard Streamlit.
 | `anac-varianti` | Varianti contrattuali | 2000-2026 | 1 |
 | `anac-stazioni-appaltanti` | Anagrafica SA (natura giuridica, AUSA, territorio) | 2026 | 2 |
 | `anac-quadro-economico` | Importi per CIG: base d'asta, varianti, consuntivo | 2026 | 2 |
+| `anac-fonti-finanziamento` | Come è finanziato ogni CIG (bilancio SA, UE, Stato, mutuo, privati) | 2026 | 1 |
 | `compose/anac-cross` | Viste incrociate (bandi × aggiudicazioni × esecuzione) | 2026 | 8 |
 
-### Mart analitici (31 totali)
+### Mart analitici (33 totali)
 
 **Bandi** (6): mart_annuale, mart_trend_pnrr, mart_top_stazioni, mart_esiti_per_procedura, mart_trend_settore, mart_sa_profilo
 
@@ -71,9 +72,11 @@ li trasforma in mart analitici e li rende interrogabili via dashboard Streamlit.
 
 **Anagrafica** (2): mart_natura, mart_territorio
 
-**Compose** (8): mart_panoramica, mart_imprese, mart_ritardi_per_sa, mart_competitivita, mart_esecuzione, mart_ritardi_contratto, mart_collaudo_ritardo, mart_sforamento
+**Compose** (9): mart_panoramica, mart_imprese, mart_ritardi_per_sa, mart_competitivita, mart_esecuzione, mart_ritardi_contratto, mart_collaudo_ritardo, mart_sforamento, mart_chi_paga
 
 **Quadro economico** (2): mart_cig, mart_eventi
+
+**Fonti finanziamento** (1): mart_fonti
 
 **Altri** (2): mart_collaudo, mart_cup
 

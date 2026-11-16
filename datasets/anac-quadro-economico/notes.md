@@ -52,18 +52,34 @@ del dataset — non al CIG. Prima del fix la clean teneva entrambe le versioni
 
 ## Cosa misura (e cosa no)
 
-`mart_cig` confronta `importo_base` (lavori+servizi+forniture della `BASE_ASTA`)
-con `importo_finale` (il `CONSUNTIVO` se c'è, altrimenti il massimo osservato).
-2.202.743 CIG con base > 0; di questi **397.674 (18,1%) hanno il consuntivo**.
+`mart_cig` confronta `importo_base` (lavori+servizi+forniture della `BASE_ASTA`,
+sommati con `COALESCE`) con `importo_finale` (il `CONSUNTIVO` se c'è, altrimenti
+il massimo osservato). **5.611.100 CIG con base > 0**; di questi **682.233
+(12,2%) hanno il consuntivo**.
+
+Fino alla issue #33 la somma era senza `COALESCE`: il 62,3% delle righe
+`BASE_ASTA` ha almeno un componente NULL, quindi `importo_base` esisteva solo
+per 2.202.896 CIG (37,7% dei CIG con una base) e il resto spariva in silenzio.
+Il fix porta la copertura al 95,5% delle righe `BASE_ASTA`; il totale con la
+coda fuori (`flag_base_sospetta`, 16 righe) è **3.125,9 mld**.
 
 | gruppo | n CIG | invariati | negativi | positivi |
 |---|---:|---:|---:|---:|
-| con consuntivo | 397.674 | 61,4% | **27,3%** (p10 −23,8%) | 11,3% (p90 +1,4%) |
+| con consuntivo, plausibili | 585.363 | 26,3% | **54,5%** (p10 −28,5%) | 18,9% (p90 +8,3%) |
 
-Il rapporto cons/base ha **mediana 1,000** in ogni fascia di ribasso (61,9% dei
-CIG entro lo 0,1%). È la mediana, non «quasi sempre uguale», che sostiene la
-scelta di non scontare il ribasso.
-| senza consuntivo | 1.805.069 | 99,1% | 0,0% | 0,9% |
+### Il ribasso: la lettura precedente non regge
+
+Il rapporto cons/base **scende** con il ribasso: mediana 1,000 nella fascia 0,
+0,989 fra 0-10, 0,905 fra 10-20, 0,817 fra 20-30, **0,715 sopra il 30%**. Il
+consuntivo è quindi in buona parte **post-ribasso**, e lo `sforamento` grezzo
+(consuntivo − base) misura soprattutto lo sconto: totale −11,69 mld, mediana
+−1,0%, 54,5% dei contratti «in risparmio».
+
+Questa nota diceva prima l'opposto («mediana 1,000 in ogni fascia»): era
+misurata sul sottoinsieme con tutti i componenti valorizzati — il 37,7% dei CIG,
+non rappresentativo. Per questo `mart_sforamento` espone sia `sforamento`
+(grezzo) sia `sforamento_scontato` (consuntivo − base scontata del ribasso:
++7,83 mld, mediana 0,0%). La misura canonica è una decisione aperta.
 
 ### Il triangolo per studiare gli outlier
 

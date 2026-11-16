@@ -53,6 +53,14 @@ support:
   # il placeholder {support.quadro_economico.mart} risolve a quella. Se si
   # riordina `mart.tables` la', questo mart legge la tabella sbagliata.
   - type: dataset
+    name: stazioni_appaltanti
+    config: ../../datasets/anac-stazioni-appaltanti/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: fonti_finanziamento
+    config: ../../datasets/anac-fonti-finanziamento/dataset.yml
+    years: [2026]
+  - type: dataset
     name: quadro_economico
     config: ../../datasets/anac-quadro-economico/dataset.yml
     years: [2026]
@@ -90,6 +98,8 @@ mart:
       sql: "sql/mart_collaudo_ritardo.sql"
     - name: "mart_sforamento"
       sql: "sql/mart_sforamento.sql"
+    - name: "mart_chi_paga"
+      sql: "sql/mart_chi_paga.sql"
   required_tables:
     - mart_panoramica
     - mart_imprese
@@ -99,6 +109,7 @@ mart:
     - mart_ritardi_contratto
     - mart_collaudo_ritardo
     - mart_sforamento
+    - mart_chi_paga
   validate:
     table_rules:
       mart_panoramica:
@@ -116,6 +127,8 @@ mart:
       mart_collaudo_ritardo:
         min_rows: 10
       mart_sforamento:
+        min_rows: 10
+      mart_chi_paga:
         min_rows: 10
 
 duckdb:

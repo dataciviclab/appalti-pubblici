@@ -1,0 +1,85 @@
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "anac_fonti_finanziamento"
+  source_id: "anac"
+  tags: [appalti, anac, finanziamento, fonti]
+  category: appalti
+  description: "ANAC fonti di finanziamento: per ogni CIG e aggiudicazione, le 13 voci con cui l'opera è finanziata (bilancio SA, bilancio amministrazione competente, UE, Stato, mutuo, capitali privati...). Risponde a «a carico di chi»."
+  years: [2026]
+  time_coverage:
+    start_year: 2000
+    end_year: 2026
+
+raw:
+  # overwrite: con split_resources il default 'versioned' accumulerebbe
+  # 000-..., 000-..._1, ... a ogni run.
+  output_policy: overwrite
+  sources:
+    - name: "fonti-finanziamento"
+      type: "ckan"
+      extractor:
+        type: "unzip_all"
+        args:
+          only_ext: [".csv"]
+      client:
+        user_agent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      args:
+        portal_url: "https://dati.anticorruzione.it/opendata"
+        dataset_id: "fonti-finanziamento"
+        # FULL (191 MB) + delta mensili: stesso pattern di aggiudicazioni.
+        download_all: true
+        split_resources: true
+      primary: true
+
+clean:
+  sql: "sql/clean.sql"
+  required_columns:
+    - "cig"
+    - "id_aggiudicazione"
+    - "fondi_bilancio_sa"
+    - "totale_fonti"
+  read:
+    source: config_only
+    mode: all
+    header: true
+    delim: ";"
+    encoding: "utf-8"
+    quote: '"'
+    escape: '"'
+    null_padding: true
+    trim_whitespace: true
+    sample_size: -1
+    source_file: true
+  validate:
+    # Chiave del Manuale §4: `Cig + id_aggiudicazione`. NON dichiarata qui:
+    # il 17,5% delle righe non ha `id_aggiudicazione` (dichiarazioni a livello
+    # di CIG, senza aggiudicazione registrata), e una primary key con NULL non
+    # e' una primary key. La deduplica fa il lavoro in due modi (vedi clean.sql)
+    # e l'audit controlla `cig` non nullo.
+    not_null:
+      - "cig"
+    max_null_pct:
+      fonte_prevalente: 0.30
+    min_rows: 1
+
+mart:
+  tables:
+    - name: "mart_fonti"
+      sql: "sql/mart_fonti.sql"
+  required_tables:
+    - "mart_fonti"
+  validate:
+    table_rules:
+      mart_fonti:
+        min_rows: 10
+
+duckdb:
+  memory_limit: "5GB"
+
+validation:
+  fail_on_error: true
+
+output:
+  artifacts: "standard"

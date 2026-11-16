@@ -154,3 +154,84 @@ def test_mart_collaudo_separa_senza_record_da_senza_data(tmp_path: Path) -> None
     assert quota_record == pytest.approx(33.3, abs=0.1)
     assert quota_data == pytest.approx(66.7, abs=0.1)
     assert mediana == 50, "10/01 -> 01/03 sono 50 giorni"
+
+
+# ── mart_sforamento: due misure, e il ribasso che manca non e' zero ─────────
+
+MART_SFORAMENTO = SQL_DIR / "mart_sforamento.sql"
+
+
+@pytest.mark.regression
+def test_mart_sforamento_espone_la_base_scontata_e_non_inventa_il_ribasso(tmp_path: Path) -> None:
+    con = duckdb.connect()
+
+    qe = _scrivi(
+        con,
+        tmp_path / "qe" / "mart_cig.parquet",
+        """
+        SELECT * FROM (VALUES
+            ('CIG_A', 1, 1000.0,  950.0, TRUE, FALSE),
+            ('CIG_B', 2, 1000.0, 1000.0, TRUE, FALSE),
+            ('CIG_C', 3, 12e9,    12e9,  TRUE, TRUE)
+        ) AS t(cig, id_aggiudicazione, importo_base, importo_finale,
+               ha_consuntivo, flag_base_sospetta)
+        """,
+    )
+    agg = _scrivi(
+        con,
+        tmp_path / "agg" / "a.parquet",
+        """
+        SELECT * FROM (VALUES
+            ('CIG_A', 1, 900.0,  10.0),
+            ('CIG_B', 2, 1000.0, NULL),
+            ('CIG_C', 3, 12e9,    0.0)
+        ) AS t(cig, id_aggiudicazione, importo_aggiudicazione, ribasso_aggiudicazione)
+        """,
+    )
+    varianti = _scrivi(
+        con,
+        tmp_path / "var" / "v.parquet",
+        "SELECT * FROM (VALUES ('CIG_A', 'per maggiori oneri')) AS t(cig, motivo_variante)",
+    )
+    bandi = _scrivi(
+        con,
+        tmp_path / "bandi" / "b.parquet",
+        """
+        SELECT * FROM (VALUES
+            ('CIG_A', 2019, 'Lazio', 'Lavori', 'SA', 'CFX', FALSE),
+            ('CIG_B', 2019, 'Lazio', 'Lavori', 'SA', 'CFX', FALSE),
+            ('CIG_C', 2019, 'Lazio', 'Lavori', 'SA', 'CFX', FALSE)
+        ) AS t(cig, anno_pubblicazione, sezione_regionale, oggetto_principale_contratto,
+               denominazione_amministrazione_appaltante, cf_amministrazione_appaltante,
+               flag_importo_sospetto)
+        """,
+    )
+
+    sql = MART_SFORAMENTO.read_text(encoding="utf-8")
+    for nome, path in [("quadro_economico.mart", qe), ("aggiudicazioni.clean", agg),
+                       ("varianti.clean", varianti), ("bandi_gara.clean", bandi)]:
+        sql = sql.replace("{" + f"support.{nome}" + "}", path)
+
+    cur = con.execute(sql)
+    colonne = [c[0] for c in cur.description]
+    righe = {r[colonne.index("cig")]: dict(zip(colonne, r)) for r in cur.fetchall()}
+
+    a = righe["CIG_A"]
+    assert a["ribasso_pct"] == 10.0
+    assert a["base_scontata"] == 900.0, "la base si sconta del ribasso"
+    assert a["sforamento"] == -50.0, "grezzo: consuntivo meno base piena"
+    assert a["sforamento_scontato"] == 50.0, "scontato: il ribasso non e' uno sforamento"
+    assert a["plausibile"] is True
+
+    b = righe["CIG_B"]
+    assert b["base_scontata"] is None, "ribasso ignoto: NULL, non 0"
+    assert b["sforamento_scontato"] is None, (
+        "senza ribasso lo sconto non esiste: fingere 0 direbbe 'nessuno sconto' "
+        "invece di 'non lo so'"
+    )
+
+    c = righe["CIG_C"]
+    assert c["plausibile"] is False
+    assert c["motivo_esclusione"] == "base oltre 10 mld", (
+        "la coda va esclusa dal confronto, non solo segnalata"
+    )
