@@ -30,6 +30,10 @@
 --     mart ne pubblica 2.909,4 per la stessa soglia (-33,9 mld).
 -- Chi legge 2.909,4 come "quanto e' finanziato in Italia" sbaglia: e' la fetta
 -- agganciabile, non il totale dichiarato (4.849,7).
+--
+-- Lo stesso filtro (`flag_base_sospetta`) vale per il contrattuale e per il
+-- finanziato: escluderlo da un lato solo renderebbe il rapporto
+-- `rapporto_finanziato_contratto` un confronto fra due popolazioni diverse.
 
 WITH contratti AS (
     SELECT cig, id_aggiudicazione, importo_base, flag_base_sospetta
@@ -89,17 +93,21 @@ SELECT
     ROUND(COUNT(*) FILTER (WHERE f.importo_finanziato IS NOT NULL) * 100.0 / COUNT(*), 1)
         AS quota_con_fonte_pct,
     ROUND(SUM(c.importo_base) FILTER (WHERE NOT c.flag_base_sospetta) / 1e9, 3) AS importo_contrattuale_mld,
-    ROUND(SUM(f.importo_finanziato) / 1e9, 3) AS importo_finanziato_mld,
+    ROUND(SUM(f.importo_finanziato) FILTER (WHERE NOT c.flag_base_sospetta) / 1e9, 3)
+        AS importo_finanziato_mld,
     ROUND(SUM(f.importo_finanziato) FILTER (WHERE NOT c.flag_base_sospetta)
         / NULLIF(SUM(c.importo_base) FILTER (WHERE NOT c.flag_base_sospetta), 0), 2)
         AS rapporto_finanziato_contratto,
-    ROUND(SUM(f.fin_bilancio_sa) / 1e9, 3) AS fin_bilancio_sa_mld,
-    ROUND(SUM(f.fin_bilancio_amministrazione) / 1e9, 3) AS fin_bilancio_amministrazione_mld,
-    ROUND(SUM(f.fin_ue) / 1e9, 3) AS fin_ue_mld,
-    ROUND(SUM(f.fin_altro_pubblico) / 1e9, 3) AS fin_altro_pubblico_mld,
-    ROUND(SUM(f.fin_mutuo) / 1e9, 3) AS fin_mutuo_mld,
-    ROUND(SUM(f.fin_privati) / 1e9, 3) AS fin_privati_mld,
-    ROUND(SUM(f.fin_altro) / 1e9, 3) AS fin_altro_mld
+    ROUND(SUM(f.fin_bilancio_sa) FILTER (WHERE NOT c.flag_base_sospetta) / 1e9, 3)
+        AS fin_bilancio_sa_mld,
+    ROUND(SUM(f.fin_bilancio_amministrazione) FILTER (WHERE NOT c.flag_base_sospetta) / 1e9, 3)
+        AS fin_bilancio_amministrazione_mld,
+    ROUND(SUM(f.fin_ue) FILTER (WHERE NOT c.flag_base_sospetta) / 1e9, 3) AS fin_ue_mld,
+    ROUND(SUM(f.fin_altro_pubblico) FILTER (WHERE NOT c.flag_base_sospetta) / 1e9, 3)
+        AS fin_altro_pubblico_mld,
+    ROUND(SUM(f.fin_mutuo) FILTER (WHERE NOT c.flag_base_sospetta) / 1e9, 3) AS fin_mutuo_mld,
+    ROUND(SUM(f.fin_privati) FILTER (WHERE NOT c.flag_base_sospetta) / 1e9, 3) AS fin_privati_mld,
+    ROUND(SUM(f.fin_altro) FILTER (WHERE NOT c.flag_base_sospetta) / 1e9, 3) AS fin_altro_mld
 FROM contratti c
 JOIN bandi b ON c.cig = b.cig
 LEFT JOIN fin f ON c.cig = f.cig AND c.id_aggiudicazione = f.id_aggiudicazione

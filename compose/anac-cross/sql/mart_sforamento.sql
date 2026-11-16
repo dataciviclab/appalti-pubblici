@@ -27,7 +27,26 @@
 --     (`base_scontata`). Totale **+7,83 mld**, mediana 0,0%, con mediana
 --     cons/base_scontata 1,056-1,117 nelle fasce alte: varianti che recuperano
 --     parte dello sconto.
--- Quale sia la misura canonica e' una decisione aperta, non un dettaglio.
+-- Quale sia la misura canonica e' una decisione aperta, non un dettaglio, e la
+-- scelta **non e' neutra nel tempo**: il ribasso sparisce dal 2023 (la
+-- degradazione gia' nota della fonte: dal 2024 `importo_aggiudicazione` e' una
+-- copia della base, ribassi > 0 allo 0,2%). Ribasso mediano per anno di
+-- pubblicazione, e le due misure:
+--
+--   anno   n        rib.med   grezzo   scontato   mediana grezza   mediana scontata
+--   2008   10.513   14,6%     -0,44    +0,80      -4,0%            +4,9%
+--   2013   28.314    6,2%     -0,52    +0,73      -3,0%             0,0%
+--   2019   43.059    3,0%     -1,06    +0,23      -3,9%             0,0%
+--   2022   57.719    0,6%     -0,92    +0,11      -0,2%             0,0%
+--   2024   31.812    0,0%     -0,06    -0,01       0,0%             0,0%
+--
+-- Quindi: la misura scontata e' una correzione reale **fino al 2022** e un
+-- **no-op dal 2023**, dove `base_scontata = base` perche' il ribasso non e' nel
+-- dato. La fascia a ribasso 0 della tabella sopra (mediana 1,000) e' per il 30%
+-- contratti 2023+ — dove lo sconto manca per dato mancante, non perche' il
+-- consuntivo sia pre-ribasso. Conseguenza pratica: **un trend di "sforamento" a
+-- cavallo del 2022 non e' interpretabile in nessuna delle due misure**, e il
+-- confronto va fatto dentro un periodo omogeneo.
 --
 -- `plausibile` marca i CIG il cui confronto ha senso; le righe escluse restano
 -- nel mart con il motivo, cosi' l'esclusione e' verificabile e non silenziosa.
