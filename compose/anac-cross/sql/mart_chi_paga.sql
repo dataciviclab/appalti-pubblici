@@ -16,6 +16,18 @@
 -- `n_esclusi_importo_sospetto`: è la coda della fonte (separatori appiattiti),
 -- la stessa che nei bandi vale `flag_importo_sospetto`. Senza la guardia un
 -- solo CIG da 20 mld domina il gruppo anno × regione.
+--
+-- **I totali di questo mart non sono i totali dei due dataset.** Riconciliazione
+-- misurata (novembre 2026):
+--   contratti: 1.531,4 mld in `mart_cig` = 1.351,0 nella popolazione del mart
+--     + 83,9 senza bando + 96,5 sospetti; il mart ne pubblica 1.322,2 perche'
+--     `HAVING COUNT(*) >= 10` scarta i gruppi piccoli (-28,8 mld).
+--   finanziamenti: 4.849,7 mld dichiarati = 3.032,2 con `id_aggiudicazione`
+--     + 1.817,5 senza id (non agganciabili a un contratto); dei 3.032,2 solo
+--     1.158,0 si agganciano a un contratto della popolazione del mart, e il
+--     mart ne pubblica 1.122,6 per la stessa soglia (-35,4 mld).
+-- Chi legge 1.122,6 come "quanto e' finanziato in Italia" sbaglia di quattro
+-- volte: e' la fetta agganciabile, non il totale dichiarato.
 
 WITH contratti AS (
     SELECT cig, id_aggiudicazione, importo_base
