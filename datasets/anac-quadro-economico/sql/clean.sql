@@ -28,7 +28,10 @@ WITH dedup AS (
 SELECT
     normalize_string(cig) AS cig,
     cast_bigint(id_aggiudicazione) AS id_aggiudicazione,
-    safe_date(data) AS data,
+    -- Il dominio ANAC parte dal 2005: 1901-01-01 (sentinella) e 1812-08-25
+    -- (refuso) non sono date. `safe_date` e' generica (1800-2100), la stretta
+    -- di dominio sta qui, come per le varianti con '0001-01-01'.
+    CASE WHEN year(safe_date(data)) < 1990 THEN NULL ELSE safe_date(data) END AS data,
     normalize_string(descrizione_evento) AS descrizione_evento,
     normalize_string(dettaglio_evento) AS dettaglio_evento,
     cast_double(importo_lavori) AS importo_lavori,

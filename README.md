@@ -59,7 +59,7 @@ li trasforma in mart analitici e li rende interrogabili via dashboard Streamlit.
 | `anac-quadro-economico` | Importi per CIG: base d'asta, varianti, consuntivo | 2026 | 2 |
 | `compose/anac-cross` | Viste incrociate (bandi × aggiudicazioni × esecuzione) | 2026 | 8 |
 
-### Mart analitici (30 totali)
+### Mart analitici (31 totali)
 
 **Bandi** (6): mart_annuale, mart_trend_pnrr, mart_top_stazioni, mart_esiti_per_procedura, mart_trend_settore, mart_sa_profilo
 
