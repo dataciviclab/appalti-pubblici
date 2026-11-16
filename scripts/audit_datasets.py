@@ -48,7 +48,11 @@ DATASETS: dict[str, dict] = {
     "anac_cup": {"key": ["cup", "cig"], "dates": []},
     "anac_fine_contratto": {"key": ["cig", "id_aggiudicazione"], "dates": ["data_effettiva_ultimazione"]},
     # Chiave dal Manuale v1.4 §4: fonti-finanziamento -> Cig + id_aggiudicazione.
-    "anac_fonti_finanziamento": {"key": ["cig", "id_aggiudicazione"], "dates": []},
+    # Ma il 17,8% delle righe non ha `id_aggiudicazione` (dichiarazioni a livello
+    # di CIG) e la chiave con NULL non esiste: il controllo qui le vedrebbe come
+    # 7.943 chiavi duplicate che invece sono dichiarazioni distinte. Verificato a
+    # parte: 0 duplicati fra le righe con id. Quindi niente check di chiave.
+    "anac_fonti_finanziamento": {"key": None, "dates": []},
     "anac_partecipanti": {"key": None, "dates": []},
     "anac_sospensioni": {"key": ["cig", "id_aggiudicazione", "data_sospensione", "descrizione_motivo"], "dates": ["data_sospensione", "data_ripresa"]},
     # Chiave dal Manuale v1.4 §4 (pag. 17): "stazioni-appaltanti -> codice_fiscale".

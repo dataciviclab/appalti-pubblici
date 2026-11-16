@@ -39,9 +39,9 @@ il mart è in **formato lungo** — una riga per fonte valorizzata.
 | | |
 |---|---:|
 | righe nel clean | **2.960.932** |
-| righe con almeno una fonte | 2.865.705 (96,8%) |
+| righe con almeno una fonte | 2.865.681 (96,8%) |
 | righe **senza** `id_aggiudicazione` | 527.220 (**17,8%**) |
-| CIG/contratti con importi sospetti (≥ 1 mld) | 5.893 |
+| CIG/contratti con importi sospetti (≥ 1 mld) | 5.895 |
 | totale dichiarato (esclusi i sospetti) | **4.849,7 mld** |
 | `n_fonti` mediano | 1 |
 
