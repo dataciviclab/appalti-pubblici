@@ -47,6 +47,8 @@ DATASETS: dict[str, dict] = {
     "anac_collaudo": {"key": ["cig", "id_aggiudicazione"], "dates": ["data_cert_collaudo", "data_delibera"]},
     "anac_cup": {"key": ["cup", "cig"], "dates": []},
     "anac_fine_contratto": {"key": ["cig", "id_aggiudicazione"], "dates": ["data_effettiva_ultimazione"]},
+    # Chiave dal Manuale v1.4 §4: fonti-finanziamento -> Cig + id_aggiudicazione.
+    "anac_fonti_finanziamento": {"key": ["cig", "id_aggiudicazione"], "dates": []},
     "anac_partecipanti": {"key": None, "dates": []},
     "anac_sospensioni": {"key": ["cig", "id_aggiudicazione", "data_sospensione", "descrizione_motivo"], "dates": ["data_sospensione", "data_ripresa"]},
     # Chiave dal Manuale v1.4 §4 (pag. 17): "stazioni-appaltanti -> codice_fiscale".
