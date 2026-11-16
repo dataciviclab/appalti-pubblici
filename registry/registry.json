@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repo": "appalti-pubblici",
   "source_repo": "dataciviclab/appalti-pubblici",
-  "updated_at": "2026-11-15",
+  "updated_at": "2026-11-16",
   "datasets": [
     {
       "slug": "anac_aggiudicatari",
@@ -885,7 +885,8 @@
         "anac_cross__mart_competitivita",
         "anac_cross__mart_esecuzione",
         "anac_cross__mart_ritardi_contratto",
-        "anac_cross__mart_collaudo_ritardo"
+        "anac_cross__mart_collaudo_ritardo",
+        "anac_cross__mart_sforamento"
       ]
     },
     {
@@ -1077,6 +1078,110 @@
       ]
     },
     {
+      "slug": "anac_quadro_economico",
+      "name": "Anac Quadro Economico",
+      "description": "ANAC quadro economico: importi per CIG a base d'asta, consuntivo e varianti. E' la fonte degli importi che manca a `varianti`: permette di misurare lo scostamento tra importo a base e consuntivo.",
+      "source": "",
+      "source_id": "anac",
+      "period": {
+        "start": 2000,
+        "end": 2026
+      },
+      "tags": [
+        "appalti",
+        "anac",
+        "quadro-economico",
+        "importi",
+        "varianti"
+      ],
+      "category": "appalti",
+      "columns": [
+        {
+          "name": "cig",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "cig_code"
+        },
+        {
+          "name": "id_aggiudicazione",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "data",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "descrizione_evento",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "dettaglio_evento",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "importo_lavori",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "importo_servizi",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "importo_forniture",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "importo_progettazione",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "importo_sicurezza",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "somme_a_disposizione",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "ulteriori_oneri_non_soggetti_ribasso",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/appalti_pubblici/anac_quadro_economico/2026/anac_quadro_economico_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "anac_quadro_economico__mart_cig",
+        "anac_quadro_economico__mart_eventi"
+      ]
+    },
+    {
       "slug": "anac_sospensioni",
       "name": "Anac Sospensioni",
       "description": "",
@@ -1243,6 +1348,143 @@
       "stage": "incubating",
       "mart_refs": [
         "anac_stati_avanzamento__mart_sal"
+      ]
+    },
+    {
+      "slug": "anac_stazioni_appaltanti",
+      "name": "Anac Stazioni Appaltanti",
+      "description": "Anagrafica ANAC delle stazioni appaltanti (1 riga per codice fiscale): natura giuridica, AUSA, localizzazione, stato. Chiave di join su cf_amministrazione_appaltante di tutti gli altri dataset.",
+      "source": "",
+      "source_id": "anac",
+      "period": {
+        "start": 2026,
+        "end": 2026
+      },
+      "tags": [
+        "appalti",
+        "anac",
+        "stazioni-appaltanti",
+        "anagrafica"
+      ],
+      "category": "appalti",
+      "columns": [
+        {
+          "name": "codice_fiscale",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "fiscal_code"
+        },
+        {
+          "name": "partita_iva",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "fiscal_code"
+        },
+        {
+          "name": "denominazione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "codice_ausa",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "ausa_code"
+        },
+        {
+          "name": "natura_giuridica_codice",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "natura_giuridica",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "soggetto_estero",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "flag_inhouse",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "flag_partecipata",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "provincia_codice",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "provincia",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "province_code"
+        },
+        {
+          "name": "citta_codice",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "citta",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "indirizzo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "cap",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "stato",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "country_code"
+        },
+        {
+          "name": "data_inizio",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/appalti_pubblici/anac_stazioni_appaltanti/2026/anac_stazioni_appaltanti_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "anac_stazioni_appaltanti__mart_natura",
+        "anac_stazioni_appaltanti__mart_territorio"
       ]
     },
     {
@@ -1629,6 +1871,16 @@
       }
     },
     {
+      "slug": "anac_cross__mart_sforamento",
+      "dataset": "anac_cross",
+      "table": "mart_sforamento",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_cross/2026/mart_sforamento.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "anac_cup__mart_cup",
       "dataset": "anac_cup",
       "table": "mart_cup",
@@ -1669,6 +1921,26 @@
       }
     },
     {
+      "slug": "anac_quadro_economico__mart_cig",
+      "dataset": "anac_quadro_economico",
+      "table": "mart_cig",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_quadro_economico/2026/mart_cig.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_quadro_economico__mart_eventi",
+      "dataset": "anac_quadro_economico",
+      "table": "mart_eventi",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_quadro_economico/2026/mart_eventi.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "anac_sospensioni__mart_sospensioni",
       "dataset": "anac_sospensioni",
       "table": "mart_sospensioni",
@@ -1685,6 +1957,26 @@
       "location": {
         "type": "gcs",
         "path": "gs://dataciviclab-mart/appalti_pubblici/anac_stati_avanzamento/2026/mart_sal.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_stazioni_appaltanti__mart_natura",
+      "dataset": "anac_stazioni_appaltanti",
+      "table": "mart_natura",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_stazioni_appaltanti/2026/mart_natura.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "anac_stazioni_appaltanti__mart_territorio",
+      "dataset": "anac_stazioni_appaltanti",
+      "table": "mart_territorio",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/appalti_pubblici/anac_stazioni_appaltanti/2026/mart_territorio.parquet",
         "multi_file": false
       }
     },
@@ -1718,21 +2010,21 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261115T221411Z_73137c4b",
+        "run_id": "20261116T110423Z_54b3bef8",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
           "mart": 100
         },
         "output_rows": {
-          "mart": 661580
+          "mart": 1059328
         },
         "output_bytes": {
-          "mart": 14139931
+          "mart": 27550369
         },
-        "started_at": "2026-11-15T22:14:11.848879+00:00",
-        "finished_at": "2026-11-15T22:14:50.068159+00:00",
-        "duration_seconds": 38.219
+        "started_at": "2026-11-16T11:04:23.014089+00:00",
+        "finished_at": "2026-11-16T11:05:17.974086+00:00",
+        "duration_seconds": 54.96
       }
     },
     {
@@ -1743,7 +2035,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261115T214400Z_94e25c65",
+        "run_id": "20261116T103106Z_31354618",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -1754,16 +2046,16 @@
         "output_rows": {
           "raw": 5437334,
           "clean": 6455228,
-          "mart": 918173
+          "mart": 918184
         },
         "output_bytes": {
           "raw": 1080709845,
-          "clean": 141321833,
-          "mart": 17812780
+          "clean": 141341720,
+          "mart": 17822634
         },
-        "started_at": "2026-11-15T21:44:00.379823+00:00",
-        "finished_at": "2026-11-15T21:45:53.315340+00:00",
-        "duration_seconds": 112.936
+        "started_at": "2026-11-16T10:31:06.933553+00:00",
+        "finished_at": "2026-11-16T10:33:12.237991+00:00",
+        "duration_seconds": 125.304
       }
     },
     {
@@ -1774,7 +2066,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261115T214554Z_d1fbe299",
+        "run_id": "20261116T103313Z_a28f3d8f",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -1789,12 +2081,12 @@
         },
         "output_bytes": {
           "raw": 1010953816,
-          "clean": 111572168,
-          "mart": 100300530
+          "clean": 111695739,
+          "mart": 100404665
         },
-        "started_at": "2026-11-15T21:45:54.913342+00:00",
-        "finished_at": "2026-11-15T21:47:55.204356+00:00",
-        "duration_seconds": 120.291
+        "started_at": "2026-11-16T10:33:13.749947+00:00",
+        "finished_at": "2026-11-16T10:35:22.567686+00:00",
+        "duration_seconds": 128.818
       }
     },
     {
@@ -1805,7 +2097,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261115T214756Z_6751f7d6",
+        "run_id": "20261116T103524Z_cbba7761",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -1820,12 +2112,12 @@
         },
         "output_bytes": {
           "raw": 207257691,
-          "clean": 40535770,
-          "mart": 2507
+          "clean": 40512470,
+          "mart": 2508
         },
-        "started_at": "2026-11-15T21:47:56.811663+00:00",
-        "finished_at": "2026-11-15T21:48:46.689176+00:00",
-        "duration_seconds": 49.878
+        "started_at": "2026-11-16T10:35:24.200878+00:00",
+        "finished_at": "2026-11-16T10:36:15.490977+00:00",
+        "duration_seconds": 51.29
       }
     },
     {
@@ -1836,7 +2128,7 @@
       "detail": "anni 2007-2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261115T220414Z_a41b9420",
+        "run_id": "20261116T105200Z_9a6e01b5",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -1846,16 +2138,16 @@
         },
         "output_rows": {
           "clean": 1071679,
-          "mart": 15466
+          "mart": 15477
         },
         "output_bytes": {
           "raw": 3217207258,
-          "clean": 148653367,
-          "mart": 420001
+          "clean": 148241639,
+          "mart": 420039
         },
-        "started_at": "2026-11-15T22:04:14.715170+00:00",
-        "finished_at": "2026-11-15T22:08:25.046504+00:00",
-        "duration_seconds": 250.331
+        "started_at": "2026-11-16T10:52:00.715065+00:00",
+        "finished_at": "2026-11-16T10:56:28.022484+00:00",
+        "duration_seconds": 267.307
       }
     },
     {
@@ -1866,7 +2158,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261115T220826Z_aa1e730a",
+        "run_id": "20261116T105629Z_8de1734a",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -1881,12 +2173,12 @@
         },
         "output_bytes": {
           "raw": 53519474,
-          "clean": 9186996,
+          "clean": 9166336,
           "mart": 1594
         },
-        "started_at": "2026-11-15T22:08:26.880667+00:00",
-        "finished_at": "2026-11-15T22:08:49.229811+00:00",
-        "duration_seconds": 22.349
+        "started_at": "2026-11-16T10:56:29.970409+00:00",
+        "finished_at": "2026-11-16T10:56:52.553270+00:00",
+        "duration_seconds": 22.583
       }
     },
     {
@@ -1897,7 +2189,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261115T220850Z_bc513bc9",
+        "run_id": "20261116T105654Z_3c776e8b",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -1913,11 +2205,11 @@
         "output_bytes": {
           "raw": 198989490,
           "clean": 76538705,
-          "mart": 9145847
+          "mart": 9145422
         },
-        "started_at": "2026-11-15T22:08:50.503664+00:00",
-        "finished_at": "2026-11-15T22:09:15.274152+00:00",
-        "duration_seconds": 24.77
+        "started_at": "2026-11-16T10:56:54.258810+00:00",
+        "finished_at": "2026-11-16T10:57:25.429622+00:00",
+        "duration_seconds": 31.171
       }
     },
     {
@@ -1928,7 +2220,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261115T220916Z_05cdb2be",
+        "run_id": "20261116T105727Z_6d41fd42",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -1943,12 +2235,12 @@
         },
         "output_bytes": {
           "raw": 60757741,
-          "clean": 15176821,
-          "mart": 3410
+          "clean": 15086569,
+          "mart": 3409
         },
-        "started_at": "2026-11-15T22:09:16.549076+00:00",
-        "finished_at": "2026-11-15T22:09:43.442324+00:00",
-        "duration_seconds": 26.893
+        "started_at": "2026-11-16T10:57:27.157465+00:00",
+        "finished_at": "2026-11-16T10:57:52.792634+00:00",
+        "duration_seconds": 25.635
       }
     },
     {
@@ -1959,7 +2251,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261115T220944Z_b2d36a8a",
+        "run_id": "20261116T105754Z_6b95867e",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -1974,12 +2266,43 @@
         },
         "output_bytes": {
           "raw": 1592914303,
-          "clean": 181792898,
-          "mart": 22367565
+          "clean": 181855790,
+          "mart": 22386702
         },
-        "started_at": "2026-11-15T22:09:44.741440+00:00",
-        "finished_at": "2026-11-15T22:12:09.725186+00:00",
-        "duration_seconds": 144.984
+        "started_at": "2026-11-16T10:57:54.077932+00:00",
+        "finished_at": "2026-11-16T11:00:26.861715+00:00",
+        "duration_seconds": 152.784
+      }
+    },
+    {
+      "id": "anac_quadro_economico",
+      "source_id": "anac",
+      "status": "ok",
+      "label": "anac_quadro_economico",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20261116T110028Z_8c327e81",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 5515313,
+          "clean": 6933965,
+          "mart": 2202902
+        },
+        "output_bytes": {
+          "raw": 582437946,
+          "clean": 169146805,
+          "mart": 56260630
+        },
+        "started_at": "2026-11-16T11:00:28.595936+00:00",
+        "finished_at": "2026-11-16T11:02:18.670745+00:00",
+        "duration_seconds": 110.075
       }
     },
     {
@@ -1990,7 +2313,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261115T221211Z_a5c3f7c5",
+        "run_id": "20261116T110220Z_398917f9",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -2005,12 +2328,12 @@
         },
         "output_bytes": {
           "raw": 22132883,
-          "clean": 3199292,
-          "mart": 4520
+          "clean": 3199502,
+          "mart": 4529
         },
-        "started_at": "2026-11-15T22:12:11.502864+00:00",
-        "finished_at": "2026-11-15T22:12:28.674382+00:00",
-        "duration_seconds": 17.172
+        "started_at": "2026-11-16T11:02:20.353711+00:00",
+        "finished_at": "2026-11-16T11:02:36.268091+00:00",
+        "duration_seconds": 15.914
       }
     },
     {
@@ -2021,7 +2344,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261115T221229Z_6c7d87d0",
+        "run_id": "20261116T110237Z_24fa0d7c",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -2036,12 +2359,43 @@
         },
         "output_bytes": {
           "raw": 230789984,
-          "clean": 40860766,
-          "mart": 2351
+          "clean": 40808854,
+          "mart": 2347
         },
-        "started_at": "2026-11-15T22:12:29.931954+00:00",
-        "finished_at": "2026-11-15T22:13:11.012318+00:00",
-        "duration_seconds": 41.08
+        "started_at": "2026-11-16T11:02:37.505097+00:00",
+        "finished_at": "2026-11-16T11:03:19.846208+00:00",
+        "duration_seconds": 42.341
+      }
+    },
+    {
+      "id": "anac_stazioni_appaltanti",
+      "source_id": "anac",
+      "status": "ok",
+      "label": "anac_stazioni_appaltanti",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20261116T110321Z_bc89f97b",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 95,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 48040,
+          "clean": 48040,
+          "mart": 228
+        },
+        "output_bytes": {
+          "raw": 12945255,
+          "clean": 2118716,
+          "mart": 5497
+        },
+        "started_at": "2026-11-16T11:03:21.128403+00:00",
+        "finished_at": "2026-11-16T11:03:25.032038+00:00",
+        "duration_seconds": 3.904
       }
     },
     {
@@ -2052,7 +2406,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261115T221312Z_56f2b9ed",
+        "run_id": "20261116T110326Z_f07367e8",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -2063,16 +2417,16 @@
         "output_rows": {
           "raw": 334301,
           "clean": 373296,
-          "mart": 279864
+          "mart": 279858
         },
         "output_bytes": {
           "raw": 189544365,
-          "clean": 18809965,
-          "mart": 4383511
+          "clean": 18793391,
+          "mart": 4376324
         },
-        "started_at": "2026-11-15T22:13:12.280219+00:00",
-        "finished_at": "2026-11-15T22:13:45.173996+00:00",
-        "duration_seconds": 32.894
+        "started_at": "2026-11-16T11:03:26.714228+00:00",
+        "finished_at": "2026-11-16T11:03:59.545815+00:00",
+        "duration_seconds": 32.832
       }
     },
     {
@@ -2083,7 +2437,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261115T221346Z_2a72fa9b",
+        "run_id": "20261116T110400Z_8f3dbfc1",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -2098,12 +2452,12 @@
         },
         "output_bytes": {
           "raw": 54701453,
-          "clean": 9034602,
-          "mart": 3128807
+          "clean": 9028662,
+          "mart": 3129877
         },
-        "started_at": "2026-11-15T22:13:46.433851+00:00",
-        "finished_at": "2026-11-15T22:14:11.384105+00:00",
-        "duration_seconds": 24.95
+        "started_at": "2026-11-16T11:04:00.817782+00:00",
+        "finished_at": "2026-11-16T11:04:22.389581+00:00",
+        "duration_seconds": 21.572
       }
     }
   ],
@@ -2181,6 +2535,18 @@
             "semantic_type": "fiscal_code"
           },
           {
+            "slug": "anac_stazioni_appaltanti",
+            "name": "Anac Stazioni Appaltanti",
+            "column": "codice_fiscale",
+            "semantic_type": "fiscal_code"
+          },
+          {
+            "slug": "anac_stazioni_appaltanti",
+            "name": "Anac Stazioni Appaltanti",
+            "column": "partita_iva",
+            "semantic_type": "fiscal_code"
+          },
+          {
             "slug": "anac_subappalti",
             "name": "Anac Subappalti",
             "column": "cf_subappaltante",
@@ -2194,7 +2560,7 @@
           }
         ],
         "types": {
-          "fiscal_code": 7
+          "fiscal_code": 9
         }
       },
       "Gara": {
@@ -2268,6 +2634,12 @@
             "semantic_type": "cig_code"
           },
           {
+            "slug": "anac_quadro_economico",
+            "name": "Anac Quadro Economico",
+            "column": "cig",
+            "semantic_type": "cig_code"
+          },
+          {
             "slug": "anac_sospensioni",
             "name": "Anac Sospensioni",
             "column": "cig",
@@ -2293,7 +2665,7 @@
           }
         ],
         "types": {
-          "cig_code": 15
+          "cig_code": 16
         }
       },
       "Nazione": {
@@ -2305,10 +2677,16 @@
             "name": "Anac Bandi Gara",
             "column": "stato",
             "semantic_type": "country_code"
+          },
+          {
+            "slug": "anac_stazioni_appaltanti",
+            "name": "Anac Stazioni Appaltanti",
+            "column": "stato",
+            "semantic_type": "country_code"
           }
         ],
         "types": {
-          "country_code": 1
+          "country_code": 2
         }
       },
       "Progetto": {
@@ -2335,10 +2713,16 @@
             "name": "Anac Bandi Gara",
             "column": "provincia",
             "semantic_type": "province_code"
+          },
+          {
+            "slug": "anac_stazioni_appaltanti",
+            "name": "Anac Stazioni Appaltanti",
+            "column": "provincia",
+            "semantic_type": "province_code"
           }
         ],
         "types": {
-          "province_code": 1
+          "province_code": 2
         }
       },
       "Stazione Appaltante": {
@@ -2350,10 +2734,16 @@
             "name": "Anac Bandi Gara",
             "column": "codice_ausa",
             "semantic_type": "ausa_code"
+          },
+          {
+            "slug": "anac_stazioni_appaltanti",
+            "name": "Anac Stazioni Appaltanti",
+            "column": "codice_ausa",
+            "semantic_type": "ausa_code"
           }
         ],
         "types": {
-          "ausa_code": 1
+          "ausa_code": 2
         }
       }
     },
@@ -2491,6 +2881,19 @@
       {
         "from": {
           "entity": "Gara",
+          "dataset": "anac_quadro_economico",
+          "via": "cig_code"
+        },
+        "to": {
+          "entity": "Comune",
+          "bridge": "anac_bandi_gara",
+          "on": "cig",
+          "semantic_type": "municipality_code"
+        }
+      },
+      {
+        "from": {
+          "entity": "Gara",
           "dataset": "anac_sospensioni",
           "via": "cig_code"
         },
@@ -2512,6 +2915,19 @@
           "bridge": "anac_bandi_gara",
           "on": "cig",
           "semantic_type": "municipality_code"
+        }
+      },
+      {
+        "from": {
+          "entity": "Stazione Appaltante",
+          "dataset": "anac_stazioni_appaltanti",
+          "via": "ausa_code"
+        },
+        "to": {
+          "entity": "Ente (o Impresa)",
+          "bridge": "bdap_anagrafe_enti",
+          "on": "codice_ente_ipa",
+          "semantic_type": "fiscal_code"
         }
       },
       {
