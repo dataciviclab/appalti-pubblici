@@ -1,6 +1,6 @@
 {
   "source_id": "anac",
-  "generated_at": "2026-11-09T13:50:22+00:00",
+  "generated_at": "2026-11-16T13:33:36+00:00",
   "report_version": 1,
   "timing": {},
   "identity": {
@@ -11,21 +11,21 @@
     "observation_mode": "catalog-watch",
     "verdict": "go",
     "note": "CKAN diretto ANAC (dati.anticorruzione.it, 70 package) — diverso dall'aggregato dati.gov.it monitorato in SO centrale. WAF richiede User-Agent browser. toolkit.extends dichiara 'appalti-pubblici', i dataset.yml usano 'anac'.",
-    "last_probed": "2026-11-09"
+    "last_probed": "2026-11-16"
   },
   "health": {
     "radar_status": "GREEN",
     "http_code": "200",
     "note": null,
     "ssl_fallback": false,
-    "streak": 6
+    "streak": 7
   },
   "inventory": {
     "total_items": 70,
     "active_items": 70,
     "stale_items": 0,
     "method": null,
-    "captured_at": "2026-11-09T13:49:52+00:00",
+    "captured_at": "2026-11-16T13:33:14+00:00",
     "baseline_value": null,
     "baseline_date": null,
     "freshness_hours": 0.0,
@@ -42,7 +42,7 @@
     }
   },
   "source_check": {
-    "last_run": "2026-11-09T13:50:22Z",
+    "last_run": "2026-11-16T13:33:36Z",
     "total_scored": 48,
     "reachable": 47,
     "csv_count": 47,
@@ -153,6 +153,10 @@
         {
           "kind": "ckan_dataset",
           "id": "cig-{year}"
+        },
+        {
+          "kind": "ckan_dataset",
+          "id": "cig"
         }
       ]
     },
@@ -197,6 +201,16 @@
       ]
     },
     {
+      "slug": "anac_quadro_economico",
+      "status": "incubating",
+      "upstream": [
+        {
+          "kind": "ckan_dataset",
+          "id": "quadro-economico"
+        }
+      ]
+    },
+    {
       "slug": "anac_sospensioni",
       "status": "incubating",
       "upstream": [
@@ -213,6 +227,16 @@
         {
           "kind": "ckan_dataset",
           "id": "stati-avanzamento"
+        }
+      ]
+    },
+    {
+      "slug": "anac_stazioni_appaltanti",
+      "status": "incubating",
+      "upstream": [
+        {
+          "kind": "ckan_dataset",
+          "id": "stazioni-appaltanti"
         }
       ]
     },
@@ -255,8 +279,8 @@
   "repo": "appalti-pubblici",
   "catalog_schema_version": 1,
   "referenced_items": {
-    "checked": 12,
-    "matched": 12,
+    "checked": 15,
+    "matched": 15,
     "missing": [],
     "unknown": []
   }
