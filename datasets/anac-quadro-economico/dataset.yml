@@ -1,0 +1,95 @@
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "anac_quadro_economico"
+  source_id: "anac"
+  tags: [appalti, anac, quadro-economico, importi, varianti]
+  category: appalti
+  description: "ANAC quadro economico: importi per CIG a base d'asta, consuntivo e varianti. E' la fonte degli importi che manca a `varianti`: permette di misurare lo scostamento tra importo a base e consuntivo."
+  years: [2026]
+  time_coverage:
+    start_year: 2000
+    end_year: 2026
+
+raw:
+  # overwrite: con split_resources il default 'versioned' accumulerebbe
+  # 000-..., 000-..._1, ... a ogni run.
+  output_policy: overwrite
+  sources:
+    - name: "quadro-economico"
+      type: "ckan"
+      extractor:
+        type: "unzip_all"
+        args:
+          only_ext: [".csv"]
+      client:
+        user_agent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      args:
+        portal_url: "https://dati.anticorruzione.it/opendata"
+        dataset_id: "quadro-economico"
+        # FULL fermo a gennaio 2026 + delta mensili: senza i delta gli eventi
+        # successivi al 15/1 non esistono (stessa forma di aggiudicazioni).
+        download_all: true
+        split_resources: true
+      primary: true
+
+clean:
+  sql: "sql/clean.sql"
+  required_columns:
+    - "cig"
+    - "id_aggiudicazione"
+    - "descrizione_evento"
+    - "importo_lavori"
+    - "somme_a_disposizione"
+  read:
+    source: config_only
+    mode: all
+    header: true
+    delim: ";"
+    encoding: "utf-8"
+    quote: '"'
+    escape: '"'
+    null_padding: true
+    trim_whitespace: true
+    sample_size: -1
+    # Provenienza per riga: serve alla regola ANAC (il delta sostituisce il
+    # full per CIG).
+    source_file: true
+  validate:
+    not_null:
+      - "cig"
+      - "id_aggiudicazione"
+      - "descrizione_evento"
+    min_rows: 1
+
+mart:
+  tables:
+    - name: "mart_cig"
+      sql: "sql/mart_cig.sql"
+    - name: "mart_eventi"
+      sql: "sql/mart_eventi.sql"
+  required_tables:
+    - "mart_cig"
+    - "mart_eventi"
+  validate:
+    table_rules:
+      mart_cig:
+        primary_key:
+          - "cig"
+          - "id_aggiudicazione"
+        min_rows: 1
+      mart_eventi:
+        primary_key:
+          - "descrizione_evento"
+        min_rows: 2
+
+duckdb:
+  # 9 file (full + 8 delta) e ~10M righe: a 2 GB la clean andava in OOM.
+  memory_limit: "5GB"
+
+validation:
+  fail_on_error: true
+
+output:
+  artifacts: "standard"
