@@ -1,0 +1,91 @@
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "anac_stazioni_appaltanti"
+  source_id: "anac"
+  tags: [appalti, anac, stazioni-appaltanti, anagrafica]
+  category: appalti
+  description: "Anagrafica ANAC delle stazioni appaltanti (1 riga per codice fiscale): natura giuridica, AUSA, localizzazione, stato. Chiave di join su cf_amministrazione_appaltante di tutti gli altri dataset."
+  years: [2026]
+  time_coverage:
+    mode: snapshot
+
+raw:
+  # Anagrafica: FULL ripubblicato, nessun delta mensile.
+  output_policy: overwrite
+  sources:
+    - name: "stazioni-appaltanti"
+      type: "ckan"
+      extractor:
+        type: "unzip_first_csv"
+      client:
+        user_agent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      args:
+        portal_url: "https://dati.anticorruzione.it/opendata"
+        dataset_id: "stazioni-appaltanti"
+        resource_name: "stazioni-appaltanti_csv"
+      primary: true
+
+clean:
+  sql: "sql/clean.sql"
+  required_columns:
+    - "codice_fiscale"
+    - "denominazione"
+    - "natura_giuridica"
+    - "stato"
+  read:
+    source: config_only
+    mode: all
+    header: true
+    delim: ";"
+    encoding: "utf-8"
+    quote: '"'
+    escape: '"'
+    null_padding: true
+    trim_whitespace: true
+    sample_size: -1
+  validate:
+    primary_key:
+      - "codice_fiscale"
+    # Solo la chiave e' obbligatoria: la fonte lascia vuoti i campi di
+    # classificazione su una quota piccola di righe (340 senza natura, 6 senza
+    # denominazione, su 48.040) e scartarle perderebbe stazioni appaltanti vere.
+    # La quota ammessa e' dichiarata qui sotto.
+    not_null:
+      - "codice_fiscale"
+    max_null_pct:
+      denominazione: 0.001
+      natura_giuridica: 0.01
+      codice_ausa: 0.001
+      indirizzo: 0.02
+      cap: 0.02
+      citta: 0.02
+      provincia: 0.10
+    min_rows: 1
+
+mart:
+  tables:
+    - name: "mart_natura"
+      sql: "sql/mart_natura.sql"
+    - name: "mart_territorio"
+      sql: "sql/mart_territorio.sql"
+  required_tables:
+    - "mart_natura"
+    - "mart_territorio"
+  validate:
+    table_rules:
+      mart_natura:
+        primary_key:
+          - "natura_giuridica"
+        min_rows: 3
+      mart_territorio:
+        primary_key:
+          - "provincia"
+        min_rows: 20
+
+validation:
+  fail_on_error: true
+
+output:
+  artifacts: "standard"
